@@ -4,6 +4,7 @@ using OnnxStack.Core.Config;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace Amuse.UI.Models
 {
@@ -21,6 +22,8 @@ namespace Amuse.UI.Models
         public int DefaultIntraOpNumThreads { get; set; }
         public ExecutionMode DefaultExecutionMode { get; set; }
         public ExecutionProvider DefaultExecutionProvider { get; set; }
+
+        [JsonIgnore]
         public IEnumerable<ExecutionProvider> SupportedExecutionProviders => GetFilteredItems();
 
         public ObservableCollection<ModelTemplateViewModel> Templates { get; set; } = new ObservableCollection<ModelTemplateViewModel>();
