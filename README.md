@@ -2,7 +2,12 @@
     <img width="50%" src="Assets/Amuse-Logo-512.png">
 </p> 
 
-![GitHub last commit (by committer)](https://img.shields.io/github/last-commit/Stackyard-AI/Amuse)
+![GitHub all releases](https://img.shields.io/github/downloads/Stackyard-AI/Amuse/total)[![Download Amuse](https://img.shields.io/github/v/release/Stackyard-AI/Amuse?label=Download&style=flat-square)](https://github.com/Stackyard-AI/Amuse/releases/download/v1.0.0/Amuse.zip)![GitHub last commit (by committer)](https://img.shields.io/github/last-commit/Stackyard-AI/Amuse)
+[![Discord](https://img.shields.io/discord/1189738352715513967?label=Discord&)](https://discord.gg/hThP5VRuHA)
+[![YouTube Channel Views](https://img.shields.io/youtube/channel/views/UCIBJC3QFZm0ocvove8oqmSg)](https://www.youtube.com/@StackyardAI)
+### **[Discord](https://discord.gg/hThP5VRuHA)**  | **[Youtube](https://www.youtube.com/@StackyardAI)** | **[Download](https://github.com/Stackyard-AI/Amuse/releases/download/v1.0.0/Amuse.zip)**
+
+__________________________
 
 # Welcome to Amuse!
 
@@ -70,6 +75,14 @@ https://github-production-user-asset-6210df.s3.amazonaws.com/90013272/292651888-
 Image inpainting is an image modification/restoration technique that intelligently fills in missing or damaged portions of an image while maintaining visual consistency. It's used for tasks like photo restoration and object removal, creating seamless and convincing results.
 
 https://github-production-user-asset-6210df.s3.amazonaws.com/90013272/292652258-c6ffbb17-98d2-483a-9eab-04e4dfad1102.mp4
+
+## Model Manager
+![image](https://github.com/Stackyard-AI/Amuse/assets/90013272/0539f55d-96fd-4a12-95f4-9d16ac335859)
+
+Discover the simplicity of our Model Manager – your all-in-one tool for stress-free model management. Easily navigate through an intuitive interface that takes the hassle out of deploying, updating, and monitoring your stable diffusion models. No need for configuration headaches; our Model Manager makes it a breeze to install new models. Stay in control effortlessly, and let your creative process evolve smoothly.
+
+## Getting Started
+Get started now with our helpful documentation: https://github.com/Stackyard-AI/Amuse/blob/master/Docs/GettingStarted.md
 
 __________________________
 
