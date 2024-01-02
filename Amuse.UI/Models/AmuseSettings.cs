@@ -1,9 +1,7 @@
 ﻿using Microsoft.ML.OnnxRuntime;
 using OnnxStack.Common.Config;
 using OnnxStack.Core.Config;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Text.Json.Serialization;
 
 namespace Amuse.UI.Models
@@ -24,29 +22,28 @@ namespace Amuse.UI.Models
         public ExecutionProvider DefaultExecutionProvider { get; set; }
 
         [JsonIgnore]
-        public IEnumerable<ExecutionProvider> SupportedExecutionProviders => GetFilteredItems();
+        public ExecutionProvider SupportedExecutionProvider => GetSupportedExecutionProvider();
 
         public ObservableCollection<ModelTemplateViewModel> Templates { get; set; } = new ObservableCollection<ModelTemplateViewModel>();
         public ObservableCollection<UpscaleModelSetViewModel> UpscaleModelSets { get; set; } = new ObservableCollection<UpscaleModelSetViewModel>();
         public ObservableCollection<StableDiffusionModelSetViewModel> StableDiffusionModelSets { get; set; } = new ObservableCollection<StableDiffusionModelSetViewModel>();
 
-        public IEnumerable<ExecutionProvider> GetFilteredItems()
+        public ExecutionProvider GetSupportedExecutionProvider()
         {
-#if DEBUG_DML || RELEASE_DML
-            yield return ExecutionProvider.DirectML;
-#elif DEBUG_CUDA || RELEASE_CUDA
-            yield return ExecutionProvider.Cuda;
+#if DEBUG_CUDA || RELEASE_CUDA
+            return ExecutionProvider.Cuda;
 #elif DEBUG_TENSORRT || RELEASE_TENSORRT
-            yield return ExecutionProvider.TensorRT;
+            return ExecutionProvider.TensorRT;
+#else
+            return ExecutionProvider.DirectML;
 #endif
-            yield return ExecutionProvider.Cpu;
         }
 
         public void Initialize()
         {
-            DefaultExecutionProvider = SupportedExecutionProviders.Contains(DefaultExecutionProvider)
-                ? DefaultExecutionProvider
-                : SupportedExecutionProviders.First();
+            DefaultExecutionProvider = DefaultExecutionProvider == SupportedExecutionProvider || DefaultExecutionProvider == ExecutionProvider.Cpu
+              ? DefaultExecutionProvider
+              : SupportedExecutionProvider;
         }
 
     }
