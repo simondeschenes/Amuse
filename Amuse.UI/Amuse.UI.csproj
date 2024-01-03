@@ -11,6 +11,7 @@
     <Configurations>Debug;Release;Debug-DML;Debug-Cuda;Release-DML;Release-Cuda;Debug-TensorRT;Release-TensorRT</Configurations>
     <ApplicationIcon>Images\Icon.ico</ApplicationIcon>
     <AssemblyName>Amuse</AssemblyName>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-DML|AnyCPU'">
@@ -78,6 +79,12 @@
 
   <ItemGroup>
     <Folder Include="Properties\PublishProfiles\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="OnnxStack.Adapter.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

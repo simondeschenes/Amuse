@@ -46,6 +46,7 @@ namespace Amuse.UI
             builder.Services.AddSingleton<IModelFactory, ModelFactory>();
             builder.Services.AddSingleton<IDialogService, DialogService>();
             builder.Services.AddSingleton<IModelDownloadService, ModelDownloadService>();
+            builder.Services.AddSingleton<IDeviceService, DeviceService>();
 
             // Build App
             _applicationHost = builder.Build();
