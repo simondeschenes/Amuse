@@ -42,6 +42,7 @@
         <converters:PipelineVisibilityConverter x:Key="PipelineVisibilityConverter" />
         <converters:ComboBoxAllItemConverter x:Key="ComboBoxAllItemConverter" />
         <converters:EnumDescriptionConverter x:Key="EnumDescriptionConverter" />
+        <converters:FullPathToFileNameConverter x:Key="FullPathToFileNameConverter" />
 
         <ObjectDataProvider x:Key="ListSortDirection" MethodName="GetValues" ObjectType="{x:Type system:Enum}">
             <ObjectDataProvider.MethodParameters>

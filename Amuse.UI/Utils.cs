@@ -186,16 +186,7 @@ namespace Amuse.UI
             };
         }
 
-        public static PromptOptionsModel ToPromptOptionsModel(this PromptOptions promptOptions)
-        {
-            return new PromptOptionsModel
-            {
-                Prompt = promptOptions.Prompt,
-                NegativePrompt = promptOptions.NegativePrompt
-            };
-        }
-
-
+ 
 
         public static BatchOptionsModel ToBatchOptionsModel(this BatchOptions batchOptions)
         {
