@@ -2,10 +2,12 @@
 using Amuse.UI.Models;
 using Microsoft.Extensions.Logging;
 using Models;
+using OnnxStack.Core.Image;
 using OnnxStack.StableDiffusion.Common;
 using OnnxStack.StableDiffusion.Config;
 using OnnxStack.StableDiffusion.Enums;
 using OnnxStack.StableDiffusion.Helpers;
+using OnnxStack.StableDiffusion.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -304,7 +306,7 @@ namespace Amuse.UI.Views
                 if (!BatchOptions.IsAutomationEnabled)
                 {
                     var timestamp = Stopwatch.GetTimestamp();
-                    var result = await _stableDiffusionService.GenerateAsBytesAsync(modelOptions, promptOptions, schedulerOptions, ProgressCallback(), _cancelationTokenSource.Token);
+                    var result = await _stableDiffusionService.GenerateAsBytesAsync(new ModelOptions(modelOptions), promptOptions, schedulerOptions, ProgressCallback(), _cancelationTokenSource.Token);
                     yield return await GenerateResultAsync(result, promptOptions, schedulerOptions, timestamp);
                 }
                 else
@@ -312,7 +314,7 @@ namespace Amuse.UI.Views
                     if (!BatchOptions.IsRealtimeEnabled)
                     {
                         var timestamp = Stopwatch.GetTimestamp();
-                        await foreach (var batchResult in _stableDiffusionService.GenerateBatchAsync(modelOptions, promptOptions, schedulerOptions, batchOptions, ProgressBatchCallback(), _cancelationTokenSource.Token))
+                        await foreach (var batchResult in _stableDiffusionService.GenerateBatchAsync(new ModelOptions(modelOptions), promptOptions, schedulerOptions, batchOptions, ProgressBatchCallback(), _cancelationTokenSource.Token))
                         {
                             yield return await GenerateResultAsync(batchResult.ImageResult.ToImageBytes(), promptOptions, batchResult.SchedulerOptions, timestamp);
                             timestamp = Stopwatch.GetTimestamp();
@@ -337,7 +339,7 @@ namespace Amuse.UI.Views
 
                         realtimePromptOptions.Prompt = string.IsNullOrEmpty(realtimePromptOptions.Prompt) ? " " : realtimePromptOptions.Prompt;
                         var timestamp = Stopwatch.GetTimestamp();
-                        var result = await _stableDiffusionService.GenerateAsBytesAsync(modelOptions, realtimePromptOptions, realtimeSchedulerOptions, RealtimeProgressCallback(), _cancelationTokenSource.Token);
+                        var result = await _stableDiffusionService.GenerateAsBytesAsync(new ModelOptions(modelOptions), realtimePromptOptions, realtimeSchedulerOptions, RealtimeProgressCallback(), _cancelationTokenSource.Token);
                         yield return await GenerateResultAsync(result, realtimePromptOptions, realtimeSchedulerOptions, timestamp);
                     }
                     await Utils.RefreshDelay(refreshTimestamp, UISettings.RealtimeRefreshRate, _cancelationTokenSource.Token);
@@ -390,57 +392,57 @@ namespace Amuse.UI.Views
         /// StableDiffusion progress callback.
         /// </summary>
         /// <returns></returns>
-        private Action<int, int> ProgressCallback()
+        private Action<DiffusionProgress> ProgressCallback()
         {
-            return (value, maximum) =>
+            return (progress) =>
             {
                 App.UIInvoke(() =>
                 {
                     if (_cancelationTokenSource.IsCancellationRequested)
                         return;
 
-                    if (ProgressMax != maximum)
-                        ProgressMax = maximum;
+                    if (ProgressMax != progress.StepMax)
+                        ProgressMax = progress.StepMax;
 
-                    ProgressValue = value;
+                    ProgressValue = progress.StepValue;
                 });
             };
         }
 
-        private Action<int, int, int, int> ProgressBatchCallback()
+        private Action<DiffusionProgress> ProgressBatchCallback()
         {
-            return (batchIndex, batchCount, step, steps) =>
+            return (progress) =>
             {
                 App.UIInvoke(() =>
                 {
                     if (_cancelationTokenSource.IsCancellationRequested)
                         return;
 
-                    if (BatchOptions.BatchsValue != batchCount)
-                        BatchOptions.BatchsValue = batchCount;
-                    if (BatchOptions.BatchValue != batchIndex)
-                        BatchOptions.BatchValue = batchIndex;
-                    if (BatchOptions.StepValue != step)
-                        BatchOptions.StepValue = step;
-                    if (BatchOptions.StepsValue != steps)
-                        BatchOptions.StepsValue = steps;
+                    if (BatchOptions.BatchsValue != progress.BatchMax)
+                        BatchOptions.BatchsValue = progress.BatchMax;
+                    if (BatchOptions.BatchValue != progress.BatchValue)
+                        BatchOptions.BatchValue = progress.BatchValue;
+                    if (BatchOptions.StepValue != progress.StepValue)
+                        BatchOptions.StepValue = progress.StepValue;
+                    if (BatchOptions.StepsValue != progress.StepMax)
+                        BatchOptions.StepsValue = progress.StepMax;
                 });
             };
         }
 
-        private Action<int, int> RealtimeProgressCallback()
+        private Action<DiffusionProgress> RealtimeProgressCallback()
         {
-            return (value, maximum) =>
+            return (progress) =>
             {
                 App.UIInvoke(() =>
                 {
                     if (_cancelationTokenSource.IsCancellationRequested)
                         return;
 
-                    if (BatchOptions.StepValue != value)
-                        BatchOptions.StepValue = value;
-                    if (BatchOptions.StepsValue != maximum)
-                        BatchOptions.StepsValue = maximum;
+                    if (BatchOptions.StepValue != progress.StepValue)
+                        BatchOptions.StepValue = progress.StepValue;
+                    if (BatchOptions.StepsValue != progress.StepMax)
+                        BatchOptions.StepsValue = progress.StepMax;
                 });
             };
         }
