@@ -32,6 +32,7 @@
                         PromptOptions="{Binding PromptOptions}" 
                         IsEnabled="{Binding IsControlsEnabled}"/>
                     <userControls:SchedulerControl DockPanel.Dock="Bottom" Margin="0, 10, 0 ,0"
+                        IsVideoControlsEnabled="True"
                         UISettings="{Binding UISettings}"
                         SelectedModel="{Binding SelectedModel}"
                         DiffuserType="ImageToImage" 
@@ -58,25 +59,23 @@
                         </StackPanel>
                     </TabItem.Header>
                     <UniformGrid Columns="2" VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <Viewbox Margin="40,40,20,40" >
-                            <userControls:VideoInputControl 
-                                IsGenerating="{Binding IsGenerating}"
-                                PromptOptions="{Binding PromptOptions, Mode=TwoWay}"
-                                PreviewImage="{Binding PreviewSource}"
-                                VideoResult="{Binding InputVideo, Mode=TwoWay}" 
-                                HasVideoResult="{Binding HasInputResult, Mode=TwoWay}" 
-                                SchedulerOptions="{Binding SchedulerOptions}"/>
-                        </Viewbox>
-                        <Viewbox Margin="20,40,40,40" >
-                            <userControls:VideoResultControl 
-                                PreviewImage="{Binding PreviewResult}"
-                                VideoResult="{Binding ResultVideo}" 
-                                HasVideoResult="{Binding HasResult}" 
-                                ProgressMax="{Binding ProgressMax}" 
-                                ProgressValue="{Binding ProgressValue}" 
-                                ProgressText="{Binding ProgressText}"
-                                SchedulerOptions="{Binding SchedulerOptions}" />
-                        </Viewbox>
+                        <userControls:VideoInputControl Margin="30,30,15,30" 
+                            IsGenerating="{Binding IsGenerating}"
+                            PromptOptions="{Binding PromptOptions, Mode=TwoWay}"
+                            PreviewImage="{Binding PreviewSource}"
+                            VideoResult="{Binding InputVideo, Mode=TwoWay}" 
+                            HasVideoResult="{Binding HasInputResult, Mode=TwoWay}" 
+                            SchedulerOptions="{Binding SchedulerOptions}"/>
+                        <userControls:VideoResultControl Margin="30,30,15,30" 
+                            IsGenerating="{Binding IsGenerating}"
+                            PreviewImage="{Binding PreviewResult}"
+                            VideoResult="{Binding ResultVideo, Mode=TwoWay}" 
+                            HasVideoResult="{Binding HasResult, Mode=TwoWay}" 
+                            ProgressMax="{Binding ProgressMax}" 
+                            ProgressValue="{Binding ProgressValue}" 
+                            ProgressText="{Binding ProgressText}"
+                            SchedulerOptions="{Binding SchedulerOptions, Mode=TwoWay}"
+                            Results="{Binding VideoResults}"/>
                     </UniformGrid>
                 </TabItem>
 
@@ -98,7 +97,7 @@
                         </DockPanel>
                         <ListBox ItemsSource="{Binding}" ItemContainerStyle="{StaticResource ImageResultListBoxItem}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" >
                             <ListBox.DataContext>
-                                <CollectionViewSource Source="{Binding ImageResults, ElementName=UI}">
+                                <CollectionViewSource Source="{Binding VideoResults, ElementName=UI}">
                                     <CollectionViewSource.SortDescriptions>
                                         <scm:SortDescription PropertyName="Timestamp" Direction="Descending" />
                                     </CollectionViewSource.SortDescriptions>

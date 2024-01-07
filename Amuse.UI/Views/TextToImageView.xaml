@@ -16,7 +16,7 @@
         <!--Control Panel-->
         <DockPanel Grid.Column="0" DataContext="{Binding ElementName=UI}" Margin="3,3,3,0">
             <UniformGrid DockPanel.Dock="Bottom" Columns="2" Height="30">
-                <Button Command="{Binding CancelCommand}" Margin="0,0,1,0" Style="{StaticResource ButtonGenerateCancelStyle}"/>
+                <Button Command="{Binding CancelCommand}" Margin="0,0,1,0" Style="{StaticResource ButtonGenerateCancelStyle}" />
                 <Button Command="{Binding GenerateCommand}" IsEnabled="{Binding SelectedModel.IsLoaded, FallbackValue=False, TargetNullValue=False}" Style="{StaticResource ButtonGenerateStyle}" IsDefault="True" Margin="1,0,0,0"/>
             </UniformGrid>
             <DockPanel >
@@ -59,8 +59,8 @@
                     <DockPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                         <Viewbox Margin="40" >
                             <userControls:ImageResultControl 
-                                Result="{Binding ResultImage}" 
-                                HasResult="{Binding HasResult}" 
+                                Result="{Binding ResultImage, Mode=TwoWay}" 
+                                HasResult="{Binding HasResult, Mode=TwoWay}" 
                                 ProgressMax="{Binding ProgressMax}" 
                                 ProgressValue="{Binding ProgressValue}" 
                                 SchedulerOptions="{Binding SchedulerOptions, Mode=TwoWay}" />

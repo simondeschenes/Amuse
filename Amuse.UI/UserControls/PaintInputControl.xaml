@@ -186,8 +186,8 @@
                     </Button>
 
                     <!--Clear-->
-                    <Button Command="{Binding ClearCanvasCommand}">
-                        <userControls:FontAwesome Icon="&#xf2ed;" IconStyle="Light"  />
+                    <Button Command="{Binding ClearCanvasCommand}" Style="{StaticResource DangerButtonStyle}">
+                        <userControls:FontAwesome Icon="&#xf2ed;" IconStyle="Light" Color="{StaticResource DangerColour}"  />
                     </Button>
                 </UniformGrid>
 
@@ -198,7 +198,7 @@
                 <!--Load Image-->
                 <Button DockPanel.Dock="Left" Command="{Binding LoadImageCommand}" ToolTip="Load Image File" Height="30"  >
                     <StackPanel Orientation="Horizontal">
-                        <userControls:FontAwesome Icon="&#xf1c5;" IconStyle="Light"  Size="13" />
+                        <userControls:FontAwesome Icon="&#xf0ee;" IconStyle="Light"  />
                         <TextBlock Text="Load Image" Margin="5,0,0,0"/>
                     </StackPanel>
                 </Button>

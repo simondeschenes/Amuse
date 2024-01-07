@@ -47,6 +47,12 @@ namespace Amuse.UI.Views
             throw new NotImplementedException();
         }
 
+        public Task NavigateAsync(VideoResultModel videoResult)
+        {
+            throw new NotImplementedException();
+        }
+
+
         private Task Save()
         {
             try

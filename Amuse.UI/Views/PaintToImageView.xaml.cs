@@ -207,6 +207,10 @@ namespace Amuse.UI.Views
             SelectedTabIndex = 0;
         }
 
+        public Task NavigateAsync(VideoResultModel videoResult)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Generates this image result.

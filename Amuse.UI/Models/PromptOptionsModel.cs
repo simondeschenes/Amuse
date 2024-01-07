@@ -46,7 +46,7 @@ namespace Amuse.UI.Models
             set { _hasChanged = value; NotifyPropertyChanged(); }
         }
 
-        public static PromptOptionsModel ToPromptOptionsModel(PromptOptions promptOptions)
+        public static PromptOptionsModel FromPromptOptions(PromptOptions promptOptions)
         {
             return new PromptOptionsModel
             {

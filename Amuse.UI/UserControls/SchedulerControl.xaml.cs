@@ -111,6 +111,15 @@ namespace Amuse.UI.UserControls
             DependencyProperty.Register("IsGenerating", typeof(bool), typeof(SchedulerControl));
 
 
+        public bool IsVideoControlsEnabled
+        {
+            get { return (bool)GetValue(IsVideoControlsEnabledProperty); }
+            set { SetValue(IsVideoControlsEnabledProperty, value); }
+        }
+        public static readonly DependencyProperty IsVideoControlsEnabledProperty =
+            DependencyProperty.Register("IsVideoControlsEnabled", typeof(bool), typeof(SchedulerControl));
+
+
 
         public StableDiffusionSchedulerDefaults SchedulerDefaults
         {

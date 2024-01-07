@@ -1,8 +1,8 @@
 ﻿using Amuse.UI.Commands;
 using Amuse.UI.Models;
 using Microsoft.Extensions.Logging;
-using Microsoft.Win32;
 using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -16,7 +16,7 @@ namespace Amuse.UI.UserControls
     public partial class VideoResultControl : UserControl, INotifyPropertyChanged
     {
         private readonly ILogger<VideoResultControl> _logger;
-        private bool _isPlaying = false;
+        private bool _isPreviewVisible;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VideoResultControl" /> class.
@@ -26,22 +26,22 @@ namespace Amuse.UI.UserControls
             if (!DesignerProperties.GetIsInDesignMode(this))
                 _logger = App.GetService<ILogger<VideoResultControl>>();
 
-            SaveVideoCommand = new AsyncRelayCommand(SaveVideo);
             ClearVideoCommand = new AsyncRelayCommand(ClearVideo);
+            UpdateSeedCommand = new AsyncRelayCommand(UpdateSeed);
             InitializeComponent();
             HasVideoResult = false;
         }
 
-        public AsyncRelayCommand SaveVideoCommand { get; }
         public AsyncRelayCommand ClearVideoCommand { get; }
+        public AsyncRelayCommand UpdateSeedCommand { get; }
 
-        public VideoInputModel VideoResult
+        public VideoResultModel VideoResult
         {
-            get { return (VideoInputModel)GetValue(VideoResultProperty); }
+            get { return (VideoResultModel)GetValue(VideoResultProperty); }
             set { SetValue(VideoResultProperty, value); }
         }
         public static readonly DependencyProperty VideoResultProperty =
-            DependencyProperty.Register("VideoResult", typeof(VideoInputModel), typeof(VideoResultControl));
+            DependencyProperty.Register("VideoResult", typeof(VideoResultModel), typeof(VideoResultControl));
 
         public SchedulerOptionsModel SchedulerOptions
         {
@@ -50,6 +50,21 @@ namespace Amuse.UI.UserControls
         }
         public static readonly DependencyProperty SchedulerOptionsProperty =
             DependencyProperty.Register("SchedulerOptions", typeof(SchedulerOptionsModel), typeof(VideoResultControl));
+
+        public bool IsGenerating
+        {
+            get { return (bool)GetValue(IsGeneratingProperty); }
+            set { SetValue(IsGeneratingProperty, value); }
+        }
+        public static readonly DependencyProperty IsGeneratingProperty =
+            DependencyProperty.Register("IsGenerating", typeof(bool), typeof(VideoResultControl), new PropertyMetadata((s, e) =>
+            {
+                if (s is VideoResultControl control && e.NewValue is bool isGenerating)
+                {
+                    if (!isGenerating)
+                        control.IsPreviewVisible = false;
+                }
+            }));
 
         public bool HasVideoResult
         {
@@ -89,17 +104,27 @@ namespace Amuse.UI.UserControls
             set { SetValue(PreviewImageProperty, value); }
         }
         public static readonly DependencyProperty PreviewImageProperty =
-            DependencyProperty.Register("PreviewImage", typeof(BitmapImage), typeof(VideoResultControl));
+            DependencyProperty.Register("PreviewImage", typeof(BitmapImage), typeof(VideoResultControl), new PropertyMetadata((s, e) =>
+            {
+                if (s is VideoResultControl control && !control.IsPreviewVisible)
+                    control.IsPreviewVisible = true;
+            }));
 
-
-
-        /// <summary>
-        /// Saves the video.
-        /// </summary>
-        private async Task SaveVideo()
+        public bool IsPreviewVisible
         {
-            await SaveVideoFile(VideoResult, SchedulerOptions);
+            get { return _isPreviewVisible; }
+            set { _isPreviewVisible = value; NotifyPropertyChanged(); }
         }
+
+        public ObservableCollection<VideoResultModel> Results
+        {
+            get { return (ObservableCollection<VideoResultModel>)GetValue(ResultsProperty); }
+            set { SetValue(ResultsProperty, value); }
+        }
+        public static readonly DependencyProperty ResultsProperty =
+            DependencyProperty.Register("Results", typeof(ObservableCollection<VideoResultModel>), typeof(VideoResultControl));
+
+
 
         /// <summary>
         /// Clears the image.
@@ -107,46 +132,26 @@ namespace Amuse.UI.UserControls
         /// <returns></returns>
         private Task ClearVideo()
         {
-            ProgressMax = 1;
-            VideoResult = null;
-            HasVideoResult = false;
+            try
+            {
+                var filename = VideoResult.FileName;
+                Results.Remove(VideoResult);
+                VideoResult = null;
+                HasVideoResult = false;
+                Task.Run(() => File.Delete(filename));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"[ClearVideo] Failed to delete video file: {ex.Message}");
+            }
             return Task.CompletedTask;
         }
 
 
-        /// <summary>
-        /// Saves the video file.
-        /// </summary>
-        /// <param name="videoResult">The video result.</param>
-        /// <param name="schedulerOptions">The scheduler options.</param>
-        private async Task SaveVideoFile(VideoInputModel videoResult, SchedulerOptionsModel schedulerOptions)
+        private Task UpdateSeed()
         {
-            try
-            {
-                var saveFileDialog = new SaveFileDialog
-                {
-                    Filter = "mp4 files (*.mp4)|*.mp4",
-                    DefaultExt = "mp4",
-                    AddExtension = true,
-                    RestoreDirectory = true,
-                    InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
-                    FileName = $"video-{schedulerOptions.Seed}.mp4"
-                };
-
-                var dialogResult = saveFileDialog.ShowDialog();
-                if (dialogResult == false)
-                {
-                    _logger.LogInformation("Saving video canceled");
-                    return;
-                }
-
-                // Write File
-                await File.WriteAllBytesAsync(saveFileDialog.FileName, videoResult.VideoBytes);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error saving video");
-            }
+            SchedulerOptions.Seed = VideoResult.SchedulerOptions.Seed;
+            return Task.CompletedTask;
         }
 
 
@@ -157,8 +162,10 @@ namespace Amuse.UI.UserControls
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void MediaElement_Loaded(object sender, RoutedEventArgs e)
         {
-            (sender as MediaElement).Play();
-            _isPlaying = true;
+            if (sender is not MediaElement mediaElement)
+                return;
+
+            mediaElement.LoadedBehavior = MediaState.Play;
         }
 
 
@@ -169,7 +176,10 @@ namespace Amuse.UI.UserControls
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void MediaElement_MediaEnded(object sender, RoutedEventArgs e)
         {
-            (sender as MediaElement).Position = TimeSpan.FromMilliseconds(1);
+            if (sender is not MediaElement mediaElement)
+                return;
+
+            mediaElement.Position = TimeSpan.FromMilliseconds(1);
         }
 
 
@@ -183,15 +193,9 @@ namespace Amuse.UI.UserControls
             if (sender is not MediaElement mediaElement)
                 return;
 
-            if (_isPlaying)
-            {
-                _isPlaying = false;
-                mediaElement.Pause();
-                return;
-            }
-
-            mediaElement.Play();
-            _isPlaying = true;
+            mediaElement.LoadedBehavior = mediaElement.LoadedBehavior == MediaState.Pause
+                ? MediaState.Play
+                : MediaState.Pause;
         }
 
         #region INotifyPropertyChanged

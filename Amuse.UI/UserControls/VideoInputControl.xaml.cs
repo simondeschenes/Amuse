@@ -16,7 +16,7 @@ namespace Amuse.UI.UserControls
     public partial class VideoInputControl : UserControl, INotifyPropertyChanged
     {
         private readonly IVideoService _videoService;
-        private bool _isPlaying = false;
+        private bool _isPreviewVisible;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VideoInputControl" /> class.
@@ -93,8 +93,6 @@ namespace Amuse.UI.UserControls
                     control.IsPreviewVisible = true;
             }));
 
-        private bool _isPreviewVisible;
-
         public bool IsPreviewVisible
         {
             get { return _isPreviewVisible; }
@@ -152,8 +150,10 @@ namespace Amuse.UI.UserControls
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void MediaElement_Loaded(object sender, RoutedEventArgs e)
         {
-            (sender as MediaElement).Play();
-            _isPlaying = true;
+            if (sender is not MediaElement mediaElement)
+                return;
+
+            mediaElement.LoadedBehavior = MediaState.Play;
         }
 
 
@@ -164,7 +164,10 @@ namespace Amuse.UI.UserControls
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void MediaElement_MediaEnded(object sender, RoutedEventArgs e)
         {
-            (sender as MediaElement).Position = TimeSpan.FromMilliseconds(1);
+            if (sender is not MediaElement mediaElement)
+                return;
+
+            mediaElement.Position = TimeSpan.FromMilliseconds(1);
         }
 
 
@@ -178,15 +181,9 @@ namespace Amuse.UI.UserControls
             if (sender is not MediaElement mediaElement)
                 return;
 
-            if (_isPlaying)
-            {
-                _isPlaying = false;
-                mediaElement.Pause();
-                return;
-            }
-
-            mediaElement.Play();
-            _isPlaying = true;
+            mediaElement.LoadedBehavior = mediaElement.LoadedBehavior == MediaState.Pause
+                ? MediaState.Play
+                : MediaState.Pause;
         }
 
 

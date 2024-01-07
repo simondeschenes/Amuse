@@ -8,21 +8,46 @@
              xmlns:userControls="clr-namespace:Amuse.UI.UserControls"
              xmlns:behaviors="clr-namespace:Amuse.UI.Behaviors"
              xmlns:models="clr-namespace:Amuse.UI.Models"
+             xmlns:views="clr-namespace:Amuse.UI.Views"
              mc:Ignorable="d" 
               Name="UI" Focusable="True" >
     <Border DataContext="{Binding ElementName=UI}" BorderBrush="{StaticResource ControlBrightDefaultBorderBrush}"  BorderThickness="2" >
         <DockPanel Margin="2">
 
             <StackPanel DockPanel.Dock="Bottom">
-                <UniformGrid  Columns="1" Height="30" Visibility="{Binding HasVideoResult, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,3">
-                        <TextBlock Text="Video File:" Margin="5,0,0,0"  FontSize="10" Opacity=".6" VerticalAlignment="Center" FontStyle="Italic"/>
-                        <TextBlock Text="{Binding VideoResult.FileName, Converter={StaticResource FullPathToFileNameConverter}}" Margin="5,0,0,0" VerticalAlignment="Center"/>
+
+                <UniformGrid Height="35"  Columns="5" Margin="0,2,0,0" Visibility="{Binding HasVideoResult, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding VideoResult.SchedulerOptions.SchedulerType}"  TextAlignment="Center"/>
+                        <TextBlock Text="Scheduler"   FontSize="10" Opacity=".6" FontStyle="Italic" TextAlignment="Center"/>
                     </StackPanel>
+                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding VideoResult.SchedulerOptions.InferenceSteps}"  TextAlignment="Center"/>
+                        <TextBlock Text="Steps"  FontSize="10" Opacity=".6" FontStyle="Italic" TextAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                        <Button  Padding="3,0" BorderThickness="0,0,0,0" BorderBrush="{StaticResource InfoColour}" ToolTip="Set as current seed" Command="{Binding UpdateSeedCommand}">
+                            <TextBlock Text="{Binding VideoResult.SchedulerOptions.Seed}" Foreground="{StaticResource InfoColour}"  />
+                        </Button>
+                        <TextBlock Text="Seed"   FontSize="10" Opacity=".6" FontStyle="Italic" TextAlignment="Center"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding VideoResult.SchedulerOptions.GuidanceScale, StringFormat={}{0:F2}}" TextAlignment="Center"/>
+                        <TextBlock Text="Guidance"   FontSize="10" Opacity=".6" FontStyle="Italic" TextAlignment="Center"/>
+                    </StackPanel>
+
+
+                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding VideoResult.Elapsed, StringFormat={}{0:F2} s}"  TextAlignment="Center"/>
+                        <TextBlock Text="Elapsed"   FontSize="10" Opacity=".6" FontStyle="Italic" TextAlignment="Center"/>
+                    </StackPanel>
+
                 </UniformGrid>
 
-                <Grid Height="30" Visibility="{Binding HasVideoResult, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
-                    <ProgressBar Maximum="{Binding ProgressMax}" behaviors:SmoothProgressBarBehavior.SmoothValue="{Binding ProgressValue}" Height="22" >
+
+                <Grid Height="35" Visibility="{Binding HasVideoResult, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                    <ProgressBar Maximum="{Binding ProgressMax}" behaviors:SmoothProgressBarBehavior.SmoothValue="{Binding ProgressValue}" Height="24" >
                         <ProgressBar.Style>
                             <Style TargetType="{x:Type ProgressBar}" BasedOn="{StaticResource {x:Type ProgressBar}}">
                                 <Setter Property="IsIndeterminate" Value="False"/>
@@ -39,49 +64,62 @@
 
                 <DockPanel  Height="30" IsEnabled="{Binding HasVideoResult}">
 
-                    <Button DockPanel.Dock="Right" Command="{Binding ClearVideoCommand}" Width="50" >
-                        <userControls:FontAwesome Icon="&#xf2ed;" IconStyle="Light"  />
+                    <Button DockPanel.Dock="Right" Command="{Binding ClearVideoCommand}" Width="50" Style="{StaticResource DangerButtonStyle}" >
+                        <userControls:FontAwesome Icon="&#xf2ed;" IconStyle="Light"  Color="{StaticResource DangerColour}"/>
                     </Button>
 
-                    <Button DockPanel.Dock="Left" Command="{Binding SaveVideoCommand}" ToolTip="Load Video File" Width="150" >
-                        <StackPanel Orientation="Horizontal">
-                            <userControls:FontAwesome Icon="&#xf1c5;" IconStyle="Light"  Size="13" />
-                            <TextBlock Text="Save Video" Margin="5,0,0,0"/>
-                        </StackPanel>
-                    </Button>
-
-                    <DockPanel>
-                        <UniformGrid Columns="2" Margin="5,0">
+                    <DockPanel DockPanel.Dock="Left" >
+                        <Button DockPanel.Dock="Right" Width="50" BorderThickness="0,1,1,1" ToolTip="Send to VideoToVideo" Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type views:INavigatable}}, Path=NavigateCommand}" CommandParameter="{Binding VideoResult}">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Width:" Margin="0,0,3,0"  FontSize="10" Opacity=".6" VerticalAlignment="Bottom" FontStyle="Italic"/>
-                                <TextBlock Text="{Binding VideoResult.VideoInfo.Width, FallbackValue=0}" />
-                                <TextBlock Text="px" Margin="1,0,0,0" FontSize="10" Opacity="1" VerticalAlignment="Bottom" FontStyle="Italic"/>
+                                <userControls:FontAwesome Icon="&#xf008;" IconStyle="Light"   />
                             </StackPanel>
+                        </Button>
+                        <Button DockPanel.Dock="Right"  Width="80" Style="{StaticResource InfoButtonStyle}" Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type views:INavigatable}}, Path=SaveVideoCommand}" CommandParameter="{Binding VideoResult}" ToolTip="Save Video File">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Frame Rate" Margin="0,0,3,0"  FontSize="10" Opacity=".6" VerticalAlignment="Bottom" FontStyle="Italic"/>
-                                <TextBlock Text="{Binding VideoResult.VideoInfo.FPS, FallbackValue=0}" />
-                                <TextBlock Text="fps" Margin="1,0,0,0" FontSize="10" Opacity="1" VerticalAlignment="Bottom" FontStyle="Italic"/>
+                                <userControls:FontAwesome Icon="&#xf0c7;" IconStyle="Light"  Color="{StaticResource InfoColour}" />
+                                <TextBlock Text="Save" Margin="8,0,0,0" Foreground="{StaticResource InfoColour}"/>
                             </StackPanel>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Height" Margin="0,0,3,0"  FontSize="10" Opacity=".6" VerticalAlignment="Bottom" FontStyle="Italic"/>
-                                <TextBlock Text="{Binding VideoResult.VideoInfo.Height, FallbackValue=0}" />
-                                <TextBlock Text="px" Margin="1,0,0,0"  FontSize="10" Opacity="1" VerticalAlignment="Bottom" FontStyle="Italic"/>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Duration" Margin="0,0,3,0"  FontSize="10" Opacity=".6" VerticalAlignment="Bottom" FontStyle="Italic"/>
-                                <TextBlock Text="{Binding VideoResult.VideoInfo.Duration, FallbackValue=00:00:00, StringFormat={}hh\\:mm\\:ss}" />
-                            </StackPanel>
-                        </UniformGrid>
+                        </Button>
                     </DockPanel>
+
+
+                    <Grid HorizontalAlignment="Left" Visibility="{Binding HasVideoResult, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <StackPanel Margin="5,0" >
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Duration:" Margin="0,0,8,0"  FontSize="10" Opacity=".6" VerticalAlignment="Center" FontStyle="Italic"/>
+                                <TextBlock Text="{Binding VideoResult.VideoInfo.Duration, FallbackValue=00:00:00, StringFormat={}mm\\:ss\\.ffff}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,-2,0,0">
+                                <TextBlock Text="Video Info:" Margin="0,0,3,0"  FontSize="10" Opacity=".6" VerticalAlignment="Center" FontStyle="Italic"/>
+                                <TextBlock Text="{Binding VideoResult.VideoInfo.Width, FallbackValue=0}" />
+                                <TextBlock Text=" x " Opacity=".7" VerticalAlignment="Center" FontStyle="Italic"/>
+                                <TextBlock Text="{Binding VideoResult.VideoInfo.Height, FallbackValue=0}" />
+                                <TextBlock Text=" @ " FontSize="11" Opacity=".7" VerticalAlignment="Center" FontStyle="Italic"/>
+                                <TextBlock Text="{Binding VideoResult.VideoInfo.FPS, FallbackValue=0}" />
+                                <TextBlock Text=" fps" FontSize="11" Opacity=".7" VerticalAlignment="Center" FontStyle="Italic"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
 
                 </DockPanel>
             </StackPanel>
 
-            <Grid>
-                <Image Source="{StaticResource PlaceholderImage}" Width="{Binding SchedulerOptions.Width}" Height="{Binding SchedulerOptions.Height}" />
-                <MediaElement Source="{Binding VideoResult.FileName}" Width="{Binding SchedulerOptions.Width}" Height="{Binding SchedulerOptions.Height}" MinHeight="512" MinWidth="512" ClipToBounds="True" LoadedBehavior="Manual" Loaded="MediaElement_Loaded"  MediaEnded="MediaElement_MediaEnded" MouseLeftButtonDown="MediaElement_MouseDown" Volume="0" />
-                <Image Source="{Binding PreviewImage}" Width="{Binding SchedulerOptions.Width}" Height="{Binding SchedulerOptions.Height}" />
-            </Grid>
+            <Viewbox>
+                <Grid Width="{Binding SchedulerOptions.Width}" Height="{Binding SchedulerOptions.Height}">
+                    <Image Source="{StaticResource PlaceholderImage}" Stretch="Uniform" Visibility="{Binding HasVideoResult, Converter={StaticResource InverseBooleanToHiddenConverter}}"/>
+                    <MediaElement
+                        Volume="0"
+                        Source="{Binding VideoResult.FileName}"
+                        Stretch="Uniform" 
+                        LoadedBehavior="Manual" 
+                        UnloadedBehavior="Close" 
+                        Loaded="MediaElement_Loaded"
+                        MediaEnded="MediaElement_MediaEnded" 
+                        MouseLeftButtonDown="MediaElement_MouseDown"
+                        Visibility="{Binding IsPreviewVisible, Converter={StaticResource InverseBooleanToHiddenConverter}}" />
+                    <Image Source="{Binding PreviewImage}" Stretch="Uniform" />
+                </Grid>
+            </Viewbox>
 
         </DockPanel>
     </Border>
