@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="Amuse.UI.Views.TextToImageView"
+﻿<UserControl x:Class="Amuse.UI.Views.VideoToVideoView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -16,24 +16,26 @@
         <!--Control Panel-->
         <DockPanel Grid.Column="0" DataContext="{Binding ElementName=UI}" Margin="3,3,3,0">
             <UniformGrid DockPanel.Dock="Bottom" Columns="2" Height="30">
-                <Button Command="{Binding CancelCommand}" Margin="0,0,1,0" Style="{StaticResource ButtonGenerateCancelStyle}" />
+                <Button Command="{Binding CancelCommand}" Margin="0,0,1,0" Style="{StaticResource ButtonGenerateCancelStyle}"/>
                 <Button Command="{Binding GenerateCommand}" IsEnabled="{Binding SelectedModel.IsLoaded, FallbackValue=False, TargetNullValue=False}" Style="{StaticResource ButtonGenerateStyle}" IsDefault="True" Margin="1,0,0,0"/>
             </UniformGrid>
-            <DockPanel >
+            <DockPanel>
                 <userControls:ModelPickerControl DockPanel.Dock="Top"
-                   UISettings="{Binding UISettings}"
-                   SupportedDiffusers="{Binding SupportedDiffusers}"
-                   IsEnabled="{Binding IsGenerating, Converter={StaticResource InverseBoolConverter}}"
-                   SelectedModel="{Binding SelectedModel, Mode=TwoWay}" />
+                      UISettings="{Binding UISettings}"
+                      SupportedDiffusers="{Binding SupportedDiffusers}"
+                      IsEnabled="{Binding IsGenerating, Converter={StaticResource InverseBoolConverter}}"
+                      SelectedModel="{Binding SelectedModel, Mode=TwoWay}"/>
                 <UniformGrid Rows="2" IsEnabled="{Binding SelectedModel.IsLoaded, FallbackValue=False, TargetNullValue=False}">
                     <userControls:PromptControl 
+                        IsVideoControlsEnabled="True"
                         SelectedModel="{Binding SelectedModel}"
                         PromptOptions="{Binding PromptOptions}" 
                         IsEnabled="{Binding IsControlsEnabled}"/>
                     <userControls:SchedulerControl DockPanel.Dock="Bottom" Margin="0, 10, 0 ,0"
+                        IsVideoControlsEnabled="True"
                         UISettings="{Binding UISettings}"
                         SelectedModel="{Binding SelectedModel}"
-                        DiffuserType="TextToImage" 
+                        DiffuserType="ImageToImage" 
                         BatchOptions="{Binding BatchOptions}"
                         SchedulerOptions="{Binding SchedulerOptions, Mode=TwoWay}" 
                         IsEnabled="{Binding IsControlsEnabled}"
@@ -42,7 +44,7 @@
             </DockPanel>
         </DockPanel>
 
-        <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" Width="4" />
+        <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" Width="4"/>
 
         <!--Content Panel-->
         <DockPanel Grid.Column="2" Margin="3,0,0,0">
@@ -56,16 +58,25 @@
                             <TextBlock Text="Generate" Margin="5,0,0,0"/>
                         </StackPanel>
                     </TabItem.Header>
-                    <DockPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <Viewbox Margin="40" >
-                            <userControls:ImageResultControl 
-                                Result="{Binding ResultImage, Mode=TwoWay}" 
-                                HasResult="{Binding HasResult, Mode=TwoWay}" 
-                                ProgressMax="{Binding ProgressMax}" 
-                                ProgressValue="{Binding ProgressValue}" 
-                                SchedulerOptions="{Binding SchedulerOptions, Mode=TwoWay}" />
-                        </Viewbox>
-                    </DockPanel>
+                    <UniformGrid Columns="2" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <userControls:VideoInputControl Margin="30,30,15,30" 
+                            IsGenerating="{Binding IsGenerating}"
+                            PromptOptions="{Binding PromptOptions, Mode=TwoWay}"
+                            PreviewImage="{Binding PreviewSource}"
+                            VideoResult="{Binding InputVideo, Mode=TwoWay}" 
+                            HasVideoResult="{Binding HasInputResult, Mode=TwoWay}" 
+                            SchedulerOptions="{Binding SchedulerOptions}"/>
+                        <userControls:VideoResultControl Margin="30,30,15,30" 
+                            IsGenerating="{Binding IsGenerating}"
+                            PreviewImage="{Binding PreviewResult}"
+                            VideoResult="{Binding ResultVideo, Mode=TwoWay}" 
+                            HasVideoResult="{Binding HasResult, Mode=TwoWay}" 
+                            ProgressMax="{Binding ProgressMax}" 
+                            ProgressValue="{Binding ProgressValue}" 
+                            ProgressText="{Binding ProgressText}"
+                            SchedulerOptions="{Binding SchedulerOptions, Mode=TwoWay}"
+                            Results="{Binding VideoResults}"/>
+                    </UniformGrid>
                 </TabItem>
 
                 <!--History Tab-->
@@ -86,7 +97,7 @@
                         </DockPanel>
                         <ListBox ItemsSource="{Binding}" ItemContainerStyle="{StaticResource ImageResultListBoxItem}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" >
                             <ListBox.DataContext>
-                                <CollectionViewSource Source="{Binding ImageResults, ElementName=UI}">
+                                <CollectionViewSource Source="{Binding VideoResults, ElementName=UI}">
                                     <CollectionViewSource.SortDescriptions>
                                         <scm:SortDescription PropertyName="Timestamp" Direction="Descending" />
                                     </CollectionViewSource.SortDescriptions>

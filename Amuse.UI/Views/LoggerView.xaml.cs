@@ -52,6 +52,12 @@ namespace Amuse.UI.Views
             throw new NotImplementedException();
         }
 
+        public Task NavigateAsync(VideoResultModel videoResult)
+        {
+            throw new NotImplementedException();
+        }
+
+
 
         /// <summary>
         /// Resets the log window.

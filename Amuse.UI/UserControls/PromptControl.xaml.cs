@@ -51,6 +51,14 @@ namespace Amuse.UI.UserControls
         public static readonly DependencyProperty SelectedModelProperty =
             DependencyProperty.Register("SelectedModel", typeof(StableDiffusionModelSetViewModel), typeof(PromptControl));
 
+        public bool IsVideoControlsEnabled
+        {
+            get { return (bool)GetValue(IsVideoControlsEnabledProperty); }
+            set { SetValue(IsVideoControlsEnabledProperty, value); }
+        }
+        public static readonly DependencyProperty IsVideoControlsEnabledProperty =
+            DependencyProperty.Register("IsVideoControlsEnabled", typeof(bool), typeof(PromptControl));
+
 
         /// <summary>
         /// Resets the parameters.

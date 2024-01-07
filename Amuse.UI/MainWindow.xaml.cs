@@ -117,7 +117,8 @@ namespace Amuse.UI
             ImageToImage = 1,
             ImageInpaint = 2,
             PaintToImage = 3,
-            Upscaler = 4
+            VideoToVideo = 4,
+            Upscaler = 5
         }
 
 

@@ -6,5 +6,6 @@ namespace Amuse.UI.Views
     public interface INavigatable
     {
         Task NavigateAsync(ImageResult imageResult);
+        Task NavigateAsync(VideoResultModel videoResult);
     }
 }

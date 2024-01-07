@@ -543,6 +543,16 @@
                         </StackPanel>
                     </StackPanel>
                 </StackPanel>
+
+                <TabItem.Style>
+                    <Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource {x:Type TabItem}}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsVideoControlsEnabled, ElementName=UI}" Value="True">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TabItem.Style>
             </TabItem>
 
 
