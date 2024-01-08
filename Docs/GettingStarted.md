@@ -291,6 +291,11 @@ Image inpainting is an image modification/restoration technique that intelligent
 
 Paint To Image is a cutting-edge image processing technique designed to revolutionize the creative process. This method allows users to paint on a canvas, transforming their artistic expressions into high-quality images while preserving the unique style and details of the original artwork. Harnessing the power of stable diffusion, Paint To Image opens up a realm of possibilities for artistic endeavors, enabling users to seamlessly translate their creative brushstrokes into visually stunning images. Whether it's digital art creation, stylized rendering, or other image manipulation tasks, Paint To Image delivers a versatile and intuitive solution for transforming painted canvases into captivating digital masterpieces.
 
+## Video To Video
+![image](https://github.com/Stackyard-AI/Amuse/assets/90013272/af8aa39b-b1f0-452e-8749-33dcd8ab4f67)
+
+Video To Video Stable Diffusion is an advanced image processing and generation method that excels in transforming one video into another while preserving the visual quality and structure of the original content.
+
 ## Upscale
 ![image](https://github.com/Stackyard-AI/Amuse/assets/90013272/51d1b7a3-762c-492a-b95c-d63c28f33d50)
 
