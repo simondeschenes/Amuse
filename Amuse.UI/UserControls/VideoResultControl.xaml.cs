@@ -26,7 +26,6 @@ namespace Amuse.UI.UserControls
             if (!DesignerProperties.GetIsInDesignMode(this))
                 _logger = App.GetService<ILogger<VideoResultControl>>();
 
-            ClearVideoCommand = new AsyncRelayCommand(ClearVideo);
             UpdateSeedCommand = new AsyncRelayCommand(UpdateSeed);
             InitializeComponent();
             HasVideoResult = false;
@@ -114,37 +113,6 @@ namespace Amuse.UI.UserControls
         {
             get { return _isPreviewVisible; }
             set { _isPreviewVisible = value; NotifyPropertyChanged(); }
-        }
-
-        public ObservableCollection<VideoResultModel> Results
-        {
-            get { return (ObservableCollection<VideoResultModel>)GetValue(ResultsProperty); }
-            set { SetValue(ResultsProperty, value); }
-        }
-        public static readonly DependencyProperty ResultsProperty =
-            DependencyProperty.Register("Results", typeof(ObservableCollection<VideoResultModel>), typeof(VideoResultControl));
-
-
-
-        /// <summary>
-        /// Clears the image.
-        /// </summary>
-        /// <returns></returns>
-        private Task ClearVideo()
-        {
-            try
-            {
-                var filename = VideoResult.FileName;
-                Results.Remove(VideoResult);
-                VideoResult = null;
-                HasVideoResult = false;
-                Task.Run(() => File.Delete(filename));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"[ClearVideo] Failed to delete video file: {ex.Message}");
-            }
-            return Task.CompletedTask;
         }
 
 

@@ -1,7 +1,7 @@
 ﻿using Amuse.UI.Commands;
 using Amuse.UI.Models;
+using Amuse.UI.Services;
 using Microsoft.Extensions.Logging;
-using Microsoft.Win32;
 using Models;
 using OnnxStack.Core.Image;
 using OnnxStack.Core.Services;
@@ -37,6 +37,7 @@ namespace Amuse.UI.Views
         private readonly ILogger<VideoToVideoView> _logger;
         private readonly IStableDiffusionService _stableDiffusionService;
         private readonly IVideoService _videoService;
+        private readonly IFileService _fileService;
 
         private bool _hasResult;
         private int _progressMax;
@@ -65,6 +66,7 @@ namespace Amuse.UI.Views
             if (!DesignerProperties.GetIsInDesignMode(this))
             {
                 _logger = App.GetService<ILogger<VideoToVideoView>>();
+                _fileService = App.GetService<IFileService>();
                 _videoService = App.GetService<IVideoService>();
                 _stableDiffusionService = App.GetService<IStableDiffusionService>();
             }
@@ -74,7 +76,9 @@ namespace Amuse.UI.Views
             GenerateCommand = new AsyncRelayCommand(Generate, CanExecuteGenerate);
             ClearHistoryCommand = new AsyncRelayCommand(ClearHistory, CanExecuteClearHistory);
             NavigateCommand = new AsyncRelayCommand<VideoResultModel>(NavigateAsync);
-            SaveVideoCommand = new AsyncRelayCommand<VideoResultModel>(SaveVideoFile);
+            SaveVideoCommand = new AsyncRelayCommand<VideoResultModel>(_fileService.SaveAsVideoFile);
+            SaveBlueprintCommand = new AsyncRelayCommand<VideoResultModel>(_fileService.SaveAsBlueprintFile);
+            RemoveVideoCommand = new AsyncRelayCommand<VideoResultModel>(RemoveVideo);
             PromptOptions = new PromptOptionsModel();
             SchedulerOptions = new SchedulerOptionsModel();
             BatchOptions = new BatchOptionsModel();
@@ -105,6 +109,8 @@ namespace Amuse.UI.Views
         public AsyncRelayCommand GenerateCommand { get; }
         public AsyncRelayCommand ClearHistoryCommand { get; }
         public AsyncRelayCommand<VideoResultModel> SaveVideoCommand { get; }
+        public AsyncRelayCommand<VideoResultModel> SaveBlueprintCommand { get; set; }
+        public AsyncRelayCommand<VideoResultModel> RemoveVideoCommand { get; set; }
 
         public ObservableCollection<VideoResultModel> VideoResults { get; }
 
@@ -239,7 +245,7 @@ namespace Amuse.UI.Views
                 VideoInfo = videoResult.VideoInfo,
             };
             PromptOptions = PromptOptionsModel.FromPromptOptions(videoResult.PromptOptions);
-            SchedulerOptions = videoResult.SchedulerOptions.ToSchedulerOptionsModel();
+            SchedulerOptions = SchedulerOptionsModel.FromSchedulerOptions(videoResult.SchedulerOptions);
             SelectedTabIndex = 0;
         }
 
@@ -258,8 +264,8 @@ namespace Amuse.UI.Views
 
             try
             {
-                var batchOptions = BatchOptions.ToBatchOptions();
-                var schedulerOptions = SchedulerOptions.ToSchedulerOptions();
+                var batchOptions = BatchOptionsModel.ToBatchOptions(BatchOptions);
+                var schedulerOptions = SchedulerOptionsModel.ToSchedulerOptions(SchedulerOptions);
                 if (_videoFrames is null || _videoFrames.Info.FPS != PromptOptions.VideoInputFPS)
                 {
                     ProgressText = $"Generating video frames @ {PromptOptions.VideoInputFPS}fps";
@@ -337,25 +343,12 @@ namespace Amuse.UI.Views
         /// Clears the history.
         /// </summary>
         /// <returns></returns>
-        private Task ClearHistory()
+        private async Task ClearHistory()
         {
-            try
-            {
-                foreach (var videoResult in VideoResults)
-                {
-                    if (videoResult.Equals(ResultVideo?.FileName))
-                        continue;
-
-                    Task.Run(() => File.Delete(videoResult.FileName));
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"[ClearHistory] Failed to delete video files: {ex.Message}");
-            }
-
+            await _fileService.DeleteTempVideoFile(VideoResults);
             VideoResults.Clear();
-            return Task.CompletedTask;
+            ResultVideo = null;
+            HasResult = false;
         }
 
 
@@ -372,6 +365,23 @@ namespace Amuse.UI.Views
 
 
         /// <summary>
+        /// Removes the video.
+        /// </summary>
+        /// <param name="result">The result.</param>
+        /// <returns></returns>
+        private async Task RemoveVideo(VideoResultModel result)
+        {
+            await _fileService.DeleteTempVideoFile(result);
+            VideoResults.Remove(result);
+            if (result == ResultVideo)
+            {
+                ResultVideo = null;
+                HasResult = false;
+            }
+        }
+
+
+        /// <summary>
         /// Resets this instance.
         /// </summary>
         private void Reset()
@@ -383,6 +393,7 @@ namespace Amuse.UI.Views
             ProgressValue = 0;
             ProgressMax = 1;
             ProgressText = null;
+            Utils.TaskbarProgress(0, 0);
         }
 
 
@@ -421,7 +432,7 @@ namespace Amuse.UI.Views
                     {
                         var refreshTimestamp = Stopwatch.GetTimestamp();
                         var realtimePromptOptions = GetLivePromptOptions(PromptOptions, videoFrame);
-                        var realtimeSchedulerOptions = SchedulerOptions.ToSchedulerOptions();
+                        var realtimeSchedulerOptions = SchedulerOptionsModel.ToSchedulerOptions(SchedulerOptions);
                         var result = await _stableDiffusionService.GenerateAsBytesAsync(new ModelOptions(modelOptions), realtimePromptOptions, realtimeSchedulerOptions, RealtimeProgressCallback(), _cancelationTokenSource.Token);
                         resultVideoFrames.Add(result);
                         PreviewResult = Utils.CreateBitmap(result);
@@ -432,7 +443,7 @@ namespace Amuse.UI.Views
 
                     IsControlsEnabled = false;
                     var videoResult = await _videoService.CreateVideoAsync(resultVideoFrames, _promptOptionsModel.VideoOutputFPS);
-                    yield return await GenerateResultAsync(videoResult.Data, _selectedModel, GetLivePromptOptions(PromptOptions, default), SchedulerOptions.ToSchedulerOptions(), timestamp);
+                    yield return await GenerateResultAsync(videoResult.Data, _selectedModel, GetLivePromptOptions(PromptOptions, default), SchedulerOptionsModel.ToSchedulerOptions(SchedulerOptions), timestamp);
                 }
             }
         }
@@ -476,60 +487,22 @@ namespace Amuse.UI.Views
         /// <returns></returns>
         private async Task<VideoResultModel> GenerateResultAsync(byte[] videoBytes, StableDiffusionModelSetViewModel modelOptions, PromptOptions promptOptions, SchedulerOptions schedulerOptions, long timestamp)
         {
-            var tempVideoFile = Path.Combine(".temp", $"VideoToVideo-{Path.GetFileNameWithoutExtension(Path.GetRandomFileName())}.mp4");
-            await File.WriteAllBytesAsync(tempVideoFile, videoBytes);
-            var videoInfo = await _videoService.GetVideoInfoAsync(videoBytes);
+            var video = await _fileService.SaveTempVideoFile(videoBytes, "VideoToVideo");
             var videoResult = new VideoResultModel
             {
                 Model = modelOptions,
-                FileName = tempVideoFile,
-                VideoInfo = videoInfo,
-                VideoBytes = videoBytes,
+                FileName = video.FileName,
+                VideoInfo = video.VideoInfo,
+                VideoBytes = video.VideoBytes,
                 PromptOptions = promptOptions,
                 SchedulerOptions = schedulerOptions,
                 PipelineType = _selectedModel.ModelSet.PipelineType,
                 Elapsed = Stopwatch.GetElapsedTime(timestamp).TotalSeconds
             };
+            await _fileService.AutoSaveVideoFile(videoResult, "VideoToVideo");
             return videoResult;
         }
 
-
-        /// <summary>
-        /// Saves the video file.
-        /// </summary>
-        /// <param name="videoResult">The video result.</param>
-        /// <param name="schedulerOptions">The scheduler options.</param>
-        private async Task SaveVideoFile(VideoResultModel videoResult)
-        {
-            try
-            {
-                _logger.LogInformation($"Saving video file...");
-                var saveFileDialog = new SaveFileDialog
-                {
-                    Filter = "mp4 files (*.mp4)|*.mp4",
-                    DefaultExt = "mp4",
-                    AddExtension = true,
-                    RestoreDirectory = true,
-                    InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos),
-                    FileName = $"video-{videoResult.SchedulerOptions.Seed}.mp4"
-                };
-
-                var dialogResult = saveFileDialog.ShowDialog();
-                if (dialogResult == false)
-                {
-                    _logger.LogInformation("Saving video file canceled");
-                    return;
-                }
-
-                // Write File
-                await File.WriteAllBytesAsync(saveFileDialog.FileName, videoResult.VideoBytes);
-                _logger.LogInformation($"Video file saved, File: {saveFileDialog.FileName}");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error saving video: {ex.Message}");
-            }
-        }
 
 
         /// <summary>
@@ -551,6 +524,7 @@ namespace Amuse.UI.Views
                     if (progress.BatchTensor is null)
                         ProgressText = $"Frame: {progress.BatchValue:D2}/{_videoFrames.Frames.Count}  |  Step: {progress.StepValue:D2}/{progress.StepMax:D2}";
 
+
                     if (progress.BatchTensor is not null)
                     {
                         PreviewResult = Utils.CreateBitmap(progress.BatchTensor.ToImageBytes());
@@ -567,6 +541,9 @@ namespace Amuse.UI.Views
                         ProgressValue = progress.BatchValue;
 
                 }, DispatcherPriority.Background);
+
+                if (progress.BatchTensor is null)
+                    Utils.TaskbarProgress((progress.StepMax * (progress.BatchValue - 1)) + progress.StepValue, _videoFrames.Frames.Count * progress.StepMax);
             };
         }
 
@@ -582,7 +559,11 @@ namespace Amuse.UI.Views
                         return;
 
                     ProgressText = $"Frame: {(ProgressValue):D2}/{ProgressMax}  |  Step: {progress.StepValue:D2}/{progress.StepMax:D2}";
+                    if (progress.BatchTensor is null)
+                        Utils.TaskbarProgress((progress.StepMax * ProgressValue) + progress.StepValue, ProgressMax * progress.StepMax);
+
                 });
+                Utils.TaskbarProgress(ProgressValue, ProgressMax);
             };
         }
 

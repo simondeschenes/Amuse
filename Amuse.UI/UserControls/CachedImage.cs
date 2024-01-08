@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Amuse.UI.Models;
+using System;
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.IO;
 using System.Net.Http;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -14,10 +14,19 @@ namespace Amuse.UI.UserControls
     public class CachedImage : Image
     {
         private static ConcurrentDictionary<string, BitmapImage> _imageCache = new ConcurrentDictionary<string, BitmapImage>();
+        private readonly AmuseSettings _settings;
 
         static CachedImage()
         {
             DefaultStyleKeyProperty.OverrideMetadata(typeof(CachedImage), new FrameworkPropertyMetadata(typeof(CachedImage)));
+        }
+
+        public CachedImage()
+        {
+            if (!DesignerProperties.GetIsInDesignMode(this))
+            {
+                _settings = App.GetService<AmuseSettings>();
+            }
         }
 
         public string CacheName
@@ -85,9 +94,9 @@ namespace Amuse.UI.UserControls
                 var cacheName = CacheName;
                 var cacheWidth = CacheWidth;
                 var filename = Path.GetFileName(imageUrl);
-                var directory = Utils.GetImageCacheDirectory(CacheName ?? ".default", true);
+                var directory = GetImageCacheDirectory(CacheName ?? ".default");
                 var existingImage = Path.Combine(directory, filename);
-                if(File.Exists(existingImage))
+                if (File.Exists(existingImage))
                 {
                     Source = await LoadImage(existingImage, cacheWidth);
                     return;
@@ -103,10 +112,10 @@ namespace Amuse.UI.UserControls
 
                     if (_imageCache.TryAdd(existingImage, default))
                     {
-                       
+
                         var image = await DownloadImage(imageUrl, existingImage, cacheWidth);
                         _imageCache.TryUpdate(existingImage, image, default);
-                        if(imageUrl == ImageUrl)
+                        if (imageUrl == ImageUrl)
                         {
                             Source = image;
                         }
@@ -121,6 +130,14 @@ namespace Amuse.UI.UserControls
             {
                 Source = Placeholder;
             }
+        }
+
+        private string GetImageCacheDirectory(string subDirectory)
+        {
+            var cachePath = Path.Combine(_settings.DirectoryCache, subDirectory);
+            if (!Directory.Exists(cachePath))
+                Directory.CreateDirectory(cachePath);
+            return cachePath;
         }
 
 

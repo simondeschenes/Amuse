@@ -163,12 +163,16 @@ namespace Amuse.UI.UserControls
         /// </summary>
         private void OpenFilePicker()
         {
+            var initialDirectory = Path.HasExtension(InitialDirectory) 
+                ? Path.GetDirectoryName(InitialDirectory) 
+                : InitialDirectory;
             var openFileDialog = new OpenFileDialog
             {
                 Title = Title,
                 Filter = Filter,
                 CheckFileExists = true,
-                InitialDirectory = InitialDirectory,
+                InitialDirectory = initialDirectory,
+                RestoreDirectory = string.IsNullOrEmpty(initialDirectory),
                 DefaultExt = DefaultExt
             };
             var dialogResult = openFileDialog.ShowDialog();

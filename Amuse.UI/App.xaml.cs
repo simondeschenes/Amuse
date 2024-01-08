@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OnnxStack.Core;
 using OnnxStack.ImageUpscaler;
+using Services;
 using System;
 using System.Windows;
 using System.Windows.Threading;
@@ -47,6 +48,7 @@ namespace Amuse.UI
             builder.Services.AddSingleton<IDialogService, DialogService>();
             builder.Services.AddSingleton<IModelDownloadService, ModelDownloadService>();
             builder.Services.AddSingleton<IDeviceService, DeviceService>();
+            builder.Services.AddSingleton<IFileService, FileService>();
 
             // Build App
             _applicationHost = builder.Build();
@@ -76,6 +78,7 @@ namespace Amuse.UI
         /// <param name="e">The <see cref="ExitEventArgs"/> instance containing the event data.</param>
         protected override async void OnExit(ExitEventArgs e)
         {
+            await GetService<IFileService>().DeleteTempFiles();
             await _applicationHost.StopAsync();
             base.OnExit(e);
         }

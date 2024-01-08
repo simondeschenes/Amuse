@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
              xmlns:userControls="clr-namespace:Amuse.UI.UserControls"
+             xmlns:views="clr-namespace:Amuse.UI.Views"
              Name="UI" mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="800" >
     <Grid DataContext="{Binding ElementName=UI}" >
         <Grid.ColumnDefinitions>
@@ -61,7 +62,7 @@
                         </Border>
                         <StackPanel Margin="0,5,0,0">
                             <TextBlock Text="Load Image" />
-                            <userControls:FilePickerTextBox FileName="{Binding ImageFile, Mode=TwoWay}" />
+                            <userControls:FilePickerTextBox FileName="{Binding ImageFile, Mode=TwoWay}" InitialDirectory="{Binding UISettings.DirectoryImage}" />
                         </StackPanel>
                     </StackPanel>
 
@@ -89,13 +90,13 @@
                 <TabItem>
                     <TabItem.Header>
                         <StackPanel Orientation="Horizontal" Margin="15,5">
-                            <userControls:FontAwesome Icon="&#xf0d0;" IconStyle="Light"/>
+                            <userControls:FontAwesome Icon="&#xf0d0;" IconStyle="Solid" Color="{StaticResource AccentColour2}"/>
                             <TextBlock Text="Generate" Margin="5,0,0,0"/>
                         </StackPanel>
                     </TabItem.Header>
                     <DockPanel VerticalAlignment="Center" HorizontalAlignment="Center">
 
-                        <Border BorderBrush="{StaticResource ControlDarkerBorderBrush}" BorderThickness="2" Margin="40">
+                        <Border BorderBrush="{StaticResource ControlDarkerBorderBrush}" BorderThickness="2" Margin="30">
                             <DockPanel Margin="2">
 
                                 <StackPanel DockPanel.Dock="Bottom">
@@ -132,10 +133,10 @@
                                         </UniformGrid>
                                     </StackPanel>
                                     <UniformGrid Columns="3" Height="30" IsEnabled="{Binding HasResult}">
-                                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=SaveImageCommand}" CommandParameter="{Binding ResultImage}" ToolTip="Save Image File">
+                                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type views:INavigatable}}, Path=SaveImageCommand}" CommandParameter="{Binding ResultImage}" Style="{StaticResource InfoButtonStyle}" ToolTip="Save Image File" Width="100" HorizontalAlignment="Left">
                                             <StackPanel Orientation="Horizontal">
-                                                <userControls:FontAwesome Icon="&#xf0c7;" IconStyle="Light"  Size="13" />
-                                                <TextBlock Text="Save Image" Margin="5,0,0,0"/>
+                                                <userControls:FontAwesome Icon="&#xf0c7;" IconStyle="Light" Color="{StaticResource InfoColour}" />
+                                                <TextBlock Text="Save" Margin="5,0,0,0" Foreground="{StaticResource InfoColour}"/>
                                             </StackPanel>
                                         </Button>
                                         <TextBlock />
@@ -167,7 +168,7 @@
                 <TabItem>
                     <TabItem.Header>
                         <StackPanel Orientation="Horizontal" Margin="15,5">
-                            <userControls:FontAwesome Icon="&#xf03a;" IconStyle="Light"/>
+                            <userControls:FontAwesome Icon="&#xf03a;" IconStyle="Solid" Color="{StaticResource AccentColour2}"/>
                             <TextBlock Text="History" Margin="5,0,0,0"/>
                         </StackPanel>
                     </TabItem.Header>

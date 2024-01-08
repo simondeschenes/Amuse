@@ -1,5 +1,6 @@
 ﻿using Amuse.UI.Commands;
 using Amuse.UI.Models;
+using Amuse.UI.Services;
 using Microsoft.Extensions.Logging;
 using OnnxStack.Core.Image;
 using OnnxStack.ImageUpscaler.Services;
@@ -22,6 +23,7 @@ namespace Amuse.UI.Views
     public partial class UpscaleView : UserControl, INavigatable, INotifyPropertyChanged
     {
         private readonly ILogger<UpscaleView> _logger;
+        private readonly IFileService _fileService;
         private readonly IUpscaleService _upscaleService;
 
         private bool _hasResult;
@@ -45,12 +47,15 @@ namespace Amuse.UI.Views
             if (!DesignerProperties.GetIsInDesignMode(this))
             {
                 _logger = App.GetService<ILogger<UpscaleView>>();
+                _fileService = App.GetService<IFileService>();
                 _upscaleService = App.GetService<IUpscaleService>();
             }
 
             CancelCommand = new AsyncRelayCommand(Cancel, CanExecuteCancel);
             GenerateCommand = new AsyncRelayCommand(Generate, CanExecuteGenerate);
             ClearHistoryCommand = new AsyncRelayCommand(ClearHistory, CanExecuteClearHistory);
+            SaveImageCommand = new AsyncRelayCommand<UpscaleResult>(_fileService.SaveAsImageFile);
+            RemoveImageCommand = new AsyncRelayCommand<UpscaleResult>(RemoveImage);
             ImageResults = new ObservableCollection<UpscaleResult>();
             UpscaleInfo = new UpscaleInfoModel();
             IsControlsEnabled = true;
@@ -68,6 +73,8 @@ namespace Amuse.UI.Views
         public AsyncRelayCommand CancelCommand { get; }
         public AsyncRelayCommand GenerateCommand { get; }
         public AsyncRelayCommand ClearHistoryCommand { get; set; }
+        public AsyncRelayCommand<UpscaleResult> SaveImageCommand { get; set; }
+        public AsyncRelayCommand<UpscaleResult> RemoveImageCommand { get; set; }
         public ObservableCollection<UpscaleResult> ImageResults { get; }
 
         public UpscaleModelSetViewModel SelectedModel
@@ -214,7 +221,7 @@ namespace Amuse.UI.Views
                     ResultImage = imageResult;
                     HasResult = true;
 
-
+                    await _fileService.AutoSaveImageFile(imageResult, "Upscale");
                     ImageResults.Add(imageResult);
                 }
 
@@ -287,6 +294,18 @@ namespace Amuse.UI.Views
         private bool CanExecuteClearHistory()
         {
             return ImageResults.Count > 0;
+        }
+
+
+        private Task RemoveImage(UpscaleResult result)
+        {
+            ImageResults.Remove(result);
+            if (result == ResultImage)
+            {
+                ResultImage = null;
+                HasResult = false;
+            }
+            return Task.CompletedTask;
         }
 
 

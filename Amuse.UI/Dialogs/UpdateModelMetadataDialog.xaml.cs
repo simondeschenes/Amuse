@@ -137,7 +137,8 @@ namespace Amuse.UI.Dialogs
             _modelTemplate.ImageIcon = IconImage;
             _modelTemplate.PreviewImages = PreviewImages.ToList();
 
-            var directory = Utils.GetImageCacheDirectory(_modelTemplate.Name, true);
+            var directory = Path.Combine(_uiSettings.DirectoryCache, _modelTemplate.Name);
+            Directory.CreateDirectory(directory);
             if (File.Exists(_modelTemplate.ImageIcon))
             {
                 var destination = Path.Combine(directory, "Logo.png");

@@ -27,7 +27,7 @@
                 </StackPanel>
                 <StackPanel >
                     <TextBlock Text="Image File"/>
-                    <userControls:FilePickerTextBox FileName="{Binding ImageFile, Mode=TwoWay}" IsEnabled="{Binding HasInitialImage, Converter={StaticResource InverseBoolConverter}}" IsRequired="True" />
+                    <userControls:FilePickerTextBox FileName="{Binding ImageFile, Mode=TwoWay}" IsEnabled="{Binding HasInitialImage, Converter={StaticResource InverseBoolConverter}}" InitialDirectory="{Binding Settings.DirectoryImage}" IsRequired="True" Filter="Image Files|*.bmp;*.jpg;*.jpeg;*.png;*.gif;*.tif;*.tiff|All Files|*.*" />
                     <StackPanel.Style>
                         <Style TargetType="{x:Type StackPanel}">
                             <Setter Property="Visibility" Value="Visible" />

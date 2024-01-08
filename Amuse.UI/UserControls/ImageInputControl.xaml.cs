@@ -1,9 +1,7 @@
 ﻿using Amuse.UI.Commands;
-using Amuse.UI.Dialogs;
 using Amuse.UI.Models;
 using Amuse.UI.Services;
 using OnnxStack.Core;
-using System;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -20,7 +18,7 @@ namespace Amuse.UI.UserControls
 {
     public partial class ImageInputControl : UserControl, INotifyPropertyChanged
     {
-        private readonly IDialogService _dialogService;
+        private readonly IFileService _fileService;
 
         private int _maskDrawSize;
         private bool _hasMaskChanged;
@@ -34,7 +32,7 @@ namespace Amuse.UI.UserControls
         public ImageInputControl()
         {
             if (!DesignerProperties.GetIsInDesignMode(this))
-                _dialogService = App.GetService<IDialogService>();
+                _fileService = App.GetService<IFileService>();
 
             MaskDrawSize = 20;
             LoadImageCommand = new AsyncRelayCommand(LoadImage);
@@ -284,26 +282,14 @@ namespace Amuse.UI.UserControls
 
         private async void ShowCropImageDialog(BitmapSource source = null, string sourceFile = null)
         {
-            try
-            {
-                if (!string.IsNullOrEmpty(sourceFile))
-                    source = new BitmapImage(new Uri(sourceFile));
-            }
-            catch { }
+            var imageResult = await _fileService.OpenImageFileCropped(SchedulerOptions.Width, SchedulerOptions.Height, source, sourceFile);
+            if (imageResult == null)
+                return;
 
-            var loadImageDialog = _dialogService.GetDialog<CropImageDialog>();
-            loadImageDialog.Initialize(SchedulerOptions.Width, SchedulerOptions.Height, source);
-            if (loadImageDialog.ShowDialog() == true)
-            {
-                await ClearImage();
-                Result = new ImageInput
-                {
-                    Image = loadImageDialog.GetImageResult(),
-                    FileName = loadImageDialog.ImageFile,
-                };
-                HasResult = true;
-                await SaveMask();
-            }
+            await ClearImage();
+            Result = imageResult;
+            HasResult = true;
+            await SaveMask();
         }
 
 

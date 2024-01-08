@@ -11,91 +11,105 @@
     <Grid DataContext="{Binding ElementName=UI}">
         <DockPanel>
 
- 
-            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="5">
 
-                <GroupBox Header="Model Settings"  MinWidth="200">
-                    <StackPanel Margin="5">
-                        <StackPanel Margin="0,10,0,0">
-                            <TextBlock Text="Cache Mode" />
-                            <ComboBox ItemsSource="{Binding Source={StaticResource ModelCacheMode}}" SelectedItem="{Binding UISettings.ModelCacheMode}" />
-                        </StackPanel>
-                    </StackPanel>
-                </GroupBox>
+            <UniformGrid DockPanel.Dock="Top" Columns="3" Margin="5">
 
 
-                <GroupBox Header="Image Settings"  MinWidth="400" Margin="10,0,0,0">
-                    <StackPanel Margin="5">
-                        <StackPanel Margin="0,10,0,0">
-                            <CheckBox x:Name="CheckBoxImageAutoSave" Content="Auto-Save Images" IsChecked="{Binding UISettings.ImageAutoSave}" />
-                        </StackPanel>
-
-                        <StackPanel Margin="0,5,0,0">
-                            <CheckBox Content="Auto-Save Blueprints" IsEnabled="{Binding IsChecked, ElementName=CheckBoxImageAutoSave}" IsChecked="{Binding UISettings.ImageAutoSaveBlueprint}" />
-                        </StackPanel>
-
-                        <StackPanel Margin="0,5,0,0">
-                            <TextBlock Text="Auto-Save Directory" />
-                            <userControls:FilePickerTextBox 
-                                IsFolderPicker="True"
-                                FileName="{Binding UISettings.ImageAutoSaveDirectory, Mode=TwoWay}"
-                                IsEnabled="{Binding IsChecked, ElementName=CheckBoxImageAutoSave}" 
-                                IsRequired="{Binding IsChecked, ElementName=CheckBoxImageAutoSave}"/>
-                        </StackPanel>
-
-                        <UniformGrid Columns="2">
-                            <StackPanel Margin="0,5,0,0">
-                                <TextBlock Text="Realtime Refresh Rate (ms)" />
-                                <TextBox Text="{Binding UISettings.RealtimeRefreshRate}"/>
-                            </StackPanel>
-                            <CheckBox Content="Enable Histrory" IsChecked="{Binding UISettings.RealtimeHistoryEnabled}" VerticalAlignment="Bottom" Margin="5,0,0,0" />
-                        </UniformGrid>
-                      
-                    </StackPanel>
-                </GroupBox>
-
-
-                <GroupBox Header="Execution Defaults"  MinWidth="200" Margin="10,0,0,0">
-                    <StackPanel Margin="5">
-                        <StackPanel>
-                            <TextBlock Text="Device" />
-                            <userControls:DevicePickerControl 
-                               Settings="{Binding UISettings}"
-                               DeviceId="{Binding UISettings.DefaultDeviceId, Mode=TwoWay}"
-                               ExecutionProvider="{Binding UISettings.DefaultExecutionProvider, Mode=TwoWay}" />
-                        </StackPanel>
-
-                        <StackPanel Margin="0,5,0,0">
-                            <TextBlock Text="Mode" />
-                            <ComboBox ItemsSource="{Binding Source={StaticResource ExecutionModeType}}" SelectedItem="{Binding UISettings.DefaultExecutionMode}" />
-                        </StackPanel>
-        
-                        <StackPanel Margin="0,5,0,0">
-                            <DockPanel>
-                                <TextBlock DockPanel.Dock="Left" Text="InterOp Threads" />
-                                <TextBlock Text="(0=auto)" FontSize="9" FontStyle="Italic" Margin="6,0,6,0" Opacity="0.5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                            </DockPanel>
-                            <TextBox Text="{Binding UISettings.DefaultInterOpNumThreads}" />
-                        </StackPanel>
-                        <StackPanel Margin="0,5,0,0">
-                            <DockPanel>
-                                <TextBlock DockPanel.Dock="Left" Text="IntraOp Threads" />
-                                <TextBlock Text="(0=auto)" FontSize="9" FontStyle="Italic" Margin="6,0,6,0" Opacity="0.5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                            </DockPanel>
-                            <TextBox Text="{Binding UISettings.DefaultIntraOpNumThreads}" />
-                        </StackPanel>
-                    </StackPanel>
-                </GroupBox>
-
-
-                <GroupBox Header="Save Settings" MinWidth="200" Margin="10,0,0,0">
-                    <StackPanel Margin="5">
-                        <StackPanel Margin="0,10,0,0">
+                <GroupBox >
+                    <GroupBox.Header>
+                        <TextBlock Text="Default Settings" FontSize="15" />
+                    </GroupBox.Header>
+                    <DockPanel Margin="5">
+                        <StackPanel DockPanel.Dock="Bottom" Margin="0,10,0,0">
                             <Button Content="Save Changes" Height="30" Command="{Binding SaveCommand}" />
                         </StackPanel>
-                    </StackPanel>
+
+                        <StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="Execution Device" />
+                                <userControls:DevicePickerControl Settings="{Binding UISettings}" DeviceId="{Binding UISettings.DefaultDeviceId, Mode=TwoWay}" ExecutionProvider="{Binding UISettings.DefaultExecutionProvider, Mode=TwoWay}" />
+                            </StackPanel>
+                            <StackPanel Margin="0,10,0,0">
+                                <TextBlock Text="Model Cache Mode" />
+                                <ComboBox ItemsSource="{Binding Source={StaticResource ModelCacheMode}}" SelectedItem="{Binding UISettings.ModelCacheMode}" />
+                            </StackPanel>
+                            <StackPanel Margin="0,5,0,0">
+                                <TextBlock Text="Default Model Directory" />
+                                <userControls:FilePickerTextBox IsFolderPicker="True" FileName="{Binding UISettings.DirectoryModel, Mode=TwoWay}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </DockPanel>
                 </GroupBox>
-            </StackPanel>
+
+
+                <GroupBox Margin="10,0,0,0">
+                    <GroupBox.Header>
+                        <TextBlock Text="Image Settings" FontSize="15" />
+                    </GroupBox.Header>
+                    <DockPanel Margin="5">
+                        <StackPanel DockPanel.Dock="Bottom" Margin="0,20,0,0">
+                            <Button Content="Save Changes" Height="30" Command="{Binding SaveCommand}" />
+                        </StackPanel>
+                        <StackPanel>
+                            <StackPanel Margin="0,5,0,0">
+                                <TextBlock Text="Default Directory" />
+                                <userControls:FilePickerTextBox IsFolderPicker="True" FileName="{Binding UISettings.DirectoryImage, Mode=TwoWay}"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,5,0,0">
+                                <TextBlock Text="Save Directory" />
+                                <userControls:FilePickerTextBox IsFolderPicker="True" FileName="{Binding UISettings.DirectoryImageSave, Mode=TwoWay}"/>
+                            </StackPanel>
+                            <UniformGrid Columns="2" Margin="0,20,0,0">
+                                <StackPanel>
+                                    <CheckBox x:Name="CheckBoxImageAutoSave" Content="Enable Auto-Save" IsChecked="{Binding UISettings.AutoSaveImage}" />
+                                </StackPanel>
+                                <StackPanel>
+                                    <CheckBox Content="Auto-Save Blueprint" IsEnabled="{Binding IsChecked, ElementName=CheckBoxImageAutoSave}" IsChecked="{Binding UISettings.AutoSaveBlueprint}" />
+                                </StackPanel>
+                            </UniformGrid>
+                            <StackPanel Margin="0,5,0,0">
+                                <TextBlock Text="Auto-Save Directory" />
+                                <userControls:FilePickerTextBox IsFolderPicker="True" FileName="{Binding UISettings.DirectoryImageAutoSave, Mode=TwoWay}" IsEnabled="{Binding IsChecked, ElementName=CheckBoxImageAutoSave}" IsRequired="{Binding IsChecked, ElementName=CheckBoxImageAutoSave}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </DockPanel>
+                </GroupBox>
+
+
+                <GroupBox Margin="10,0,0,0">
+                    <GroupBox.Header>
+                        <TextBlock Text="Video Settings" FontSize="15" />
+                    </GroupBox.Header>
+                    <DockPanel Margin="5">
+                        <StackPanel DockPanel.Dock="Bottom" Margin="0,20,0,0">
+                            <Button Content="Save Changes" Height="30" Command="{Binding SaveCommand}" />
+                        </StackPanel>
+                        <StackPanel>
+                            <StackPanel Margin="0,5,0,0">
+                                <TextBlock Text="Default Directory" />
+                                <userControls:FilePickerTextBox IsFolderPicker="True" FileName="{Binding UISettings.DirectoryVideo, Mode=TwoWay}"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,5,0,0">
+                                <TextBlock Text="Save Directory" />
+                                <userControls:FilePickerTextBox IsFolderPicker="True" FileName="{Binding UISettings.DirectoryVideoSave, Mode=TwoWay}"/>
+                            </StackPanel>
+                            <UniformGrid Columns="2" Margin="0,20,0,0">
+                                <StackPanel>
+                                    <CheckBox x:Name="CheckBoxVideoAutoSave" Content="Enable Auto-Save" IsChecked="{Binding UISettings.AutoSaveVideo}" />
+                                </StackPanel>
+                                <StackPanel>
+                                    <CheckBox Content="Auto-Save Blueprint" IsEnabled="{Binding IsChecked, ElementName=CheckBoxVideoAutoSave}" IsChecked="{Binding UISettings.AutoSaveBlueprint}" />
+                                </StackPanel>
+                            </UniformGrid>
+                            <StackPanel Margin="0,5,0,0">
+                                <TextBlock Text="Auto-Save Directory" />
+                                <userControls:FilePickerTextBox IsFolderPicker="True" FileName="{Binding UISettings.DirectoryVideoAutoSave, Mode=TwoWay}" IsEnabled="{Binding IsChecked, ElementName=CheckBoxVideoAutoSave}" IsRequired="{Binding IsChecked, ElementName=CheckBoxVideoAutoSave}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </DockPanel>
+                </GroupBox>
+
+            </UniformGrid>
 
             <StackPanel></StackPanel>
 

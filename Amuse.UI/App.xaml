@@ -235,137 +235,6 @@
 
 
 
-        <DataTemplate DataType="{x:Type models:ImageResult}">
-            <DockPanel Width="200" Height="265" HorizontalAlignment="Center">
-                <StackPanel  DockPanel.Dock="Bottom" >
-                    <UniformGrid Columns="2" Rows="2" HorizontalAlignment="Center">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <TextBlock Text="{Binding SchedulerType}" Margin="2,0,0,0"/>
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
-                            <TextBlock Text="Steps:" Margin="2,0,0,0" FontSize="9" Opacity=".6" VerticalAlignment="Center" FontStyle="Italic"/>
-                            <TextBlock Text="{Binding SchedulerOptions.InferenceSteps}" Margin="2,0,0,0"/>
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <TextBlock Text="Guidance:" Margin="2,0,0,0"  FontSize="9" Opacity=".6" VerticalAlignment="Center" FontStyle="Italic"/>
-                            <TextBlock Text="{Binding SchedulerOptions.GuidanceScale}" Margin="2,0,0,0"/>
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <TextBlock Text="Seed:" Margin="2,0,0,0"  FontSize="9" Opacity=".6" VerticalAlignment="Center" FontStyle="Italic"/>
-                            <TextBlock Text="{Binding SchedulerOptions.Seed}"  Margin="2,0,0,0" />
-                        </StackPanel>
-                    </UniformGrid>
-                    <UniformGrid Columns="7" Margin="0,2,0,2">
-                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=SaveImageResultCommand}" CommandParameter="{Binding}">
-                            <userControls:FontAwesome Icon="&#xf0c7;" IconStyle="Light"  Size="13" ToolTip="Save Image File"/>
-                        </Button>
-                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=SaveBlueprintCommand}" CommandParameter="{Binding}" BorderThickness="0, 1">
-                            <userControls:FontAwesome Icon="&#xf121;" IconStyle="Light"  Size="13" ToolTip="Save Blueprint File"/>
-                        </Button>
-                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=NavigateTextToImageCommand}" CommandParameter="{Binding}">
-                            <userControls:FontAwesome Icon="&#xf15c;" IconStyle="Light"  Size="13" ToolTip="Send To Text To Image"/>
-                        </Button>
-                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=NavigateImageToImageCommand}" CommandParameter="{Binding}" BorderThickness="0, 1">
-                            <userControls:FontAwesome Icon="&#xf302;" IconStyle="Light"  Size="13" ToolTip="Send To Image To Image"/>
-                        </Button>
-                        <Button  Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=NavigateImageInpaintCommand}" CommandParameter="{Binding}" >
-                            <userControls:FontAwesome Icon="&#xf1c5;" IconStyle="Light"  Size="13" ToolTip="Send To Image Inpaint"/>
-                        </Button>
-                        <Button  Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=NavigateImagePaintToImageCommand}" CommandParameter="{Binding}" Padding="2,2" BorderThickness="0,1,1,1">
-                            <userControls:FontAwesome Icon="&#xf1fc;" IconStyle="Light" Size="13" ToolTip="Send To Paint To Image"/>
-                        </Button>
-                        <Button  Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=NavigateUpscalerCommand}" CommandParameter="{Binding}" Padding="2,2" BorderThickness="0,1,1,1">
-                            <userControls:FontAwesome Icon="&#xf424;" IconStyle="Light" Size="13" ToolTip="Send To Upscaler"/>
-                        </Button>
-                    </UniformGrid>
-                </StackPanel>
-                <Border Margin="0,2"  BorderBrush="{StaticResource ContainerBorder}" BorderThickness="1" Background="{StaticResource ContainerBackground}" >
-                    <Image Source="{Binding Image}" DockPanel.Dock="Left"  Stretch="Uniform" VerticalAlignment="Center" />
-                </Border>
-            </DockPanel>
-        </DataTemplate>
-
-
-        <DataTemplate DataType="{x:Type models:UpscaleResult}">
-            <DockPanel Width="220" Height="285" HorizontalAlignment="Center">
-                <StackPanel  DockPanel.Dock="Bottom" >
-                    <UniformGrid Columns="2" Margin="0,3">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <TextBlock Text="Scale Factor:" Margin="0,0,5,0" FontStyle="Italic"  FontSize="10" Opacity=".6" VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding Info.ScaleFactor}" />
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <TextBlock Text="Elapsed:" Margin="5,0,0,0"  FontSize="10" Opacity=".6" VerticalAlignment="Center" FontStyle="Italic"/>
-                            <TextBlock Text="{Binding Elapsed, StringFormat={}{0:F1}s}" Margin="5,0,0,0"/>
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <TextBlock Text="Input:" Margin="0,0,5,0" FontStyle="Italic" FontSize="10" Opacity=".6" VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding Info.InputWidth}" />
-                            <TextBlock Text="x" Margin="2,0,2,0"/>
-                            <TextBlock Text="{Binding Info.InputHeight}" />
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <TextBlock Text="Output:" Margin="0,0,5,0" FontStyle="Italic" FontSize="10" Opacity=".6" VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding Info.OutputWidth}" />
-                            <TextBlock Text="x" Margin="2,0,2,0"/>
-                            <TextBlock Text="{Binding Info.OutputHeight}" />
-                        </StackPanel>
-                    </UniformGrid>
-                    <UniformGrid Columns="1" Height="30" IsEnabled="{Binding HasResult}">
-                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=SaveImageCommand}" CommandParameter="{Binding}" ToolTip="Save Image File">
-                            <StackPanel Orientation="Horizontal">
-                                <userControls:FontAwesome Icon="&#xf0c7;" IconStyle="Light"  Size="13" />
-                                <TextBlock Text="Save Image" Margin="5,0,0,0"/>
-                            </StackPanel>
-                        </Button>
-                    </UniformGrid>
-                </StackPanel>
-                <Border Margin="0,2"  BorderBrush="{StaticResource ContainerBorder}" BorderThickness="1" Background="{StaticResource ContainerBackground}" >
-                    <Image Source="{Binding Image}" DockPanel.Dock="Left"  Stretch="Uniform" VerticalAlignment="Center" />
-                </Border>
-            </DockPanel>
-        </DataTemplate>
-
-
-        <DataTemplate DataType="{x:Type models:VideoResultModel}">
-            <DockPanel Width="220" Height="285" HorizontalAlignment="Center">
-                <StackPanel  DockPanel.Dock="Bottom" >
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <TextBlock Text="Duration:" Margin="5,0,0,0"  FontSize="10" Opacity=".6" VerticalAlignment="Center" FontStyle="Italic"/>
-                        <TextBlock Text="{Binding VideoInfo.Duration, StringFormat={}hh\\:mm\\:ss\\.ffff}" Margin="5,0,0,0"/>
-                    </StackPanel>
-                    <UniformGrid Columns="2" Margin="0,3">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <TextBlock Text="Size:" Margin="0,0,5,0" FontStyle="Italic"  FontSize="10" Opacity=".6" VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding VideoInfo.Width}" />
-                            <TextBlock Text="x" Margin="2,0,2,0"/>
-                            <TextBlock Text="{Binding VideoInfo.Height}" />
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <TextBlock Text="Frame Rate:" Margin="0,0,5,0" FontStyle="Italic" FontSize="10" Opacity=".6" VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding VideoInfo.FPS}" />
-                            <TextBlock Text="fps" Margin="2,0,2,0" FontSize="10" Opacity=".6" VerticalAlignment="Bottom"/>
-                        </StackPanel>
-                    </UniformGrid>
-                    <UniformGrid Columns="2" Margin="0,2,0,2">
-                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type views:INavigatable}}, Path=SaveVideoCommand}" CommandParameter="{Binding}">
-                            <userControls:FontAwesome Icon="&#xf0c7;" IconStyle="Light"  Size="13" ToolTip="Save Video File"/>
-                        </Button>
-                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type views:INavigatable}}, Path=NavigateCommand}" CommandParameter="{Binding}">
-                            <userControls:FontAwesome Icon="&#xf008;" IconStyle="Light"  Size="13" ToolTip="Send to VideoToVideo"/>
-                        </Button>
-                    </UniformGrid>
-
-                </StackPanel>
-                <Border Margin="0,2" BorderBrush="{StaticResource ContainerBorder}" BorderThickness="1" Background="{StaticResource ContainerBackground}" >
-                    <MediaElement Source="{Binding FileName}" LoadedBehavior="Manual" UnloadedBehavior="Close" DockPanel.Dock="Left" Stretch="Uniform" VerticalAlignment="Center" >
-                        <i:Interaction.Behaviors>
-                            <behaviors:MediaElementBehavior />
-                        </i:Interaction.Behaviors>
-                    </MediaElement>
-                </Border>
-            </DockPanel>
-        </DataTemplate>
 
 
 
@@ -2149,6 +2018,159 @@
         <Style x:Key="DangerTextBlockStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource {x:Type TextBlock}}">
             <Setter Property="Foreground" Value="{StaticResource DangerColour}" />
         </Style>
+
+
+
+
+        <DataTemplate DataType="{x:Type models:ImageResult}">
+            <DockPanel Width="200" Height="265" HorizontalAlignment="Center">
+                <StackPanel  DockPanel.Dock="Bottom" >
+                    <UniformGrid Columns="2" Rows="2" HorizontalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <TextBlock Text="{Binding SchedulerOptions.SchedulerType}" Margin="2,0,0,0"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
+                            <TextBlock Text="Steps:" Margin="2,0,0,0" FontSize="9" Opacity=".6" VerticalAlignment="Center" FontStyle="Italic"/>
+                            <TextBlock Text="{Binding SchedulerOptions.InferenceSteps}" Margin="2,0,0,0"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <TextBlock Text="Guidance:" Margin="2,0,0,0"  FontSize="9" Opacity=".6" VerticalAlignment="Center" FontStyle="Italic"/>
+                            <TextBlock Text="{Binding SchedulerOptions.GuidanceScale}" Margin="2,0,0,0"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <TextBlock Text="Seed:" Margin="2,0,0,0"  FontSize="9" Opacity=".6" VerticalAlignment="Center" FontStyle="Italic"/>
+                            <TextBlock Text="{Binding SchedulerOptions.Seed}"  Margin="2,0,0,0" />
+                        </StackPanel>
+                    </UniformGrid>
+                    <UniformGrid Columns="8" Margin="0,2,0,2">
+                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type views:INavigatable}}, Path=SaveImageCommand}" CommandParameter="{Binding}">
+                            <userControls:FontAwesome Icon="&#xf0c7;" IconStyle="Light"   ToolTip="Save Image File" Color="{StaticResource InfoColour}"/>
+                        </Button>
+                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type views:INavigatable}}, Path=SaveBlueprintCommand}" CommandParameter="{Binding}">
+                            <userControls:FontAwesome Icon="&#xf121;" IconStyle="Light"   ToolTip="Save Blueprint File"/>
+                        </Button>
+                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=NavigateTextToImageCommand}" CommandParameter="{Binding}">
+                            <userControls:FontAwesome Icon="&#xf036;" IconStyle="Light"   ToolTip="Send To Text To Image"/>
+                        </Button>
+                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=NavigateImageToImageCommand}" CommandParameter="{Binding}" BorderThickness="0, 1">
+                            <userControls:FontAwesome Icon="&#xf03e;" IconStyle="Light"   ToolTip="Send To Image To Image"/>
+                        </Button>
+                        <Button  Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=NavigateImageInpaintCommand}" CommandParameter="{Binding}" >
+                            <userControls:FontAwesome Icon="&#xf044;" IconStyle="Light"   ToolTip="Send To Image Inpaint"/>
+                        </Button>
+                        <Button  Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=NavigateImagePaintToImageCommand}" CommandParameter="{Binding}" Padding="2,2" BorderThickness="0,1,1,1">
+                            <userControls:FontAwesome Icon="&#xf1fc;" IconStyle="Light"  ToolTip="Send To Paint To Image"/>
+                        </Button>
+                        <Button  Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=NavigateUpscalerCommand}" CommandParameter="{Binding}" Padding="2,2" BorderThickness="0,1,1,1">
+                            <userControls:FontAwesome Icon="&#xf424;" IconStyle="Light"  ToolTip="Send To Upscaler"/>
+                        </Button>
+                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type views:INavigatable}}, Path=RemoveImageCommand}" CommandParameter="{Binding}">
+                            <userControls:FontAwesome Icon="&#xf2ed;" IconStyle="Light"   ToolTip="Remove Image" Color="{StaticResource DangerColour}"/>
+                        </Button>
+                    </UniformGrid>
+                </StackPanel>
+                <Border Margin="0,2"  BorderBrush="{StaticResource ContainerBorder}" BorderThickness="1" Background="{StaticResource ContainerBackground}" >
+                    <Image Source="{Binding Image}" DockPanel.Dock="Left"  Stretch="Uniform" VerticalAlignment="Center" />
+                </Border>
+            </DockPanel>
+        </DataTemplate>
+
+
+        <DataTemplate DataType="{x:Type models:UpscaleResult}">
+            <DockPanel Width="220" Height="285" HorizontalAlignment="Center">
+                <StackPanel  DockPanel.Dock="Bottom" >
+                    <UniformGrid Columns="2" Margin="0,3">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <TextBlock Text="Scale Factor:" Margin="0,0,5,0" FontStyle="Italic"  FontSize="10" Opacity=".6" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding Info.ScaleFactor}" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <TextBlock Text="Elapsed:" Margin="5,0,0,0"  FontSize="10" Opacity=".6" VerticalAlignment="Center" FontStyle="Italic"/>
+                            <TextBlock Text="{Binding Elapsed, StringFormat={}{0:F1}s}" Margin="5,0,0,0"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <TextBlock Text="Input:" Margin="0,0,5,0" FontStyle="Italic" FontSize="10" Opacity=".6" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding Info.InputWidth}" />
+                            <TextBlock Text="x" Margin="2,0,2,0"/>
+                            <TextBlock Text="{Binding Info.InputHeight}" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <TextBlock Text="Output:" Margin="0,0,5,0" FontStyle="Italic" FontSize="10" Opacity=".6" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding Info.OutputWidth}" />
+                            <TextBlock Text="x" Margin="2,0,2,0"/>
+                            <TextBlock Text="{Binding Info.OutputHeight}" />
+                        </StackPanel>
+                    </UniformGrid>
+                    <UniformGrid Columns="2">
+                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type views:INavigatable}}, Path=SaveImageCommand}" CommandParameter="{Binding}" ToolTip="Save Image File">
+                            <userControls:FontAwesome Icon="&#xf0c7;" IconStyle="Light" Color="{StaticResource InfoColour}" />
+                        </Button>
+                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type views:INavigatable}}, Path=RemoveImageCommand}" CommandParameter="{Binding}">
+                            <userControls:FontAwesome Icon="&#xf2ed;" IconStyle="Light" ToolTip="Remove Image" Color="{StaticResource DangerColour}"/>
+                        </Button>
+                    </UniformGrid>
+                </StackPanel>
+                <Border Margin="0,2"  BorderBrush="{StaticResource ContainerBorder}" BorderThickness="1" Background="{StaticResource ContainerBackground}" >
+                    <Image Source="{Binding Image}" DockPanel.Dock="Left"  Stretch="Uniform" VerticalAlignment="Center" />
+                </Border>
+            </DockPanel>
+        </DataTemplate>
+
+
+        <DataTemplate DataType="{x:Type models:VideoResultModel}">
+            <DockPanel Width="220" Height="285" HorizontalAlignment="Center">
+                <StackPanel  DockPanel.Dock="Bottom" >
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <TextBlock Text="Duration:" Margin="5,0,0,0"  FontSize="10" Opacity=".6" VerticalAlignment="Center" FontStyle="Italic"/>
+                        <TextBlock Text="{Binding VideoInfo.Duration, StringFormat={}hh\\:mm\\:ss\\.ffff}" Margin="5,0,0,0"/>
+                    </StackPanel>
+                    <UniformGrid Columns="2" Margin="0,3">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <TextBlock Text="Size:" Margin="0,0,5,0" FontStyle="Italic"  FontSize="10" Opacity=".6" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding VideoInfo.Width}" />
+                            <TextBlock Text="x" Margin="2,0,2,0"/>
+                            <TextBlock Text="{Binding VideoInfo.Height}" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <TextBlock Text="Frame Rate:" Margin="0,0,5,0" FontStyle="Italic" FontSize="10" Opacity=".6" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding VideoInfo.FPS}" />
+                            <TextBlock Text="fps" Margin="2,0,2,0" FontSize="10" Opacity=".6" VerticalAlignment="Bottom"/>
+                        </StackPanel>
+                    </UniformGrid>
+                    <UniformGrid Columns="3" Margin="0,2,0,2">
+                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type views:INavigatable}}, Path=SaveVideoCommand}" CommandParameter="{Binding}">
+                            <userControls:FontAwesome Icon="&#xf0c7;" IconStyle="Light" ToolTip="Save Video File" Color="{StaticResource InfoColour}" />
+                        </Button>
+                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type views:INavigatable}}, Path=SaveBlueprintCommand}" CommandParameter="{Binding}">
+                            <userControls:FontAwesome Icon="&#xf121;" IconStyle="Light"   ToolTip="Save Blueprint File" Color="{StaticResource InfoColour}"/>
+                        </Button>
+                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type views:INavigatable}}, Path=NavigateCommand}" CommandParameter="{Binding}">
+                            <userControls:FontAwesome Icon="&#xf008;" IconStyle="Light" ToolTip="Send to VideoToVideo"/>
+                        </Button>
+                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type views:INavigatable}}, Path=RemoveVideoCommand}" CommandParameter="{Binding}">
+                            <userControls:FontAwesome Icon="&#xf2ed;" IconStyle="Light" ToolTip="Remove Video" Color="{StaticResource DangerColour}"/>
+                        </Button>
+                    </UniformGrid>
+                </StackPanel>
+                <Border Margin="0,2" BorderBrush="{StaticResource ContainerBorder}" BorderThickness="1" Background="{StaticResource ContainerBackground}" >
+                    <MediaElement Source="{Binding FileName}" LoadedBehavior="Manual" UnloadedBehavior="Close" DockPanel.Dock="Left" Stretch="Uniform" VerticalAlignment="Center" >
+                        <i:Interaction.Behaviors>
+                            <behaviors:MediaElementBehavior />
+                        </i:Interaction.Behaviors>
+                    </MediaElement>
+                </Border>
+            </DockPanel>
+        </DataTemplate>
+
+
+
+
+
+
+
+
+
+
 
     </Application.Resources>
 </Application>

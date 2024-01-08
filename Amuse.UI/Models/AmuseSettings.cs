@@ -1,7 +1,9 @@
 ﻿using Microsoft.ML.OnnxRuntime;
 using OnnxStack.Common.Config;
 using OnnxStack.Core.Config;
+using System;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Text.Json.Serialization;
 
 namespace Amuse.UI.Models
@@ -9,24 +11,37 @@ namespace Amuse.UI.Models
     public class AmuseSettings : IConfigSection
     {
         public ModelCacheMode ModelCacheMode { get; set; }
-
-        public bool ImageAutoSave { get; set; }
-        public bool ImageAutoSaveBlueprint { get; set; }
-        public string ImageAutoSaveDirectory { get; set; }
+        public bool AutoSaveImage { get; set; }
+        public bool AutoSaveVideo { get; set; }
+        public bool AutoSaveBlueprint { get; set; }
+        public string DirectoryModel { get; set; }
+        public string DirectoryImage { get; set; }
+        public string DirectoryImageSave { get; set; }
+        public string DirectoryImageAutoSave { get; set; }
+        public string DirectoryVideo { get; set; }
+        public string DirectoryVideoSave { get; set; }
+        public string DirectoryVideoAutoSave { get; set; }
         public int RealtimeRefreshRate { get; set; } = 100;
-        public bool RealtimeHistoryEnabled { get; set; }
+        public bool RealtimeHistoryEnabled { get; set; } = true;
         public int DefaultDeviceId { get; set; }
         public int DefaultInterOpNumThreads { get; set; }
         public int DefaultIntraOpNumThreads { get; set; }
         public ExecutionMode DefaultExecutionMode { get; set; }
         public ExecutionProvider DefaultExecutionProvider { get; set; }
+        public ObservableCollection<ModelTemplateViewModel> Templates { get; set; } = new ObservableCollection<ModelTemplateViewModel>();
+        public ObservableCollection<UpscaleModelSetViewModel> UpscaleModelSets { get; set; } = new ObservableCollection<UpscaleModelSetViewModel>();
+        public ObservableCollection<StableDiffusionModelSetViewModel> StableDiffusionModelSets { get; set; } = new ObservableCollection<StableDiffusionModelSetViewModel>();
+
+
+        [JsonIgnore]
+        public string DirectoryTemp { get; set; }
+
+        [JsonIgnore]
+        public string DirectoryCache { get; set; }
 
         [JsonIgnore]
         public ExecutionProvider SupportedExecutionProvider => GetSupportedExecutionProvider();
 
-        public ObservableCollection<ModelTemplateViewModel> Templates { get; set; } = new ObservableCollection<ModelTemplateViewModel>();
-        public ObservableCollection<UpscaleModelSetViewModel> UpscaleModelSets { get; set; } = new ObservableCollection<UpscaleModelSetViewModel>();
-        public ObservableCollection<StableDiffusionModelSetViewModel> StableDiffusionModelSets { get; set; } = new ObservableCollection<StableDiffusionModelSetViewModel>();
 
         public ExecutionProvider GetSupportedExecutionProvider()
         {
@@ -44,6 +59,11 @@ namespace Amuse.UI.Models
             DefaultExecutionProvider = DefaultExecutionProvider == SupportedExecutionProvider || DefaultExecutionProvider == ExecutionProvider.Cpu
               ? DefaultExecutionProvider
               : SupportedExecutionProvider;
+
+            if (string.IsNullOrEmpty(DirectoryTemp))
+                DirectoryTemp = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".temp");
+            if (string.IsNullOrEmpty(DirectoryCache))
+                DirectoryCache = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".cache");
         }
 
     }

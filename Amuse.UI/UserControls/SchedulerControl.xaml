@@ -22,7 +22,7 @@
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal" Margin="5">
-                        <userControls:FontAwesome Icon="&#xf1de;" IconStyle="Light"/>
+                        <userControls:FontAwesome Icon="&#xf1de;" IconStyle="Solid" Color="{StaticResource AccentColour2}"/>
                         <TextBlock Text="Options" Margin="5,0,0,0"/>
                     </StackPanel>
                 </TabItem.Header>
@@ -283,7 +283,7 @@
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal" Margin="5">
-                        <userControls:FontAwesome Icon="&#xf085;" IconStyle="Light"/>
+                        <userControls:FontAwesome Icon="&#xf085;" IconStyle="Solid" Color="{StaticResource AccentColour2}"/>
                         <TextBlock Text="Advanced" Margin="5,0,0,0"/>
                     </StackPanel>
                 </TabItem.Header>
@@ -379,7 +379,7 @@
             <TabItem IsEnabled="{Binding BatchOptions.IsRealtimeEnabled, Converter={StaticResource InverseBoolConverter}}" IsSelected="{Binding BatchOptions.IsAutomationEnabled}">
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal" Margin="5">
-                        <userControls:FontAwesome Icon="&#xf544;" IconStyle="Light"/>
+                        <userControls:FontAwesome Icon="&#xf544;" IconStyle="Solid" Color="{StaticResource AccentColour2}"/>
                         <TextBlock Text="Automation" Margin="5,0,0,0"/>
                     </StackPanel>
                 </TabItem.Header>

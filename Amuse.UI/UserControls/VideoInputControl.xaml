@@ -27,7 +27,7 @@
                         <userControls:FontAwesome Icon="&#xf2ed;" IconStyle="Light" Color="{StaticResource DangerColour}" />
                     </Button>
 
-                    <Button DockPanel.Dock="Left" Command="{Binding LoadVideoCommand}" ToolTip="Load Video File" Width="80" Style="{StaticResource InfoButtonStyle}" >
+                    <Button DockPanel.Dock="Left" Command="{Binding LoadVideoCommand}" ToolTip="Load Video File" Width="100" Style="{StaticResource InfoButtonStyle}" >
                         <StackPanel Orientation="Horizontal">
                             <userControls:FontAwesome Icon="&#xf0ee;" IconStyle="Light" Color="{StaticResource InfoColour}" />
                             <TextBlock Text="Load" Margin="5,0,0,0" Foreground="{StaticResource InfoColour}"/>

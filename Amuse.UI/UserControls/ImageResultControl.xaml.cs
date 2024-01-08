@@ -15,13 +15,11 @@ namespace Amuse.UI.UserControls
         /// <summary>Initializes a new instance of the <see cref="ImageResultControl" /> class.</summary>
         public ImageResultControl()
         {
-            ClearImageCommand = new AsyncRelayCommand(ClearImage);
             CopyImageCommand = new AsyncRelayCommand(CopyImage);
             UpdateSeedCommand = new AsyncRelayCommand<int>(UpdateSeed);
             InitializeComponent();
         }
 
-        public AsyncRelayCommand ClearImageCommand { get; }
         public AsyncRelayCommand CopyImageCommand { get; }
         public AsyncRelayCommand<int> UpdateSeedCommand { get; }
 
@@ -64,6 +62,13 @@ namespace Amuse.UI.UserControls
         public static readonly DependencyProperty ProgressValueProperty =
             DependencyProperty.Register("ProgressValue", typeof(int), typeof(ImageResultControl));
 
+        public string ProgressText
+        {
+            get { return (string)GetValue(ProgressTextProperty); }
+            set { SetValue(ProgressTextProperty, value); }
+        }
+        public static readonly DependencyProperty ProgressTextProperty =
+            DependencyProperty.Register("ProgressText", typeof(string), typeof(ImageResultControl));
 
         public bool HasResult
         {
@@ -73,13 +78,6 @@ namespace Amuse.UI.UserControls
 
         public static readonly DependencyProperty HasResultProperty =
             DependencyProperty.Register("HasResult", typeof(bool), typeof(ImageResultControl));
-
-        private Task ClearImage()
-        {
-            Result = null;
-            HasResult = false;
-            return Task.CompletedTask;
-        }
 
 
         private Task UpdateSeed(int previousSeed)

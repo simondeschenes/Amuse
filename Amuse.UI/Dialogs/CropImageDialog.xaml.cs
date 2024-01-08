@@ -1,7 +1,9 @@
 ﻿using Amuse.UI.Commands;
+using Amuse.UI.Models;
 using Microsoft.Extensions.Logging;
 using System;
 using System.ComponentModel;
+using System.Runtime;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
@@ -16,6 +18,7 @@ namespace Amuse.UI.Dialogs
     /// </summary>
     public partial class CropImageDialog : Window, INotifyPropertyChanged
     {
+        private readonly AmuseSettings _settings;
         private readonly ILogger<CropImageDialog> _logger;
         private double _zoom = 100;
         private double _scale = 1.0;
@@ -45,8 +48,9 @@ namespace Amuse.UI.Dialogs
         /// Initializes a new instance of the <see cref="CropImageDialog"/> class.
         /// </summary>
         /// <param name="logger">The logger.</param>
-        public CropImageDialog(ILogger<CropImageDialog> logger)
+        public CropImageDialog(AmuseSettings settings, ILogger<CropImageDialog> logger)
         {
+            _settings = settings;
             _logger = logger;
 
             WindowCloseCommand = new AsyncRelayCommand(WindowClose);
@@ -61,6 +65,7 @@ namespace Amuse.UI.Dialogs
             InitializeComponent();
         }
 
+        public AmuseSettings Settings => _settings;
         public AsyncRelayCommand WindowMinimizeCommand { get; }
         public AsyncRelayCommand WindowRestoreCommand { get; }
         public AsyncRelayCommand WindowMaximizeCommand { get; }
