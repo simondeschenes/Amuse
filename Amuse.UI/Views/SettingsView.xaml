@@ -17,7 +17,7 @@
 
                 <GroupBox >
                     <GroupBox.Header>
-                        <TextBlock Text="Default Settings" FontSize="15" />
+                        <TextBlock Text="Settings" FontSize="15" />
                     </GroupBox.Header>
                     <DockPanel Margin="5">
                         <StackPanel DockPanel.Dock="Bottom" Margin="0,10,0,0">
@@ -37,6 +37,18 @@
                                 <TextBlock Text="Default Model Directory" />
                                 <userControls:FilePickerTextBox IsFolderPicker="True" FileName="{Binding UISettings.DirectoryModel, Mode=TwoWay}"/>
                             </StackPanel>
+
+
+                            <StackPanel Orientation="Horizontal" Margin="0,15,0,0">
+                                <StackPanel>
+                                    <TextBlock Text="Realtime Refresh Rate (ms)" />
+                                    <TextBox Text="{Binding UISettings.RealtimeRefreshRate}"/>
+                                </StackPanel>
+                                <StackPanel VerticalAlignment="Center">
+                                    <CheckBox IsChecked="{Binding UISettings.RealtimeHistoryEnabled}" Content="Realtime History Enabled" Margin="10,13,0,0"/>
+                                </StackPanel>
+                            </StackPanel>
+
                         </StackPanel>
                     </DockPanel>
                 </GroupBox>
