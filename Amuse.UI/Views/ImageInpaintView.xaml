@@ -52,28 +52,25 @@
                 <TabItem>
                     <TabItem.Header>
                         <StackPanel Orientation="Horizontal" Margin="15,5">
-                            <userControls:FontAwesome Icon="&#xf0d0;" IconStyle="Light"/>
+                            <userControls:FontAwesome Icon="&#xf0d0;" IconStyle="Solid" Color="{StaticResource AccentColour2}"/>
                             <TextBlock Text="Generate" Margin="5,0,0,0"/>
                         </StackPanel>
                     </TabItem.Header>
                     <UniformGrid Columns="2" VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <Viewbox Margin="40,40,20,40" >
-                            <userControls:ImageInputControl 
-                                Result="{Binding InputImage, Mode=TwoWay}" 
-                                HasResult="{Binding HasInputResult, Mode=TwoWay}" 
-                                MaskResult="{Binding InputImageMask, Mode=TwoWay}"
-                                HasMaskResult="{Binding HasInputMaskResult, Mode=TwoWay}"
-                                SchedulerOptions="{Binding SchedulerOptions}"
-                                IsMaskEnabled="True"/>
-                        </Viewbox>
-                        <Viewbox Margin="20,40,40,40" >
-                            <userControls:ImageResultControl 
-                                Result="{Binding ResultImage}" 
-                                HasResult="{Binding HasResult}" 
-                                ProgressMax="{Binding ProgressMax}" 
-                                ProgressValue="{Binding ProgressValue}" 
-                                SchedulerOptions="{Binding SchedulerOptions, Mode=TwoWay}" />
-                        </Viewbox>
+                        <userControls:ImageInputControl Margin="30,30,15,30"
+                            Result="{Binding InputImage, Mode=TwoWay}" 
+                            HasResult="{Binding HasInputResult, Mode=TwoWay}" 
+                            MaskResult="{Binding InputImageMask, Mode=TwoWay}"
+                            HasMaskResult="{Binding HasInputMaskResult, Mode=TwoWay}"
+                            SchedulerOptions="{Binding SchedulerOptions}"
+                            IsMaskEnabled="True"/>
+                        <userControls:ImageResultControl Margin="15,30,30,30"
+                            Result="{Binding ResultImage}" 
+                            HasResult="{Binding HasResult}" 
+                            ProgressMax="{Binding ProgressMax}" 
+                            ProgressValue="{Binding ProgressValue}" 
+                            ProgressText="{Binding ProgressText}" 
+                            SchedulerOptions="{Binding SchedulerOptions, Mode=TwoWay}" />
                     </UniformGrid>
                 </TabItem>
 
@@ -81,7 +78,7 @@
                 <TabItem>
                     <TabItem.Header>
                         <StackPanel Orientation="Horizontal" Margin="15,5">
-                            <userControls:FontAwesome Icon="&#xf03a;" IconStyle="Light"/>
+                            <userControls:FontAwesome Icon="&#xf03a;" IconStyle="Solid" Color="{StaticResource AccentColour2}"/>
                             <TextBlock Text="History" Margin="5,0,0,0"/>
                         </StackPanel>
                     </TabItem.Header>

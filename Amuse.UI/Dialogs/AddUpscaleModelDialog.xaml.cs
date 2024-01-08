@@ -45,6 +45,8 @@ namespace Amuse.UI.Dialogs
             InvalidOptions = _settings.Templates.Where(x => x.IsUserTemplate).Select(x => x.Name.ToLower()).ToList();
             InitializeComponent();
         }
+
+        public AmuseSettings Settings => _settings;
         public AsyncRelayCommand WindowMinimizeCommand { get; }
         public AsyncRelayCommand WindowRestoreCommand { get; }
         public AsyncRelayCommand WindowMaximizeCommand { get; }

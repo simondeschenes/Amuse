@@ -54,7 +54,7 @@
                 <TabItem>
                     <TabItem.Header>
                         <StackPanel Orientation="Horizontal" Margin="15,5">
-                            <userControls:FontAwesome Icon="&#xf0d0;" IconStyle="Light"/>
+                            <userControls:FontAwesome Icon="&#xf0d0;" IconStyle="Solid" Color="{StaticResource AccentColour2}"/>
                             <TextBlock Text="Generate" Margin="5,0,0,0"/>
                         </StackPanel>
                     </TabItem.Header>
@@ -66,7 +66,7 @@
                             VideoResult="{Binding InputVideo, Mode=TwoWay}" 
                             HasVideoResult="{Binding HasInputResult, Mode=TwoWay}" 
                             SchedulerOptions="{Binding SchedulerOptions}"/>
-                        <userControls:VideoResultControl Margin="30,30,15,30" 
+                        <userControls:VideoResultControl Margin="15,30,30,30" 
                             IsGenerating="{Binding IsGenerating}"
                             PreviewImage="{Binding PreviewResult}"
                             VideoResult="{Binding ResultVideo, Mode=TwoWay}" 
@@ -74,8 +74,7 @@
                             ProgressMax="{Binding ProgressMax}" 
                             ProgressValue="{Binding ProgressValue}" 
                             ProgressText="{Binding ProgressText}"
-                            SchedulerOptions="{Binding SchedulerOptions, Mode=TwoWay}"
-                            Results="{Binding VideoResults}"/>
+                            SchedulerOptions="{Binding SchedulerOptions, Mode=TwoWay}"/>
                     </UniformGrid>
                 </TabItem>
 
@@ -83,7 +82,7 @@
                 <TabItem>
                     <TabItem.Header>
                         <StackPanel Orientation="Horizontal" Margin="15,5">
-                            <userControls:FontAwesome Icon="&#xf03a;" IconStyle="Light"/>
+                            <userControls:FontAwesome Icon="&#xf03a;" IconStyle="Solid" Color="{StaticResource AccentColour2}"/>
                             <TextBlock Text="History" Margin="5,0,0,0"/>
                         </StackPanel>
                     </TabItem.Header>

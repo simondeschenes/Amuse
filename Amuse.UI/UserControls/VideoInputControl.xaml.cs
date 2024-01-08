@@ -10,11 +10,13 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
+using Amuse.UI.Services;
 
 namespace Amuse.UI.UserControls
 {
     public partial class VideoInputControl : UserControl, INotifyPropertyChanged
     {
+        private readonly IFileService _fileService;
         private readonly IVideoService _videoService;
         private bool _isPreviewVisible;
 
@@ -24,7 +26,10 @@ namespace Amuse.UI.UserControls
         public VideoInputControl()
         {
             if (!DesignerProperties.GetIsInDesignMode(this))
+            {
+                _fileService = App.GetService<IFileService>();
                 _videoService = App.GetService<IVideoService>();
+            }
 
             LoadVideoCommand = new AsyncRelayCommand(LoadVideo);
             ClearVideoCommand = new AsyncRelayCommand(ClearVideo);
@@ -107,27 +112,14 @@ namespace Amuse.UI.UserControls
         /// <returns></returns>
         private async Task LoadVideo()
         {
-            // Show Dialog
-            var openFileDialog = new OpenFileDialog
-            {
-                Filter = "Video Files|*.mp4;*.avi;*.mkv;*.mov;*.wmv;*.flv;*.gif|All Files|*.*",
-                RestoreDirectory = true,
-                Multiselect = false,
-            };
-            if (openFileDialog.ShowDialog() == true)
-            {
-                var videoBytes = await File.ReadAllBytesAsync(openFileDialog.FileName);
-                var videoInfo = await _videoService.GetVideoInfoAsync(videoBytes);
-                VideoResult = new VideoInputModel
-                {
-                    FileName = openFileDialog.FileName,
-                    VideoInfo = videoInfo,
-                    VideoBytes = videoBytes
-                };
-                HasVideoResult = true;
-                PromptOptions.VideoInputFPS = videoInfo.FPS;
-                PromptOptions.VideoOutputFPS = videoInfo.FPS;
-            }
+            var videoResult = await _fileService.OpenVideoFile();
+            if (videoResult is null)
+                return;
+
+            VideoResult = videoResult;
+            HasVideoResult = true;
+            PromptOptions.VideoInputFPS = videoResult.VideoInfo.FPS;
+            PromptOptions.VideoOutputFPS = videoResult.VideoInfo.FPS;
         }
 
 

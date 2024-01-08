@@ -7,76 +7,93 @@
              xmlns:userControls="clr-namespace:Amuse.UI.UserControls"
              xmlns:behaviors="clr-namespace:Amuse.UI.Behaviors"
              xmlns:models="clr-namespace:Amuse.UI.Models"
+             xmlns:views="clr-namespace:Amuse.UI.Views"
              mc:Ignorable="d" 
              d:DesignWidth="500" Name="UI" Focusable="True" PreviewKeyDown="OnPreviewKeyDown" MouseEnter="OnMouseEnter">
-    <UserControl.Resources>
-        <Style TargetType="{x:Type Label}">
-            <Setter Property="Margin" Value="-4,0,0,-4"/>
-        </Style>
-    </UserControl.Resources>
-
     <Border DataContext="{Binding ElementName=UI}" BorderBrush="{StaticResource ControlBrightDefaultBorderBrush}" BorderThickness="2" >
-        <StackPanel Margin="2">
-            <Image Source="{Binding Result.Image, FallbackValue={StaticResource PlaceholderImage}, TargetNullValue={StaticResource PlaceholderImage}}" Width="{Binding SchedulerOptions.Width, FallbackValue=512}" Height="{Binding SchedulerOptions.Height, FallbackValue=512}" MinHeight="512" MinWidth="512"   >
-                <Image.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem Header="Copy" Command="{Binding CopyImageCommand}" IsEnabled="{Binding HasResult}" />
-                    </ContextMenu>
-                </Image.ContextMenu>
-            </Image>
-            <StackPanel Visibility="{Binding HasResult, Converter={StaticResource InverseBooleanToVisibilityConverter}}" Margin="0,4">
-                <ProgressBar Maximum="{Binding ProgressMax}" behaviors:SmoothProgressBarBehavior.SmoothValue="{Binding ProgressValue}" Height="22" />
-            </StackPanel>
-            <StackPanel Visibility="{Binding HasResult, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,4">
-                <UniformGrid Columns="5" Margin="0,3" Width="{Binding SchedulerOptions.Width, FallbackValue=512}" MinWidth="512">
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <TextBlock Text="Scheduler:" Margin="5,0,0,0"  FontSize="10" Opacity=".6" VerticalAlignment="Center" FontStyle="Italic"/>
-                        <TextBlock Text="{Binding Result.SchedulerOptions.SchedulerType}" Margin="5,0,0,0"/>
+        <DockPanel Margin="2">
+
+            <StackPanel DockPanel.Dock="Bottom" >
+                <Grid  Visibility="{Binding HasResult, Converter={StaticResource InverseBooleanToVisibilityConverter}}" Height="35" >
+                    <ProgressBar Maximum="{Binding ProgressMax}" behaviors:SmoothProgressBarBehavior.SmoothValue="{Binding ProgressValue}" Height="24" />
+                    <TextBlock Text="{Binding ProgressText}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13"/>
+                </Grid>
+
+                <UniformGrid Height="35"  Columns="5" Margin="0,2,0,0" Visibility="{Binding HasResult, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding Result.SchedulerOptions.SchedulerType}"  TextAlignment="Center"/>
+                        <TextBlock Text="Scheduler" FontSize="10" Opacity=".6" FontStyle="Italic" TextAlignment="Center"/>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
-                        <TextBlock Text="Steps:" Margin="5,0,0,0" FontSize="10" Opacity=".6" VerticalAlignment="Center" FontStyle="Italic"/>
-                        <TextBlock Text="{Binding Result.SchedulerOptions.InferenceSteps}" Margin="5,0,0,0"/>
+                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding Result.SchedulerOptions.InferenceSteps}"  TextAlignment="Center"/>
+                        <TextBlock Text="Steps" FontSize="10" Opacity=".6" FontStyle="Italic" TextAlignment="Center"/>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <TextBlock Text="Guidance:" Margin="5,0,0,0"  FontSize="10" Opacity=".6" VerticalAlignment="Center" FontStyle="Italic"/>
-                        <TextBlock Text="{Binding Result.SchedulerOptions.GuidanceScale}" Margin="5,0,0,0"/>
+                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                        <Button  Padding="3,0" BorderThickness="0,0,0,0" BorderBrush="{StaticResource InfoColour}" ToolTip="Set as current seed" Command="{Binding UpdateSeedCommand}" CommandParameter="{Binding Result.SchedulerOptions.Seed}">
+                            <TextBlock Text="{Binding Result.SchedulerOptions.Seed}" Foreground="{StaticResource InfoColour}"  />
+                        </Button>
+                        <TextBlock Text="Seed" FontSize="10" Opacity=".6" FontStyle="Italic" TextAlignment="Center"/>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <TextBlock Text="Seed:" Margin="5,0,0,0"  FontSize="10" Opacity=".6" VerticalAlignment="Center" FontStyle="Italic"/>
-                        <Button Content="{Binding Result.SchedulerOptions.Seed}" Command="{Binding UpdateSeedCommand}" CommandParameter="{Binding Result.SchedulerOptions.Seed}" Margin="5,0,0,0" Style="{x:Null}" BorderThickness="0" Background="Transparent" />
+                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding Result.SchedulerOptions.GuidanceScale, StringFormat={}{0:F2}}" TextAlignment="Center"/>
+                        <TextBlock Text="Guidance" FontSize="10" Opacity=".6" FontStyle="Italic" TextAlignment="Center"/>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <TextBlock Text="Elapsed:" Margin="5,0,0,0"  FontSize="10" Opacity=".6" VerticalAlignment="Center" FontStyle="Italic"/>
-                        <TextBlock Text="{Binding Result.Elapsed, StringFormat={}{0:F1}s}" Margin="5,0,0,0"/>
+                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding Result.Elapsed, StringFormat={}{0:F2} s}"  TextAlignment="Center"/>
+                        <TextBlock Text="Elapsed" FontSize="10" Opacity=".6" FontStyle="Italic" TextAlignment="Center"/>
                     </StackPanel>
                 </UniformGrid>
+
+                <DockPanel Height="30" IsEnabled="{Binding HasResult}">
+
+                    <Button Width="100" DockPanel.Dock="Left" Style="{StaticResource InfoButtonStyle}" Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type views:INavigatable}}, Path=SaveImageCommand}" CommandParameter="{Binding Result}" ToolTip="Save Image File">
+                        <StackPanel Orientation="Horizontal">
+                            <userControls:FontAwesome Icon="&#xf0c7;" IconStyle="Light"  Color="{StaticResource InfoColour}" />
+                            <TextBlock Text="Save" Margin="8,0,0,0" Foreground="{StaticResource InfoColour}"/>
+                        </StackPanel>
+                    </Button>
+
+                    <Button DockPanel.Dock="Right" Width="50" Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type views:INavigatable}},Path=RemoveImageCommand}" CommandParameter="{Binding Result}" ToolTip="Clear Image Result" BorderThickness="1" Style="{StaticResource DangerButtonStyle}">
+                        <userControls:FontAwesome Icon="&#xf2ed;" IconStyle="Light" Color="{StaticResource DangerColour}" />
+                    </Button>
+
+                    <UniformGrid Columns="6"  >
+                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type views:INavigatable}}, Path=SaveBlueprintCommand}" CommandParameter="{Binding Result}"  ToolTip="Save Blueprint File" >
+                            <userControls:FontAwesome Icon="&#xf121;" IconStyle="Light"  />
+                        </Button>
+                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=NavigateTextToImageCommand}" CommandParameter="{Binding Result}" ToolTip="Send To Text To Image">
+                            <userControls:FontAwesome Icon="&#xf036;" IconStyle="Light" />
+                        </Button>
+                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=NavigateImageToImageCommand}" CommandParameter="{Binding Result}" ToolTip="Send To Image To Image">
+                            <userControls:FontAwesome Icon="&#xf03e;" IconStyle="Light" />
+                        </Button>
+                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=NavigateImageInpaintCommand}" CommandParameter="{Binding Result}" ToolTip="Send To Image Inpaint">
+                            <userControls:FontAwesome Icon="&#xf044;" IconStyle="Light" />
+                        </Button>
+                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=NavigateImagePaintToImageCommand}" CommandParameter="{Binding Result}" ToolTip="Send To Paint To Image">
+                            <userControls:FontAwesome Icon="&#xf1fc;" IconStyle="Light" />
+                        </Button>
+                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=NavigateUpscalerCommand}" CommandParameter="{Binding Result}" ToolTip="Send To Upscaler" >
+                            <userControls:FontAwesome Icon="&#xf424;" IconStyle="Light" />
+                        </Button>
+                    </UniformGrid>
+
+                </DockPanel>
+
+
+          
             </StackPanel>
-            <UniformGrid Columns="8" Height="30" IsEnabled="{Binding HasResult}">
-                <Button Style="{StaticResource InfoButtonStyle}" Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=SaveImageResultCommand}" CommandParameter="{Binding Result}" ToolTip="Save Image File">
-                    <userControls:FontAwesome Icon="&#xf0c7;" IconStyle="Light"  Color="{StaticResource InfoColour}" />
-                </Button>
-                <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=SaveBlueprintCommand}" CommandParameter="{Binding Result}" BorderThickness="0,1" ToolTip="Save Blueprint File">
-                    <userControls:FontAwesome Icon="&#xf121;" IconStyle="Light"  />
-                </Button>
-                <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=NavigateTextToImageCommand}" CommandParameter="{Binding Result}" ToolTip="Send To Text To Image">
-                    <userControls:FontAwesome Icon="&#xf036;" IconStyle="Light"   />
-                </Button>
-                <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=NavigateImageToImageCommand}" CommandParameter="{Binding Result}" BorderThickness="0,1" ToolTip="Send To Image To Image">
-                    <userControls:FontAwesome Icon="&#xf03e;" IconStyle="Light"  />
-                </Button>
-                <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=NavigateImageInpaintCommand}" CommandParameter="{Binding Result}" ToolTip="Send To Image Inpaint">
-                    <userControls:FontAwesome Icon="&#xf044;" IconStyle="Light"  />
-                </Button>
-                <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=NavigateImagePaintToImageCommand}" CommandParameter="{Binding Result}" ToolTip="Send To Paint To Image" BorderThickness="0,1,1,1">
-                    <userControls:FontAwesome Icon="&#xf1fc;" IconStyle="Light" />
-                </Button>
-                <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=NavigateUpscalerCommand}" CommandParameter="{Binding Result}" ToolTip="Send To Upscaler" BorderThickness="0,1,0,1">
-                    <userControls:FontAwesome Icon="&#xf424;" IconStyle="Light" />
-                </Button>
-                <Button Command="{Binding ClearImageCommand}" ToolTip="Clear Image Result" BorderThickness="1" Style="{StaticResource DangerButtonStyle}">
-                    <userControls:FontAwesome Icon="&#xf2ed;" IconStyle="Light" Color="{StaticResource DangerColour}" />
-                </Button>
-            </UniformGrid>
-        </StackPanel>
+
+            <Viewbox>
+                <Image Source="{Binding Result.Image, FallbackValue={StaticResource PlaceholderImage}, TargetNullValue={StaticResource PlaceholderImage}}" Width="{Binding SchedulerOptions.Width}" Height="{Binding SchedulerOptions.Height}"  >
+                    <Image.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Copy" Command="{Binding CopyImageCommand}" IsEnabled="{Binding HasResult}" />
+                        </ContextMenu>
+                    </Image.ContextMenu>
+                </Image>
+            </Viewbox>
+
+        </DockPanel>
     </Border>
 </UserControl>

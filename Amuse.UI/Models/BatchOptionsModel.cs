@@ -1,4 +1,5 @@
-﻿using OnnxStack.StableDiffusion.Enums;
+﻿using OnnxStack.StableDiffusion.Config;
+using OnnxStack.StableDiffusion.Enums;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -15,7 +16,7 @@ namespace Models
         private int _stepsValue = 1;
         private int _batchValue;
         private int _batchsValue = 1;
-        private bool _disableHistory = true;
+        private bool _disableHistory = false;
         private bool _isRealtimeEnabled;
 
         public BatchOptionType BatchType
@@ -95,6 +96,30 @@ namespace Models
                 NotifyPropertyChanged();
             }
         }
+
+
+        public static BatchOptionsModel FromBatchOptions(BatchOptions batchOptions)
+        {
+            return new BatchOptionsModel
+            {
+                BatchType = batchOptions.BatchType,
+                ValueTo = batchOptions.ValueTo,
+                Increment = batchOptions.Increment,
+                ValueFrom = batchOptions.ValueFrom
+            };
+        }
+
+        public static BatchOptions ToBatchOptions(BatchOptionsModel batchOptionsModel)
+        {
+            return new BatchOptions
+            {
+                BatchType = batchOptionsModel.BatchType,
+                ValueTo = batchOptionsModel.ValueTo,
+                Increment = batchOptionsModel.Increment,
+                ValueFrom = batchOptionsModel.ValueFrom
+            };
+        }
+
 
         #region INotifyPropertyChanged
         public event PropertyChangedEventHandler PropertyChanged;

@@ -43,7 +43,7 @@
 
             <StackPanel Margin="0,10,0,0">
                 <TextBlock Text="Model Folder"/>
-                <userControls:FilePickerTextBox FileName="{Binding ModelFolder, Mode=TwoWay}" IsFolderPicker="True" />
+                <userControls:FilePickerTextBox FileName="{Binding ModelFolder, Mode=TwoWay}" InitialDirectory="{Binding Settings.DirectoryModel}" IsFolderPicker="True" />
             </StackPanel>
 
             <StackPanel Margin="0,10,0,0" Visibility="{Binding EnableNameSelection, Converter={StaticResource BooleanToVisibilityConverter}}">

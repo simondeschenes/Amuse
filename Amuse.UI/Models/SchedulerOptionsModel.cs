@@ -1,4 +1,5 @@
-﻿using OnnxStack.StableDiffusion.Enums;
+﻿using OnnxStack.StableDiffusion.Config;
+using OnnxStack.StableDiffusion.Enums;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -207,6 +208,68 @@ namespace Amuse.UI.Models
             set { _hasChanged = value; NotifyPropertyChanged(); }
         }
 
+
+        public static SchedulerOptions ToSchedulerOptions(SchedulerOptionsModel model)
+        {
+            return new SchedulerOptions
+            {
+                AlphaTransformType = model.AlphaTransformType,
+                BetaEnd = model.BetaEnd,
+                BetaStart = model.BetaStart,
+                BetaSchedule = model.BetaSchedule,
+                ClipSample = model.ClipSample,
+                ClipSampleRange = model.ClipSampleRange,
+                GuidanceScale = model.GuidanceScale,
+                Height = model.Height,
+                InferenceSteps = model.InferenceSteps,
+                MaximumBeta = model.MaximumBeta,
+                PredictionType = model.PredictionType,
+                SampleMaxValue = model.SampleMaxValue,
+                Seed = model.Seed,
+                StepsOffset = model.StepsOffset,
+                Width = model.Width,
+                Strength = model.Strength,
+                Thresholding = model.Thresholding,
+                TimestepSpacing = model.TimestepSpacing,
+                TrainedBetas = model.TrainedBetas,
+                TrainTimesteps = model.TrainTimesteps,
+                UseKarrasSigmas = model.UseKarrasSigmas,
+                VarianceType = model.VarianceType,
+                OriginalInferenceSteps = model.OriginalInferenceSteps,
+                SchedulerType = model.SchedulerType
+            };
+        }
+
+        public static SchedulerOptionsModel FromSchedulerOptions(SchedulerOptions model)
+        {
+            return new SchedulerOptionsModel
+            {
+                AlphaTransformType = model.AlphaTransformType,
+                BetaEnd = model.BetaEnd,
+                BetaStart = model.BetaStart,
+                BetaSchedule = model.BetaSchedule,
+                ClipSample = model.ClipSample,
+                ClipSampleRange = model.ClipSampleRange,
+                GuidanceScale = model.GuidanceScale,
+                Height = model.Height,
+                InferenceSteps = model.InferenceSteps,
+                MaximumBeta = model.MaximumBeta,
+                PredictionType = model.PredictionType,
+                SampleMaxValue = model.SampleMaxValue,
+                Seed = model.Seed,
+                StepsOffset = model.StepsOffset,
+                Width = model.Width,
+                Strength = model.Strength,
+                Thresholding = model.Thresholding,
+                TimestepSpacing = model.TimestepSpacing,
+                TrainedBetas = model.TrainedBetas,
+                TrainTimesteps = model.TrainTimesteps,
+                UseKarrasSigmas = model.UseKarrasSigmas,
+                VarianceType = model.VarianceType,
+                OriginalInferenceSteps = model.OriginalInferenceSteps,
+                SchedulerType = model.SchedulerType
+            };
+        }
 
 
         #region INotifyPropertyChanged

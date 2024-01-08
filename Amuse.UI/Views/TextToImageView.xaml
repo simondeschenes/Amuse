@@ -52,19 +52,18 @@
                 <TabItem>
                     <TabItem.Header>
                         <StackPanel Orientation="Horizontal" Margin="15,5">
-                            <userControls:FontAwesome Icon="&#xf0d0;" IconStyle="Light"/>
+                            <userControls:FontAwesome Icon="&#xf0d0;" IconStyle="Solid" Color="{StaticResource AccentColour2}"/>
                             <TextBlock Text="Generate" Margin="5,0,0,0"/>
                         </StackPanel>
                     </TabItem.Header>
                     <DockPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <Viewbox Margin="40" >
-                            <userControls:ImageResultControl 
-                                Result="{Binding ResultImage, Mode=TwoWay}" 
-                                HasResult="{Binding HasResult, Mode=TwoWay}" 
-                                ProgressMax="{Binding ProgressMax}" 
-                                ProgressValue="{Binding ProgressValue}" 
-                                SchedulerOptions="{Binding SchedulerOptions, Mode=TwoWay}" />
-                        </Viewbox>
+                        <userControls:ImageResultControl Margin="30"
+                            Result="{Binding ResultImage, Mode=TwoWay}" 
+                            HasResult="{Binding HasResult, Mode=TwoWay}" 
+                            ProgressMax="{Binding ProgressMax}" 
+                            ProgressValue="{Binding ProgressValue}" 
+                            ProgressText="{Binding ProgressText}" 
+                            SchedulerOptions="{Binding SchedulerOptions, Mode=TwoWay}" />
                     </DockPanel>
                 </TabItem>
 
@@ -72,7 +71,7 @@
                 <TabItem>
                     <TabItem.Header>
                         <StackPanel Orientation="Horizontal" Margin="15,5">
-                            <userControls:FontAwesome Icon="&#xf03a;" IconStyle="Light"/>
+                            <userControls:FontAwesome Icon="&#xf03a;" IconStyle="Solid" Color="{StaticResource AccentColour2}"/>
                             <TextBlock Text="History" Margin="5,0,0,0"/>
                         </StackPanel>
                     </TabItem.Header>

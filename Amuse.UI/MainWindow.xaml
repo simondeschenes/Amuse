@@ -8,8 +8,8 @@
         xmlns:userControls="clr-namespace:Amuse.UI.UserControls"
         mc:Ignorable="d"
         Title="Amuse"
-        Width="1200"
-        Height="700"
+        Width="1366"
+        Height="768"
         MinWidth="820"
         MinHeight="600"
         Icon="/Images/Icon.ico" 
@@ -27,11 +27,11 @@
             <!--Text To Image-->
             <TabItem Margin="1,0,0,0">
                 <TabItem.Header>
-                    <StackPanel Orientation="Horizontal" Margin="5">
+                    <StackPanel Orientation="Horizontal" Margin="5,8,5,5">
                         <StackPanel Orientation="Horizontal">
-                            <userControls:FontAwesome Icon="&#xf036;" IconStyle="Light" Size="14"/>
+                            <userControls:FontAwesome Icon="&#xf036;" IconStyle="Solid" Color="{StaticResource AccentColour2}" Size="19"/>
                         </StackPanel>
-                        <TextBlock Text="Text To Image" Margin="5,0,0,0"/>
+                        <TextBlock Text="Text To Image" Margin="5,0,0,0" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
                 <views:TextToImageView UISettings="{Binding UISettings}" Margin="0,6,0,0"/>
@@ -40,11 +40,11 @@
             <!--Image To Image-->
             <TabItem>
                 <TabItem.Header>
-                    <StackPanel Orientation="Horizontal" Margin="5">
+                    <StackPanel Orientation="Horizontal" Margin="5,6,5,0">
                         <StackPanel Orientation="Horizontal">
-                            <userControls:FontAwesome Icon="&#xf03e;" IconStyle="Light" />
+                            <userControls:FontAwesome Icon="&#xf03e;" IconStyle="Solid" Color="{StaticResource AccentColour2}" Size="22"/>
                         </StackPanel>
-                        <TextBlock Text="Image To Image" Margin="5,0,0,0"/>
+                        <TextBlock Text="Image To Image" Margin="5,0,0,2" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
                 <views:ImageToImageView UISettings="{Binding UISettings}" Margin="0,6,0,0"/>
@@ -53,11 +53,11 @@
             <!--Image Inpaint-->
             <TabItem>
                 <TabItem.Header>
-                    <StackPanel Orientation="Horizontal" Margin="5">
+                    <StackPanel Orientation="Horizontal" Margin="5,8,5,2">
                         <StackPanel Orientation="Horizontal">
-                            <userControls:FontAwesome Icon="&#xf044;" IconStyle="Light"/>
+                            <userControls:FontAwesome Icon="&#xf044;" IconStyle="Solid" Color="{StaticResource AccentColour2}" Size="20"/>
                         </StackPanel>
-                        <TextBlock Text="Image Inpaint" Margin="5,0,0,0"/>
+                        <TextBlock Text="Image Inpaint" Margin="5,0,0,0" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
                 <views:ImageInpaintView UISettings="{Binding UISettings}" Margin="0,6,0,0"/>
@@ -66,11 +66,11 @@
             <!--Paint To Image-->
             <TabItem>
                 <TabItem.Header>
-                    <StackPanel Orientation="Horizontal" Margin="5">
+                    <StackPanel Orientation="Horizontal" Margin="5,8,5,2">
                         <StackPanel Orientation="Horizontal">
-                            <userControls:FontAwesome Icon="&#xf1fc;" IconStyle="Light"/>
+                            <userControls:FontAwesome Icon="&#xf1fc;" IconStyle="Solid" Color="{StaticResource AccentColour2}" Size="20"/>
                         </StackPanel>
-                        <TextBlock Text="Paint To Image" Margin="5,0,0,0"/>
+                        <TextBlock Text="Paint To Image" Margin="5,0,0,0" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
                 <views:PaintToImageView UISettings="{Binding UISettings}" Margin="0,6,0,0"/>
@@ -79,11 +79,11 @@
             <!--Video To Video-->
             <TabItem>
                 <TabItem.Header>
-                    <StackPanel Orientation="Horizontal" Margin="5">
+                    <StackPanel Orientation="Horizontal" Margin="5,8,5,2">
                         <StackPanel Orientation="Horizontal">
-                            <userControls:FontAwesome Icon="&#xf008;" IconStyle="Light" />
+                            <userControls:FontAwesome Icon="&#xf008;" IconStyle="Solid" Color="{StaticResource AccentColour2}" Size="20"/>
                         </StackPanel>
-                        <TextBlock Text="Video To Video" Margin="5,0,0,0"/>
+                        <TextBlock Text="Video To Video" Margin="5,0,0,0" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
                 <views:VideoToVideoView UISettings="{Binding UISettings}" SelectedTab="{Binding SelectedTabItem, Mode=TwoWay}" Margin="0,6,0,0"/>
@@ -92,11 +92,11 @@
             <!--Upscale-->
             <TabItem>
                 <TabItem.Header>
-                    <StackPanel Orientation="Horizontal" Margin="5">
+                    <StackPanel Orientation="Horizontal" Margin="5,8,5,2">
                         <StackPanel Orientation="Horizontal">
-                            <userControls:FontAwesome Icon="&#xf424;" IconStyle="Light"/>
+                            <userControls:FontAwesome Icon="&#xf424;" IconStyle="Solid" Color="{StaticResource AccentColour2}" Size="20"/>
                         </StackPanel>
-                        <TextBlock Text="Upscale Image" Margin="5,0,0,0"/>
+                        <TextBlock Text="Upscale Image" Margin="5,0,0,0" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
                 <views:UpscaleView UISettings="{Binding UISettings}" Margin="0,6,0,0"/>
@@ -105,21 +105,21 @@
             <!--Log Window-->
             <TabItem DockPanel.Dock="Right" HorizontalAlignment="Right">
                 <TabItem.Header>
-                    <StackPanel Orientation="Horizontal" Margin="5">
+                    <StackPanel Orientation="Horizontal" Margin="5,8,5,2">
                         <StackPanel Orientation="Horizontal">
-                            <userControls:FontAwesome Icon="&#xf022;" IconStyle="Light"/>
+                            <userControls:FontAwesome Icon="&#xf022;" IconStyle="Solid" Color="{StaticResource AccentColour2}" Size="20"/>
                         </StackPanel>
                     </StackPanel>
                 </TabItem.Header>
-                <views:LoggerView UISettings="{Binding UISettings}" LogOutput="{Binding OutputLog, Mode=TwoWay}" Margin="0,6,0,0"/>
+                <views:LoggerView UISettings="{Binding UISettings}" LogOutput="{Binding OutputLog, Mode=TwoWay}" Margin="0,6,0,0" />
             </TabItem>
 
             <!--Settings Window-->
             <TabItem DockPanel.Dock="Right" HorizontalAlignment="Right">
                 <TabItem.Header>
-                    <StackPanel Orientation="Horizontal" Margin="5">
+                    <StackPanel Orientation="Horizontal" Margin="5,8,5,2">
                         <StackPanel Orientation="Horizontal">
-                            <userControls:FontAwesome Icon="&#xf013;" IconStyle="Light"/>
+                            <userControls:FontAwesome Icon="&#xf013;" IconStyle="Solid" Color="{StaticResource AccentColour2}" Size="20"/>
                         </StackPanel>
                     </StackPanel>
                 </TabItem.Header>
@@ -129,11 +129,11 @@
             <!--Models-->
             <TabItem DockPanel.Dock="Right" HorizontalAlignment="Right">
                 <TabItem.Header>
-                    <StackPanel Orientation="Horizontal" Margin="5">
+                    <StackPanel Orientation="Horizontal" Margin="5,8,5,2">
                         <StackPanel Orientation="Horizontal">
-                            <userControls:FontAwesome Icon="&#xf5fd;" IconStyle="Light"/>
+                            <userControls:FontAwesome Icon="&#xf5fd;" IconStyle="Solid" Color="{StaticResource AccentColour2}" Size="20"/>
                         </StackPanel>
-                        <TextBlock Text="Models" Margin="5,0,0,0"/>
+                        <TextBlock Text="Models" Margin="5,0,0,0" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
                 <views:ModelSettingsView UISettings="{Binding UISettings}" Margin="0,6,0,0"/>

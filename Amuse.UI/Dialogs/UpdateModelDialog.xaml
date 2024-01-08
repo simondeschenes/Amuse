@@ -142,7 +142,7 @@
                                             </StackPanel>
                                             <StackPanel>
                                                 <TextBlock Text="{Binding Type}" />
-                                                <userControls:FilePickerTextBox FileName="{Binding OnnxModelPath, Mode=TwoWay}"  IsRequired="True" Filter="Onnx files (*.onnx)|*.onnx" Title="Model Selector" DefaultExt="onnx"/>
+                                                <userControls:FilePickerTextBox FileName="{Binding OnnxModelPath, Mode=TwoWay}" InitialDirectory="{Binding OnnxModelPath}"  IsRequired="True" Filter="Onnx files (*.onnx)|*.onnx" Title="Model Selector" DefaultExt="onnx"/>
                                             </StackPanel>
                                         </DockPanel>
 

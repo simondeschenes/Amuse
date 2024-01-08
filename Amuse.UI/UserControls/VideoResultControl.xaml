@@ -15,7 +15,6 @@
         <DockPanel Margin="2">
 
             <StackPanel DockPanel.Dock="Bottom">
-
                 <UniformGrid Height="35"  Columns="5" Margin="0,2,0,0" Visibility="{Binding HasVideoResult, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                         <TextBlock Text="{Binding VideoResult.SchedulerOptions.SchedulerType}"  TextAlignment="Center"/>
@@ -31,20 +30,15 @@
                         </Button>
                         <TextBlock Text="Seed"   FontSize="10" Opacity=".6" FontStyle="Italic" TextAlignment="Center"/>
                     </StackPanel>
-
                     <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                         <TextBlock Text="{Binding VideoResult.SchedulerOptions.GuidanceScale, StringFormat={}{0:F2}}" TextAlignment="Center"/>
                         <TextBlock Text="Guidance"   FontSize="10" Opacity=".6" FontStyle="Italic" TextAlignment="Center"/>
                     </StackPanel>
-
-
                     <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                         <TextBlock Text="{Binding VideoResult.Elapsed, StringFormat={}{0:F2} s}"  TextAlignment="Center"/>
                         <TextBlock Text="Elapsed"   FontSize="10" Opacity=".6" FontStyle="Italic" TextAlignment="Center"/>
                     </StackPanel>
-
                 </UniformGrid>
-
 
                 <Grid Height="35" Visibility="{Binding HasVideoResult, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                     <ProgressBar Maximum="{Binding ProgressMax}" behaviors:SmoothProgressBarBehavior.SmoothValue="{Binding ProgressValue}" Height="24" >
@@ -63,25 +57,27 @@
                 </Grid>
 
                 <DockPanel  Height="30" IsEnabled="{Binding HasVideoResult}">
-
-                    <Button DockPanel.Dock="Right" Command="{Binding ClearVideoCommand}" Width="50" Style="{StaticResource DangerButtonStyle}" >
+                    <Button DockPanel.Dock="Right" Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type views:INavigatable}}, Path=RemoveVideoCommand}" CommandParameter="{Binding VideoResult}" Width="50" Style="{StaticResource DangerButtonStyle}" >
                         <userControls:FontAwesome Icon="&#xf2ed;" IconStyle="Light"  Color="{StaticResource DangerColour}"/>
                     </Button>
-
                     <DockPanel DockPanel.Dock="Left" >
-                        <Button DockPanel.Dock="Right" Width="50" BorderThickness="0,1,1,1" ToolTip="Send to VideoToVideo" Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type views:INavigatable}}, Path=NavigateCommand}" CommandParameter="{Binding VideoResult}">
+                        <Button DockPanel.Dock="Right" Width="40" Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type views:INavigatable}}, Path=NavigateCommand}" CommandParameter="{Binding VideoResult}"  ToolTip="Send to VideoToVideo">
                             <StackPanel Orientation="Horizontal">
                                 <userControls:FontAwesome Icon="&#xf008;" IconStyle="Light"   />
                             </StackPanel>
                         </Button>
-                        <Button DockPanel.Dock="Right"  Width="80" Style="{StaticResource InfoButtonStyle}" Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type views:INavigatable}}, Path=SaveVideoCommand}" CommandParameter="{Binding VideoResult}" ToolTip="Save Video File">
+                        <Button DockPanel.Dock="Right" Width="40"  Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type views:INavigatable}}, Path=SaveBlueprintCommand}" CommandParameter="{Binding VideoResult}"  ToolTip="Save Blueprint File">
+                            <StackPanel Orientation="Horizontal">
+                                <userControls:FontAwesome Icon="&#xf121;" IconStyle="Light"   />
+                            </StackPanel>
+                        </Button>
+                        <Button DockPanel.Dock="Right"  Width="100" Style="{StaticResource InfoButtonStyle}" Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type views:INavigatable}}, Path=SaveVideoCommand}" CommandParameter="{Binding VideoResult}" ToolTip="Save Video File">
                             <StackPanel Orientation="Horizontal">
                                 <userControls:FontAwesome Icon="&#xf0c7;" IconStyle="Light"  Color="{StaticResource InfoColour}" />
                                 <TextBlock Text="Save" Margin="8,0,0,0" Foreground="{StaticResource InfoColour}"/>
                             </StackPanel>
                         </Button>
                     </DockPanel>
-
 
                     <Grid HorizontalAlignment="Left" Visibility="{Binding HasVideoResult, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <StackPanel Margin="5,0" >
@@ -122,5 +118,6 @@
             </Viewbox>
 
         </DockPanel>
+
     </Border>
 </UserControl>

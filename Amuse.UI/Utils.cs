@@ -1,13 +1,8 @@
-﻿using Amuse.UI.Models;
-using Models;
-using OnnxStack.StableDiffusion.Config;
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
@@ -23,21 +18,7 @@ namespace Amuse.UI
             return $"v{version.Major}.{version.Minor}.{version.Build}";
         }
 
-        public static string GetImageCacheDirectory(string subDirectory = null, bool createSubDirectory = false)
-        {
-            var cachePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".cache");
-            if (!Directory.Exists(cachePath))
-                Directory.CreateDirectory(cachePath);
 
-            if (string.IsNullOrEmpty(subDirectory))
-                return cachePath;
-
-            cachePath = Path.Combine(cachePath, subDirectory);
-            if (createSubDirectory && !Directory.Exists(cachePath))
-                Directory.CreateDirectory(cachePath);
-
-            return cachePath;
-        }
 
         public static void NavigateToUrl(string url)
         {
@@ -76,140 +57,6 @@ namespace Amuse.UI
             }
         }
 
-        public static async Task<bool> SaveImageFileAsync(this BitmapSource image, string filename)
-        {
-            await Task.Run(() =>
-            {
-                var encoder = new PngBitmapEncoder();
-                encoder.Frames.Add(BitmapFrame.Create(image));
-                using (var fileStream = new FileStream(filename, FileMode.Create))
-                {
-                    encoder.Save(fileStream);
-                }
-            });
-            return File.Exists(filename);
-        }
-
-
-        public static async Task<bool> SaveBlueprintFileAsync(this ImageResult imageResult, string filename)
-        {
-            var serializerOptions = new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                Converters = { new JsonStringEnumConverter() }
-            };
-            using (var fileStream = new FileStream(filename, FileMode.Create))
-            {
-                await JsonSerializer.SerializeAsync(fileStream, imageResult, serializerOptions);
-                return File.Exists(filename);
-            }
-        }
-
-
-        public static async Task<bool> AutoSaveAsync(this ImageResult imageResult, string autosaveDirectory, bool includeBlueprint)
-        {
-            if (!Directory.Exists(autosaveDirectory))
-                Directory.CreateDirectory(autosaveDirectory);
-
-            var random = RandomString();
-            var imageFile = Path.Combine(autosaveDirectory, $"image-{imageResult.SchedulerOptions.Seed}-{random}.png");
-            var blueprintFile = Path.Combine(autosaveDirectory, $"image-{imageResult.SchedulerOptions.Seed}-{random}.json");
-            if (!await imageResult.Image.SaveImageFileAsync(imageFile))
-                return false;
-
-            if (includeBlueprint)
-                return await imageResult.SaveBlueprintFileAsync(blueprintFile);
-
-            return true;
-        }
-
-
-        public static SchedulerOptions ToSchedulerOptions(this SchedulerOptionsModel model)
-        {
-            return new SchedulerOptions
-            {
-                AlphaTransformType = model.AlphaTransformType,
-                BetaEnd = model.BetaEnd,
-                BetaStart = model.BetaStart,
-                BetaSchedule = model.BetaSchedule,
-                ClipSample = model.ClipSample,
-                ClipSampleRange = model.ClipSampleRange,
-                GuidanceScale = model.GuidanceScale,
-                Height = model.Height,
-                InferenceSteps = model.InferenceSteps,
-                MaximumBeta = model.MaximumBeta,
-                PredictionType = model.PredictionType,
-                SampleMaxValue = model.SampleMaxValue,
-                Seed = model.Seed,
-                StepsOffset = model.StepsOffset,
-                Width = model.Width,
-                Strength = model.Strength,
-                Thresholding = model.Thresholding,
-                TimestepSpacing = model.TimestepSpacing,
-                TrainedBetas = model.TrainedBetas,
-                TrainTimesteps = model.TrainTimesteps,
-                UseKarrasSigmas = model.UseKarrasSigmas,
-                VarianceType = model.VarianceType,
-                OriginalInferenceSteps = model.OriginalInferenceSteps,
-                SchedulerType = model.SchedulerType
-            };
-        }
-
-        public static SchedulerOptionsModel ToSchedulerOptionsModel(this SchedulerOptions model)
-        {
-            return new SchedulerOptionsModel
-            {
-                AlphaTransformType = model.AlphaTransformType,
-                BetaEnd = model.BetaEnd,
-                BetaStart = model.BetaStart,
-                BetaSchedule = model.BetaSchedule,
-                ClipSample = model.ClipSample,
-                ClipSampleRange = model.ClipSampleRange,
-                GuidanceScale = model.GuidanceScale,
-                Height = model.Height,
-                InferenceSteps = model.InferenceSteps,
-                MaximumBeta = model.MaximumBeta,
-                PredictionType = model.PredictionType,
-                SampleMaxValue = model.SampleMaxValue,
-                Seed = model.Seed,
-                StepsOffset = model.StepsOffset,
-                Width = model.Width,
-                Strength = model.Strength,
-                Thresholding = model.Thresholding,
-                TimestepSpacing = model.TimestepSpacing,
-                TrainedBetas = model.TrainedBetas,
-                TrainTimesteps = model.TrainTimesteps,
-                UseKarrasSigmas = model.UseKarrasSigmas,
-                VarianceType = model.VarianceType,
-                OriginalInferenceSteps = model.OriginalInferenceSteps,
-                SchedulerType = model.SchedulerType
-            };
-        }
-
- 
-
-        public static BatchOptionsModel ToBatchOptionsModel(this BatchOptions batchOptions)
-        {
-            return new BatchOptionsModel
-            {
-                BatchType = batchOptions.BatchType,
-                ValueTo = batchOptions.ValueTo,
-                Increment = batchOptions.Increment,
-                ValueFrom = batchOptions.ValueFrom
-            };
-        }
-
-
-        public static BatchOptions ToBatchOptions(this BatchOptionsModel batchOptionsModel)
-        {
-            return new BatchOptions
-            {
-                BatchType = batchOptionsModel.BatchType,
-                ValueTo = batchOptionsModel.ValueTo,
-                Increment = batchOptionsModel.Increment,
-                ValueFrom = batchOptionsModel.ValueFrom
-            };
-        }
 
         internal static async Task RefreshDelay(long startTime, int refreshRate, CancellationToken cancellationToken)
         {
@@ -221,12 +68,36 @@ namespace Amuse.UI
 
         public static void LogToWindow(string message)
         {
+            if (System.Windows.Application.Current is null)
+                return;
+
             System.Windows.Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Render, new Action(() =>
             {
-                (System.Windows.Application.Current.MainWindow as MainWindow).UpdateOutputLog(message);
+                if (System.Windows.Application.Current.MainWindow is MainWindow mainWindow)
+                    mainWindow.UpdateOutputLog(message);
             }));
         }
 
+
+        public static void TaskbarProgress(int value, int maximum)
+        {
+            if (System.Windows.Application.Current is null)
+                return;
+
+            var pecent = maximum == 0 ? 0 : (double)value / maximum;
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Render, new Action(() =>
+            {
+                if (System.Windows.Application.Current.MainWindow is MainWindow mainWindow)
+                {
+                    if (mainWindow.TaskbarItemInfo.ProgressState == System.Windows.Shell.TaskbarItemProgressState.None && maximum > 0)
+                        mainWindow.TaskbarItemInfo.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Normal;
+                    if (mainWindow.TaskbarItemInfo.ProgressState == System.Windows.Shell.TaskbarItemProgressState.Normal && maximum == 0)
+                        mainWindow.TaskbarItemInfo.ProgressState = System.Windows.Shell.TaskbarItemProgressState.None;
+
+                    mainWindow.TaskbarItemInfo.ProgressValue = pecent;
+                }
+            }));
+        }
 
         /// <summary>
         /// Forces the notify collection changed event.

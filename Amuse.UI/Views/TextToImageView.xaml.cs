@@ -1,19 +1,18 @@
 ﻿using Amuse.UI.Commands;
 using Amuse.UI.Models;
+using Amuse.UI.Services;
 using Microsoft.Extensions.Logging;
 using Models;
 using OnnxStack.Core.Image;
 using OnnxStack.StableDiffusion.Common;
 using OnnxStack.StableDiffusion.Config;
 using OnnxStack.StableDiffusion.Enums;
-using OnnxStack.StableDiffusion.Helpers;
 using OnnxStack.StableDiffusion.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,6 +27,7 @@ namespace Amuse.UI.Views
     public partial class TextToImageView : UserControl, INavigatable, INotifyPropertyChanged
     {
         private readonly ILogger<TextToImageView> _logger;
+        private readonly IFileService _fileService;
         private readonly IStableDiffusionService _stableDiffusionService;
 
         private bool _hasResult;
@@ -42,6 +42,7 @@ namespace Amuse.UI.Views
         private SchedulerOptionsModel _schedulerOptions;
         private BatchOptionsModel _batchOptions;
         private CancellationTokenSource _cancelationTokenSource;
+        private string _progressText;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TextToImageView"/> class.
@@ -51,6 +52,7 @@ namespace Amuse.UI.Views
             if (!DesignerProperties.GetIsInDesignMode(this))
             {
                 _logger = App.GetService<ILogger<TextToImageView>>();
+                _fileService = App.GetService<IFileService>();
                 _stableDiffusionService = App.GetService<IStableDiffusionService>();
             }
 
@@ -58,6 +60,9 @@ namespace Amuse.UI.Views
             CancelCommand = new AsyncRelayCommand(Cancel, CanExecuteCancel);
             GenerateCommand = new AsyncRelayCommand(Generate, CanExecuteGenerate);
             ClearHistoryCommand = new AsyncRelayCommand(ClearHistory, CanExecuteClearHistory);
+            SaveImageCommand = new AsyncRelayCommand<ImageResult>(_fileService.SaveAsImageFile);
+            SaveBlueprintCommand = new AsyncRelayCommand<ImageResult>(_fileService.SaveAsBlueprintFile);
+            RemoveImageCommand = new AsyncRelayCommand<ImageResult>(RemoveImage);
             PromptOptions = new PromptOptionsModel();
             SchedulerOptions = new SchedulerOptionsModel();
             BatchOptions = new BatchOptionsModel();
@@ -80,6 +85,9 @@ namespace Amuse.UI.Views
         public AsyncRelayCommand CancelCommand { get; }
         public AsyncRelayCommand GenerateCommand { get; }
         public AsyncRelayCommand ClearHistoryCommand { get; set; }
+        public AsyncRelayCommand<ImageResult> SaveImageCommand { get; set; }
+        public AsyncRelayCommand<ImageResult> SaveBlueprintCommand { get; set; }
+        public AsyncRelayCommand<ImageResult> RemoveImageCommand { get; set; }
         public ObservableCollection<ImageResult> ImageResults { get; }
 
         public StableDiffusionModelSetViewModel SelectedModel
@@ -124,6 +132,12 @@ namespace Amuse.UI.Views
             set { _progressMax = value; NotifyPropertyChanged(); }
         }
 
+        public string ProgressText
+        {
+            get { return _progressText; }
+            set { _progressText = value; NotifyPropertyChanged(); }
+        }
+
         public bool IsGenerating
         {
             get { return _isGenerating; }
@@ -166,12 +180,8 @@ namespace Amuse.UI.Views
             {
                 SelectedModel = imageResult.Model;
             }
-            PromptOptions = new PromptOptionsModel
-            {
-                Prompt = imageResult.Prompt,
-                NegativePrompt = imageResult.NegativePrompt
-            };
-            SchedulerOptions = imageResult.SchedulerOptions.ToSchedulerOptionsModel();
+            PromptOptions = PromptOptionsModel.FromPromptOptions(imageResult.PromptOptions);
+            SchedulerOptions = SchedulerOptionsModel.FromSchedulerOptions(imageResult.SchedulerOptions);
             SelectedTabIndex = 0;
         }
 
@@ -191,8 +201,8 @@ namespace Amuse.UI.Views
             IsControlsEnabled = false;
             ResultImage = null;
             var promptOptions = GetPromptOptions(PromptOptions);
-            var batchOptions = BatchOptions.ToBatchOptions();
-            var schedulerOptions = SchedulerOptions.ToSchedulerOptions();
+            var batchOptions = BatchOptionsModel.ToBatchOptions(BatchOptions);
+            var schedulerOptions = SchedulerOptionsModel.ToSchedulerOptions(SchedulerOptions);
 
             try
             {
@@ -290,6 +300,24 @@ namespace Amuse.UI.Views
             IsGenerating = false;
             IsControlsEnabled = true;
             ProgressValue = 0;
+            Utils.TaskbarProgress(0, 0);
+        }
+
+
+        /// <summary>
+        /// Removes the image.
+        /// </summary>
+        /// <param name="result">The result.</param>
+        /// <returns></returns>
+        private Task RemoveImage(ImageResult result)
+        {
+            ImageResults.Remove(result);
+            if (result == ResultImage)
+            {
+                ResultImage = null;
+                HasResult = false;
+            }
+            return Task.CompletedTask;
         }
 
 
@@ -340,7 +368,7 @@ namespace Amuse.UI.Views
                         PromptOptions.HasChanged = false;
                         SchedulerOptions.HasChanged = false;
                         var realtimePromptOptions = GetPromptOptions(PromptOptions);
-                        var realtimeSchedulerOptions = SchedulerOptions.ToSchedulerOptions();
+                        var realtimeSchedulerOptions = SchedulerOptionsModel.ToSchedulerOptions(SchedulerOptions);
 
                         realtimePromptOptions.Prompt = string.IsNullOrEmpty(realtimePromptOptions.Prompt) ? " " : realtimePromptOptions.Prompt;
                         var timestamp = Stopwatch.GetTimestamp();
@@ -379,16 +407,14 @@ namespace Amuse.UI.Views
             {
                 Image = image,
                 Model = _selectedModel,
-                Prompt = promptOptions.Prompt,
-                NegativePrompt = promptOptions.NegativePrompt,
+                PromptOptions = promptOptions,
                 PipelineType = _selectedModel.ModelSet.PipelineType,
                 DiffuserType = promptOptions.DiffuserType,
                 SchedulerOptions = schedulerOptions,
                 Elapsed = Stopwatch.GetElapsedTime(timestamp).TotalSeconds
             };
 
-            if (UISettings.ImageAutoSave)
-                await imageResult.AutoSaveAsync(Path.Combine(UISettings.ImageAutoSaveDirectory, "TextToImage"), UISettings.ImageAutoSaveBlueprint);
+            await _fileService.AutoSaveImageFile(imageResult, "TextToImage");
             return imageResult;
         }
 
@@ -410,7 +436,9 @@ namespace Amuse.UI.Views
                         ProgressMax = progress.StepMax;
 
                     ProgressValue = progress.StepValue;
+                    ProgressText = $"Step: {progress.StepValue:D2}/{progress.StepMax:D2}";
                 });
+                Utils.TaskbarProgress(progress.StepValue, progress.StepMax);
             };
         }
 
@@ -432,6 +460,7 @@ namespace Amuse.UI.Views
                     if (BatchOptions.StepsValue != progress.StepMax)
                         BatchOptions.StepsValue = progress.StepMax;
                 });
+                Utils.TaskbarProgress((progress.StepMax * (progress.BatchValue - 1)) + progress.StepValue, progress.BatchMax * progress.StepMax);
             };
         }
 
@@ -449,6 +478,7 @@ namespace Amuse.UI.Views
                     if (BatchOptions.StepsValue != progress.StepMax)
                         BatchOptions.StepsValue = progress.StepMax;
                 });
+                Utils.TaskbarProgress(progress.StepValue, progress.StepMax);
             };
         }
 

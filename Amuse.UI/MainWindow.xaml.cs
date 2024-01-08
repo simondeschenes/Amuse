@@ -2,10 +2,8 @@
 using Amuse.UI.Models;
 using Amuse.UI.Views;
 using Microsoft.Extensions.Logging;
-using Microsoft.Win32;
 using OnnxStack.ImageUpscaler.Config;
 using OnnxStack.StableDiffusion.Config;
-using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -27,9 +25,7 @@ namespace Amuse.UI
         {
             _logger = logger;
             UISettings = uiSettings;
-            SaveImageCommand = new AsyncRelayCommand<UpscaleResult>(SaveUpscaleImageFile);
-            SaveImageResultCommand = new AsyncRelayCommand<ImageResult>(SaveImageResultFile);
-            SaveBlueprintCommand = new AsyncRelayCommand<ImageResult>(SaveBlueprintFile);
+            TaskbarItemInfo = new System.Windows.Shell.TaskbarItemInfo();
             NavigateTextToImageCommand = new AsyncRelayCommand<ImageResult>(NavigateTextToImage);
             NavigateImageToImageCommand = new AsyncRelayCommand<ImageResult>(NavigateImageToImage);
             NavigateImageInpaintCommand = new AsyncRelayCommand<ImageResult>(NavigateImageInpaint);
@@ -50,9 +46,6 @@ namespace Amuse.UI
         public AsyncRelayCommand WindowRestoreCommand { get; }
         public AsyncRelayCommand WindowMaximizeCommand { get; }
         public AsyncRelayCommand WindowCloseCommand { get; }
-        public AsyncRelayCommand<UpscaleResult> SaveImageCommand { get; }
-        public AsyncRelayCommand<ImageResult> SaveImageResultCommand { get; }
-        public AsyncRelayCommand<ImageResult> SaveBlueprintCommand { get; }
         public AsyncRelayCommand<ImageResult> NavigateTextToImageCommand { get; }
         public AsyncRelayCommand<ImageResult> NavigateImageToImageCommand { get; }
         public AsyncRelayCommand<ImageResult> NavigateImageInpaintCommand { get; }
@@ -119,107 +112,6 @@ namespace Amuse.UI
             PaintToImage = 3,
             VideoToVideo = 4,
             Upscaler = 5
-        }
-
-
-
-        private async Task SaveImageResultFile(ImageResult imageResult)
-        {
-            try
-            {
-                var filename = GetSaveFilename($"image-{imageResult.SchedulerOptions.Seed}");
-                if (string.IsNullOrEmpty(filename))
-                    return;
-
-                var result = await imageResult.Image.SaveImageFileAsync(filename);
-                if (!result)
-                    _logger.LogError("Error saving image");
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error saving image");
-            }
-        }
-
-
-        private async Task SaveUpscaleImageFile(UpscaleResult imageResult)
-        {
-            try
-            {
-                var filename = GetSaveFilename($"image-{imageResult.Info.OutputWidth}x{imageResult.Info.OutputHeight}");
-                if (string.IsNullOrEmpty(filename))
-                    return;
-
-                var result = await imageResult.Image.SaveImageFileAsync(filename);
-                if (!result)
-                    _logger.LogError("Error saving image");
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error saving image");
-            }
-        }
-
-
-        private async Task SaveBlueprintFile(ImageResult imageResult)
-        {
-            try
-            {
-                var saveFileDialog = new SaveFileDialog
-                {
-                    Title = Title,
-                    Filter = "json files (*.json)|*.json",
-                    DefaultExt = "json",
-                    AddExtension = true,
-                    RestoreDirectory = true,
-                    InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
-                    FileName = $"image-{imageResult.SchedulerOptions.Seed}.json"
-                };
-
-                var dialogResult = saveFileDialog.ShowDialog();
-                if (dialogResult == false)
-                {
-                    _logger.LogInformation("Saving image blueprint canceled");
-                    return;
-                }
-
-              
-
-                var result = await imageResult.SaveBlueprintFileAsync(saveFileDialog.FileName);
-                if (!result)
-                    _logger.LogError("Error saving image blueprint");
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error saving image blueprint");
-            }
-        }
-
-
-        private string GetSaveFilename(string initialFilename)
-        {
-            var saveFileDialog = new SaveFileDialog
-            {
-                Title = Title,
-                Filter = "png files (*.png)|*.png",
-                DefaultExt = "png",
-                AddExtension = true,
-                RestoreDirectory = true,
-                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
-                FileName = $"{initialFilename}.png"
-            };
-
-            var dialogResult = saveFileDialog.ShowDialog();
-            if (dialogResult == false)
-            {
-                _logger.LogInformation("Saving image canceled");
-                return null;
-            }
-
-            return saveFileDialog.FileName;
         }
 
 
