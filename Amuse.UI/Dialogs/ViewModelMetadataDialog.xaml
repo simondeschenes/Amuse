@@ -33,25 +33,22 @@
             <DockPanel>
                 <StackPanel DockPanel.Dock="Left" Margin="0,0,4,0" Width="140">
                     <TextBlock Text="Author" FontWeight="DemiBold" Margin="0,15,0,0" Opacity=".7"/>
-                    <TextBlock Text="{Binding ModelTemplate.Author}"  />
+                    <TextBox Text="{Binding ModelTemplate.Author}" Style="{StaticResource TextBlockStyle}" />
                 </StackPanel>
                 <StackPanel Margin="0,0,4,0" >
                     <TextBlock Text="Website" FontWeight="DemiBold" Margin="0,15,0,0" Opacity=".7"/>
-                    <TextBlock Text="{Binding ModelTemplate.Website, TargetNullValue=Unknown}"  />
+                    <TextBox Text="{Binding ModelTemplate.Website, TargetNullValue=Unknown}"  Style="{StaticResource TextBlockStyle}"/>
                 </StackPanel>
             </DockPanel>
 
-          
-          
-
             <StackPanel>
                 <TextBlock Text="Description" FontWeight="DemiBold" Margin="0,15,0,0" Opacity=".7"/>
-                <TextBlock Text="{Binding ModelTemplate.Description, TargetNullValue=Unknown}" TextWrapping="Wrap"   />
+                <TextBox Text="{Binding ModelTemplate.Description, TargetNullValue=Unknown}" TextWrapping="Wrap"  Style="{StaticResource TextBlockStyle}" />
             </StackPanel>
 
             <StackPanel>
                 <TextBlock Text="Repository Clone" FontWeight="DemiBold" Margin="0,15,0,0" Opacity=".7"/>
-                <TextBlock Text="{Binding ModelTemplate.Repository, TargetNullValue=Unknown}"  />
+                <TextBox Text="{Binding ModelTemplate.Repository, TargetNullValue=Unknown}" Style="{StaticResource TextBlockStyle}" />
             </StackPanel>
 
             <TextBlock Text="Direct Download Files" FontWeight="DemiBold" Margin="0,15,0,0" Opacity=".7"/>
@@ -60,7 +57,7 @@
                     <DataTemplate>
                         <StackPanel Tag="{Binding Path=(ItemsControl.AlternationIndex), RelativeSource={RelativeSource TemplatedParent}}" Orientation="Horizontal">
                             <TextBlock Text="{Binding Path=Tag, RelativeSource={RelativeSource AncestorType=StackPanel}, StringFormat={}{0}.}" Opacity=".8"/>
-                            <TextBlock Text="{Binding}" Margin="3,0,0,0" />
+                            <TextBox Text="{Binding .}" Margin="3,0,0,0" Style="{StaticResource TextBlockStyle}"/>
                         </StackPanel>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>

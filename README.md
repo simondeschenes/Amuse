@@ -5,7 +5,7 @@
 ![GitHub all releases](https://img.shields.io/github/downloads/Stackyard-AI/Amuse/total)[![Download Amuse](https://img.shields.io/github/v/release/Stackyard-AI/Amuse?label=Download&style=flat-square)](https://github.com/Stackyard-AI/Amuse/releases/download/v1.0.0/Amuse.zip)![GitHub last commit (by committer)](https://img.shields.io/github/last-commit/Stackyard-AI/Amuse)
 [![Discord](https://img.shields.io/discord/1189738352715513967?label=Discord&)](https://discord.gg/hThP5VRuHA)
 [![YouTube Channel Views](https://img.shields.io/youtube/channel/views/UCIBJC3QFZm0ocvove8oqmSg)](https://www.youtube.com/@StackyardAI)
-### **[Discord](https://discord.gg/hThP5VRuHA)**  | **[Youtube](https://www.youtube.com/@StackyardAI)** | **[Download](https://github.com/Stackyard-AI/Amuse/releases/download/v1.0.0/Amuse.zip)**
+### **[Discord](https://discord.gg/hThP5VRuHA)**  | **[Youtube](https://www.youtube.com/@StackyardAI)** | **[Download](https://github.com/Stackyard-AI/Amuse/releases/download/v1.1.0/Amuse_v1.1.0.zip)**
 
 __________________________
 
@@ -16,6 +16,8 @@ Amuse is a professional and intuitive Windows UI for harnessing the capabilities
 Amuse, written entirely in .NET, operates locally with a dependency-free architecture, providing a secure and private environment and eliminating the need for intricate setups or external dependencies such as Python. Unlike solutions reliant on external APIs, Amuse functions independently, ensuring privacy by operating offline. External connections are limited to the essential process of downloading models, preserving the security of your data and shielding your creative endeavors from external influences.
 
 ### Experience the power of AI without compromise
+
+## >> [Download Amuse v1.1.0](https://github.com/Stackyard-AI/Amuse/releases/download/v1.1.0/Amuse_v1.1.0.zip) <<
 __________________________
 
 ## Features
