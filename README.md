@@ -29,7 +29,9 @@ __________________________
   
 - **Image Inpaint:** Effortlessly fill in missing or damaged parts of images with intelligent inpainting.
 
-- **Model Management:** Install, download and manage all your models in a simple user interafce.
+- **Video To Video:** Easily apply stable diffusion to each frame of your videos.
+
+- **Model Management:** Install, download and manage all your models in a simple user interaface.
 
 Amuse provides compatibility with a diverse set of models, including 
 - StableDiffusion 1.5
@@ -57,6 +59,11 @@ Amuse isn't just a tool; it's a gateway to a new realm of AI-enhanced creativity
 
 Amuse is not about building or deploying; it's about bringing AI directly into your creative process. Elevate your artistic endeavors with Amuse, the AI-augmented companion for visual storytellers and digital artists.
 __________________________
+
+## Video To Video
+VideoToVideo ia an innovative feature within Amuse that takes your video editing experience to new heights. With VideoToVideo, you can effortlessly apply stable diffusion to each frame of your video, resulting in mesmerizing transformations that elevate your content to a whole new level.
+
+https://github.com/Stackyard-AI/Amuse/assets/4353684/2d409874-5ebc-4462-9bb5-60402ee17af9.mp4
 
 ## Paint To Image
 Paint To Image is a cutting-edge image processing technique designed to revolutionize the creative process. This method allows users to paint on a canvas, transforming their artistic expressions into high-quality images while preserving the unique style and details of the original artwork. Harnessing the power of stable diffusion, Paint To Image opens up a realm of possibilities for artistic endeavors, enabling users to seamlessly translate their creative brushstrokes into visually stunning images. Whether it's digital art creation, stylized rendering, or other image manipulation tasks, Paint To Image delivers a versatile and intuitive solution for transforming painted canvases into captivating digital masterpieces.
