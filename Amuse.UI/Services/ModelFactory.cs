@@ -42,11 +42,11 @@ namespace Amuse.UI.Services
                 SampleSize = modelTemplate.SampleSize,
                 PipelineType = modelTemplate.PipelineType,
                 Diffusers = modelTemplate.DiffuserTypes.ToList(),
+                TokenizerLength = modelTemplate.TokenizerLength,
 
                 ScaleFactor = 0.18215f,
                 TokenizerLimit = 77,
                 PadTokenId = 49407,
-                TokenizerLength = 768,
                 Tokenizer2Length = 1280,
                 BlankTokenId = 49407,
                 TokenizerType = TokenizerType.One,
