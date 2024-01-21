@@ -149,18 +149,6 @@ namespace Amuse.UI.UserControls
         }
 
 
-
-        public BitmapSource OverlayImage
-        {
-            get { return (BitmapSource)GetValue(OverlayImageProperty); }
-            set { SetValue(OverlayImageProperty, value); }
-        }
-        public static readonly DependencyProperty OverlayImageProperty =
-            DependencyProperty.Register("OverlayImage", typeof(BitmapSource), typeof(ImageInputControl));
-
-
-
-
         /// <summary>
         /// Loads the image.
         /// </summary>

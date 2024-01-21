@@ -4,7 +4,12 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" Name="UI">
-    <UniformGrid DataContext="{Binding ElementName=UI}" Columns="1">
+    <UserControl.Resources>
+        <Storyboard x:Key="SpinAnimation" >
+            <DoubleAnimation Storyboard.TargetName="SpinTarget" Storyboard.TargetProperty="(Image.RenderTransform).(RotateTransform.Angle)" To="360" Duration="0:0:1" RepeatBehavior="Forever" />
+        </Storyboard>
+    </UserControl.Resources>
+    <Grid DataContext="{Binding ElementName=UI}" x:Name="SpinTarget" RenderTransformOrigin="0.5,0.5">
         <TextBlock Text="{Binding Icon}" FontSize="{Binding Size}" Foreground="{Binding Color}" VerticalAlignment="Center" HorizontalAlignment="Center" >
             <TextBlock.Style>
                 <Style TargetType="{x:Type TextBlock}">
@@ -28,5 +33,8 @@
                 </Style>
             </TextBlock.Style>
         </TextBlock>
-    </UniformGrid>
+        <Grid.RenderTransform>
+            <RotateTransform Angle="0"  />
+        </Grid.RenderTransform>
+    </Grid>
 </UserControl>

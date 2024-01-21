@@ -49,11 +49,6 @@ namespace Amuse.UI.Views
         private BatchOptionsModel _batchOptions;
         private CancellationTokenSource _cancelationTokenSource;
         private string _progressText;
-        private bool _isControlImageProcessingEnabled;
-        private bool _isControlImageProcessingPreviewEnabled;
-        private BitmapSource _inputControlImagePreviewCache;
-        private BitmapSource _inputControlImagePreview;
-
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageToImageView"/> class.
@@ -140,7 +135,7 @@ namespace Amuse.UI.Views
         public ImageInput InputImage
         {
             get { return _inputImage; }
-            set { _inputImage = value; NotifyPropertyChanged(); InputControlImagePreview = null; _inputControlImagePreviewCache = null; }
+            set { _inputImage = value; NotifyPropertyChanged(); }
         }
 
         public int ProgressValue
@@ -191,34 +186,6 @@ namespace Amuse.UI.Views
             set { _isControlsEnabled = value; NotifyPropertyChanged(); }
         }
 
-        public bool IsControlImageProcessingEnabled
-        {
-            get { return _isControlImageProcessingEnabled; }
-            set
-            {
-                _isControlImageProcessingEnabled = value;
-                InputControlImagePreview = _isControlImageProcessingEnabled && _isControlImageProcessingPreviewEnabled ? _inputControlImagePreviewCache : null;
-                NotifyPropertyChanged();
-            }
-        }
-
-        public bool IsControlImageProcessingPreviewEnabled
-        {
-            get { return _isControlImageProcessingPreviewEnabled; }
-            set
-            {
-                _isControlImageProcessingPreviewEnabled = value;
-                InputControlImagePreview = _isControlImageProcessingEnabled && _isControlImageProcessingPreviewEnabled ? _inputControlImagePreviewCache : null;
-                NotifyPropertyChanged();
-            }
-        }
-
-        public BitmapSource InputControlImagePreview
-        {
-            get { return _inputControlImagePreview; }
-            set { _inputControlImagePreview = value; NotifyPropertyChanged(); }
-        }
-
 
         /// <summary>
         /// Called on Navigate
@@ -262,7 +229,7 @@ namespace Amuse.UI.Views
             IsGenerating = true;
             IsControlsEnabled = false;
             ResultImage = null;
-            var promptOptions = await GetPromptOptionsAsync(PromptOptions, InputImage);
+            var promptOptions = await GetPromptOptionsAsync(PromptOptions, SchedulerOptions, InputImage);
             var batchOptions = BatchOptionsModel.ToBatchOptions(BatchOptions);
             var schedulerOptions = SchedulerOptionsModel.ToSchedulerOptions(SchedulerOptions);
 
@@ -432,7 +399,7 @@ namespace Amuse.UI.Views
                     {
                         PromptOptions.HasChanged = false;
                         SchedulerOptions.HasChanged = false;
-                        var realtimePromptOptions = await GetPromptOptionsAsync(PromptOptions, InputImage);
+                        var realtimePromptOptions = await GetPromptOptionsAsync(PromptOptions, SchedulerOptions, InputImage);
                         var realtimeSchedulerOptions = SchedulerOptionsModel.ToSchedulerOptions(SchedulerOptions);
 
                         var timestamp = Stopwatch.GetTimestamp();
@@ -444,7 +411,7 @@ namespace Amuse.UI.Views
             }
         }
 
-        private async Task<PromptOptions> GetPromptOptionsAsync(PromptOptionsModel promptOptionsModel, ImageInput imageInput)
+        private async Task<PromptOptions> GetPromptOptionsAsync(PromptOptionsModel promptOptionsModel, SchedulerOptionsModel schedulerOptionsModel, ImageInput imageInput)
         {
             var imageBytes = imageInput.Image.GetImageBytes();
             if (_selectedModel.IsControlNet)
@@ -457,17 +424,9 @@ namespace Amuse.UI.Views
                 if (controlNetDiffuserType == DiffuserType.ControlNetImage)
                     inputImage = new InputImage(imageBytes);
 
-                InputControlImagePreview = null;
-                _inputControlImagePreviewCache = null;
                 var controlImage = new InputImage(imageBytes);
-                if (IsControlImageProcessingEnabled && _selectedControlNetModel.HasAnnotator)
-                {
+                if (_selectedControlNetModel.HasAnnotator && schedulerOptionsModel.IsControlImageProcessingEnabled)
                     controlImage = await _controlNetImageService.PrepareInputImage(_selectedControlNetModel.ModelSet, controlImage, _schedulerOptions.Height, _schedulerOptions.Width);
-                    _inputControlImagePreviewCache = Utils.GetImage(controlImage.Image);
-                    if (IsControlImageProcessingPreviewEnabled)
-                        InputControlImagePreview = _inputControlImagePreviewCache;
-                }
-
 
                 return new PromptOptions
                 {

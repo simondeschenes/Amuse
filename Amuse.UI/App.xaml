@@ -22,9 +22,6 @@
         <BitmapImage x:Key="PlaceholderImageModel" UriSource="/Images/Model.png" />
         <BitmapImage x:Key="PlaceholderImageUpscale" UriSource="/Images/Upscale.png" />
 
-        <Storyboard x:Key="LoadingAnimation">
-            <DoubleAnimation Storyboard.TargetProperty="(Image.RenderTransform).(RotateTransform.Angle)" To="360" Duration="0:0:1" RepeatBehavior="Forever" />
-        </Storyboard>
         <FontFamily x:Key="FontAwesomeBrands">pack://application:,,,/Fonts/fa-brands-400.ttf#Font Awesome 5 Brands Regular</FontFamily>
         <FontFamily x:Key="FontAwesomeDuotone">pack://application:,,,/Fonts/fa-duotone-900.ttf#Font Awesome 5 Duotone Solid</FontFamily>
         <FontFamily x:Key="FontAwesomeLight">pack://application:,,,/Fonts/fa-light-300.ttf#Font Awesome 5 Pro Light</FontFamily>

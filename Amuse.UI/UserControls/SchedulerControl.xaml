@@ -270,8 +270,8 @@
 
                     <DockPanel DockPanel.Dock="Bottom" Visibility="{Binding SelectedModel.IsControlNet, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Collapsed}">
                         <UniformGrid Columns="2" Margin="0,0,0,10" >
-                            <CheckBox IsChecked="{Binding IsControlImageProcessingEnabled}" Content="Process Input Image" />
-                            <CheckBox IsChecked="{Binding IsControlImageProcessingPreviewEnabled}" IsEnabled="{Binding IsControlImageProcessingEnabled}" Content="Preview Processed Input" Margin="5,0,0,0" />
+                            <CheckBox IsChecked="{Binding SchedulerOptions.IsControlImageProcessingEnabled}" Content="Process Input Image" />
+                            <!--<CheckBox IsChecked="{Binding IsControlImageProcessingPreviewEnabled}" IsEnabled="{Binding IsControlImageProcessingEnabled}" Content="Preview Processed Input" Margin="5,0,0,0" />-->
                             <UniformGrid.Style>
                                 <Style TargetType="{x:Type UniformGrid}">
                                     <Setter Property="Visibility" Value="Collapsed" />

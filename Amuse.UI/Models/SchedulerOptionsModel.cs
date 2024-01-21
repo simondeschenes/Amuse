@@ -35,6 +35,7 @@ namespace Amuse.UI.Models
         private SchedulerType _schedulerType;
         private bool _hasChanged;
         private float _conditioningScale = 1;
+        private bool _isControlImageProcessingEnabled;
 
         /// <summary>
         /// Gets or sets the height.
@@ -209,6 +210,13 @@ namespace Amuse.UI.Models
             set { _conditioningScale = value; NotifyPropertyChanged(); }
         }
 
+        public bool IsControlImageProcessingEnabled
+        {
+            get { return _isControlImageProcessingEnabled; }
+            set { _isControlImageProcessingEnabled = value; NotifyPropertyChanged(); }
+        }
+
+
         public bool HasChanged
         {
             get { return _hasChanged; }
@@ -245,7 +253,7 @@ namespace Amuse.UI.Models
                 OriginalInferenceSteps = model.OriginalInferenceSteps,
                 SchedulerType = model.SchedulerType,
                 ConditioningScale = model.ConditioningScale,
-               // IsControlImageProcessingEnabled = model.IsControlImageProcessingEnabled,
+                IsControlImageProcessingEnabled = false // Amuse will handle pre-processing not OnnxStack
             };
         }
 
@@ -277,7 +285,6 @@ namespace Amuse.UI.Models
                 VarianceType = model.VarianceType,
                 OriginalInferenceSteps = model.OriginalInferenceSteps,
                 SchedulerType = model.SchedulerType,
-               // IsControlImageProcessingEnabled = model.IsControlImageProcessingEnabled,
                 ConditioningScale = model.ConditioningScale,
             };
         }

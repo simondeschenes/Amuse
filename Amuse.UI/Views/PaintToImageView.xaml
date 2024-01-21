@@ -21,7 +21,7 @@
             </UniformGrid>
             <DockPanel>
                 <userControls:ModelPickerControl DockPanel.Dock="Top"
-                    UISettings="{Binding UISettings}"
+                    Settings="{Binding UISettings}"
                     SupportedDiffusers="{Binding SupportedDiffusers}"
                     IsEnabled="{Binding IsGenerating, Converter={StaticResource InverseBoolConverter}}"
                     SelectedModel="{Binding SelectedModel, Mode=TwoWay}"/>

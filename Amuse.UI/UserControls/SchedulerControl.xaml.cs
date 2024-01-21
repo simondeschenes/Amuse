@@ -142,31 +142,6 @@ namespace Amuse.UI.UserControls
         }
 
 
-
-
-        public bool IsControlImageProcessingEnabled
-        {
-            get { return (bool)GetValue(IsControlImageProcessingEnabledProperty); }
-            set { SetValue(IsControlImageProcessingEnabledProperty, value); }
-        }
-
-        public static readonly DependencyProperty IsControlImageProcessingEnabledProperty =
-            DependencyProperty.Register("IsControlImageProcessingEnabled", typeof(bool), typeof(SchedulerControl));
-
-
-
-
-        public bool IsControlImageProcessingPreviewEnabled
-        {
-            get { return (bool)GetValue(IsControlImageProcessingPreviewEnabledProperty); }
-            set { SetValue(IsControlImageProcessingPreviewEnabledProperty, value); }
-        }
-        public static readonly DependencyProperty IsControlImageProcessingPreviewEnabledProperty =
-            DependencyProperty.Register("IsControlImageProcessingPreviewEnabled", typeof(bool), typeof(SchedulerControl));
-
-
-
-
         /// <summary>
         /// Called when the selected model has changed.
         /// </summary>
