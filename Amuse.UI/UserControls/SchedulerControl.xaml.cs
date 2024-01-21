@@ -69,6 +69,20 @@ namespace Amuse.UI.UserControls
             }));
 
 
+
+
+        public ControlNetModelSetViewModel SelectedControlNetModel
+        {
+            get { return (ControlNetModelSetViewModel)GetValue(SelectedControlNetModelProperty); }
+            set { SetValue(SelectedControlNetModelProperty, value); }
+        }
+
+        public static readonly DependencyProperty SelectedControlNetModelProperty =
+            DependencyProperty.Register("SelectedControlNetModel", typeof(ControlNetModelSetViewModel), typeof(SchedulerControl));
+
+
+
+
         /// <summary>
         /// Gets or sets the type of the diffuser.
         /// </summary>
@@ -129,6 +143,30 @@ namespace Amuse.UI.UserControls
 
 
 
+
+        public bool IsControlImageProcessingEnabled
+        {
+            get { return (bool)GetValue(IsControlImageProcessingEnabledProperty); }
+            set { SetValue(IsControlImageProcessingEnabledProperty, value); }
+        }
+
+        public static readonly DependencyProperty IsControlImageProcessingEnabledProperty =
+            DependencyProperty.Register("IsControlImageProcessingEnabled", typeof(bool), typeof(SchedulerControl));
+
+
+
+
+        public bool IsControlImageProcessingPreviewEnabled
+        {
+            get { return (bool)GetValue(IsControlImageProcessingPreviewEnabledProperty); }
+            set { SetValue(IsControlImageProcessingPreviewEnabledProperty, value); }
+        }
+        public static readonly DependencyProperty IsControlImageProcessingPreviewEnabledProperty =
+            DependencyProperty.Register("IsControlImageProcessingPreviewEnabled", typeof(bool), typeof(SchedulerControl));
+
+
+
+
         /// <summary>
         /// Called when the selected model has changed.
         /// </summary>
@@ -156,7 +194,8 @@ namespace Amuse.UI.UserControls
                 GuidanceScale = SchedulerDefaults.Guidance,
                 InferenceSteps = SchedulerDefaults.Steps,
                 Width = SelectedModel.ModelSet.SampleSize,
-                Height = SelectedModel.ModelSet.SampleSize
+                Height = SelectedModel.ModelSet.SampleSize,
+                Strength = SelectedModel.IsControlNet ? 1 : 0.75f,
             };
         }
 

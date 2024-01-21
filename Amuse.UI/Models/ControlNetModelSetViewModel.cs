@@ -1,17 +1,17 @@
 ﻿using OnnxStack.StableDiffusion.Config;
 using OnnxStack.StableDiffusion.Enums;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 
 namespace Amuse.UI.Models
 {
-    public class StableDiffusionModelSetViewModel : INotifyPropertyChanged
+    public class ControlNetModelSetViewModel : INotifyPropertyChanged
     {
         private string _name;
         private bool _isLoaded;
         private bool _isLoading;
-        private StableDiffusionModelSet _modelSet;
 
         public string Name
         {
@@ -33,14 +33,11 @@ namespace Amuse.UI.Models
             set { _isLoading = value; NotifyPropertyChanged(); }
         }
 
-        public StableDiffusionModelSet ModelSet
-        {
-            get { return _modelSet; }
-            set { _modelSet = value; NotifyPropertyChanged(); }
-        }
+        public ControlNetType Type => ModelSet.Type;
 
-        [JsonIgnore]
-        public bool IsControlNet => ModelSet.Diffusers.Contains(DiffuserType.ControlNet);
+        public bool HasAnnotator => ModelSet.ModelConfigurations.Any(x => x.Type == OnnxStack.Core.Config.OnnxModelType.Annotation);
+
+        public ControlNetModelSet ModelSet { get; set; }
 
         #region INotifyPropertyChanged
         public event PropertyChangedEventHandler PropertyChanged;

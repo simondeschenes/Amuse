@@ -42,7 +42,7 @@ namespace Amuse.UI.Dialogs
             SaveCommand = new AsyncRelayCommand(Save, CanExecuteSave);
             CancelCommand = new AsyncRelayCommand(Cancel);
             ModelTemplates = _settings.Templates.Where(x => !x.IsUserTemplate && x.Category == ModelTemplateCategory.Upscaler).ToList();
-            InvalidOptions = _settings.Templates.Where(x => x.IsUserTemplate).Select(x => x.Name.ToLower()).ToList();
+            _invalidOptions = _settings.GetModelNames();
             InitializeComponent();
         }
 
@@ -60,11 +60,6 @@ namespace Amuse.UI.Dialogs
         {
             get { return _modelTemplate; }
             set { _modelTemplate = value; NotifyPropertyChanged(); CreateModelSet(); }
-        }
-        public List<string> InvalidOptions
-        {
-            get { return _invalidOptions; }
-            set { _invalidOptions = value; NotifyPropertyChanged(); }
         }
 
         public string ModelName
@@ -135,7 +130,7 @@ namespace Amuse.UI.Dialogs
 
             // Validate
             if (_enableNameSelection)
-                ValidationResults.Add(new ValidationResult("Name", !InvalidOptions.Contains(_modelName.ToLower()) && _modelName.Length > 2 && _modelName.Length < 50));
+                ValidationResults.Add(new ValidationResult("Name", !_invalidOptions.Contains(_modelName.ToLower()) && _modelName.Length > 2 && _modelName.Length < 50));
 
             foreach (var validationResult in _modelSetResult.ModelConfigurations.Select(x => new ValidationResult(x.Type.ToString(), File.Exists(x.OnnxModelPath))))
             {

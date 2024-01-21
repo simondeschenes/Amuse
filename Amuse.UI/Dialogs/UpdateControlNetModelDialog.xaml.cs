@@ -1,61 +1,52 @@
-﻿using Amuse.UI.Commands;
+﻿using OnnxStack.StableDiffusion.Config;
+using Amuse.UI.Commands;
 using Amuse.UI.Models;
-using Microsoft.Extensions.Logging;
-using OnnxStack.StableDiffusion.Config;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
+using System;
 
 namespace Amuse.UI.Dialogs
 {
     /// <summary>
-    /// Interaction logic for UpdateUpscaleModelSettingsDialog.xaml
+    /// Interaction logic for UpdateControlNetModelDialog.xaml
     /// </summary>
-    public partial class UpdateUpscaleModelSettingsDialog : Window, INotifyPropertyChanged
+    public partial class UpdateControlNetModelDialog : Window, INotifyPropertyChanged
     {
-        private readonly ILogger<UpdateUpscaleModelSettingsDialog> _logger;
-
         private List<string> _invalidOptions;
-        private AmuseSettings _uiSettings;
-        private UpdateUpscaleModelSetViewModel _updateModelSet;
-        private UpscaleModelSet _modelSetResult;
+        private AmuseSettings _settings;
+        private ControlNetModelSet _modelSetResult;
+        private UpdateControlNetModelSetViewModel _updateModelSet;
         private string _validationError;
 
-        public UpdateUpscaleModelSettingsDialog(AmuseSettings uiSettings, ILogger<UpdateUpscaleModelSettingsDialog> logger)
+        public UpdateControlNetModelDialog(AmuseSettings settings)
         {
-            _logger = logger;
-            _uiSettings = uiSettings;
+            _settings = settings;
             WindowCloseCommand = new AsyncRelayCommand(WindowClose);
             WindowRestoreCommand = new AsyncRelayCommand(WindowRestore);
             WindowMinimizeCommand = new AsyncRelayCommand(WindowMinimize);
             WindowMaximizeCommand = new AsyncRelayCommand(WindowMaximize);
             SaveCommand = new AsyncRelayCommand(Save, CanExecuteSave);
             CancelCommand = new AsyncRelayCommand(Cancel, CanExecuteCancel);
-            _invalidOptions = _uiSettings.GetModelNames();
+            _invalidOptions = _settings.GetModelNames();
             InitializeComponent();
         }
 
-        public AmuseSettings UISettings => _uiSettings;
         public AsyncRelayCommand WindowMinimizeCommand { get; }
         public AsyncRelayCommand WindowRestoreCommand { get; }
         public AsyncRelayCommand WindowMaximizeCommand { get; }
         public AsyncRelayCommand WindowCloseCommand { get; }
+        public AmuseSettings Settings => _settings;
         public AsyncRelayCommand SaveCommand { get; }
         public AsyncRelayCommand CancelCommand { get; }
 
-        public UpdateUpscaleModelSetViewModel UpdateModelSet
+        public UpdateControlNetModelSetViewModel UpdateModelSet
         {
             get { return _updateModelSet; }
             set { _updateModelSet = value; NotifyPropertyChanged(); }
-        }
-
-        public UpscaleModelSet ModelSetResult
-        {
-            get { return _modelSetResult; }
         }
 
         public string ValidationError
@@ -64,48 +55,70 @@ namespace Amuse.UI.Dialogs
             set { _validationError = value; NotifyPropertyChanged(); }
         }
 
-
-        public bool ShowDialog(UpscaleModelSet modelSet)
+        public ControlNetModelSet ModelSetResult
         {
-            _invalidOptions.Remove(modelSet.Name);
-            UpdateModelSet = UpdateUpscaleModelSetViewModel.FromModelSet(modelSet);
-            return ShowDialog() ?? false;
+            get { return _modelSetResult; }
         }
 
-        private Task Save()
+
+        public bool ShowDialog(ControlNetModelSet modelSet)
         {
-            _modelSetResult = UpdateUpscaleModelSetViewModel.ToModelSet(_updateModelSet);
+            _invalidOptions.Remove(modelSet.Name);
+            UpdateModelSet = UpdateControlNetModelSetViewModel.FromModelSet(modelSet);
+            return base.ShowDialog() ?? false;
+        }
+
+        private bool Validate()
+        {
+            if (_updateModelSet == null)
+                return false;
+
+            _modelSetResult = UpdateControlNetModelSetViewModel.ToModelSet(_updateModelSet);
+            if (_modelSetResult == null)
+                return false;
+
             if (_invalidOptions.Contains(_modelSetResult.Name))
             {
                 ValidationError = $"Model with name '{_modelSetResult.Name}' already exists";
-                return Task.CompletedTask;
+                return false;
             }
 
             foreach (var modelFile in _modelSetResult.ModelConfigurations)
             {
-                modelFile.DeviceId = null;
-                modelFile.ExecutionProvider = null;
-                modelFile.ExecutionMode = null;
-                modelFile.InterOpNumThreads = null;
-                modelFile.IntraOpNumThreads = null;
+                if (!File.Exists(modelFile.OnnxModelPath))
+                {
+                    ValidationError = $"'{modelFile.Type}' model file not found";
+                    return false;
+                }
             }
+            ValidationError = null;
+            return true;
+        }
+
+        private Task Save()
+        {
+
+            if (!Validate())
+                return Task.CompletedTask;
 
             DialogResult = true;
             return Task.CompletedTask;
         }
 
+
         private bool CanExecuteSave()
         {
-            return true;
+            return Validate();
         }
+
 
         private Task Cancel()
         {
             _modelSetResult = null;
-            UpdateModelSet = null;
             DialogResult = false;
             return Task.CompletedTask;
         }
+
 
         private bool CanExecuteCancel()
         {

@@ -78,6 +78,7 @@
                           EditingMode="{Binding MaskEditingMode}" 
                           DefaultDrawingAttributes="{Binding MaskAttributes}" 
                           Visibility="{Binding IsMaskEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    <Image Source="{Binding OverlayImage}" Stretch="Uniform" />
                 </Grid>
             </Viewbox>
 

@@ -2,6 +2,7 @@
 using Amuse.UI.Models;
 using Amuse.UI.Services;
 using OnnxStack.Core;
+using System;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -146,6 +147,18 @@ namespace Amuse.UI.UserControls
                 UpdateMaskAttributes();
             }
         }
+
+
+
+        public BitmapSource OverlayImage
+        {
+            get { return (BitmapSource)GetValue(OverlayImageProperty); }
+            set { SetValue(OverlayImageProperty, value); }
+        }
+        public static readonly DependencyProperty OverlayImageProperty =
+            DependencyProperty.Register("OverlayImage", typeof(BitmapSource), typeof(ImageInputControl));
+
+
 
 
         /// <summary>

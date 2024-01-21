@@ -34,6 +34,7 @@ namespace Amuse.UI.Models
         private int _originalInferenceSteps = 100;
         private SchedulerType _schedulerType;
         private bool _hasChanged;
+        private float _conditioningScale = 1;
 
         /// <summary>
         /// Gets or sets the height.
@@ -202,6 +203,12 @@ namespace Amuse.UI.Models
             set { _schedulerType = value; NotifyPropertyChanged(); }
         }
 
+        public float ConditioningScale
+        {
+            get { return _conditioningScale; }
+            set { _conditioningScale = value; NotifyPropertyChanged(); }
+        }
+
         public bool HasChanged
         {
             get { return _hasChanged; }
@@ -236,7 +243,9 @@ namespace Amuse.UI.Models
                 UseKarrasSigmas = model.UseKarrasSigmas,
                 VarianceType = model.VarianceType,
                 OriginalInferenceSteps = model.OriginalInferenceSteps,
-                SchedulerType = model.SchedulerType
+                SchedulerType = model.SchedulerType,
+                ConditioningScale = model.ConditioningScale,
+               // IsControlImageProcessingEnabled = model.IsControlImageProcessingEnabled,
             };
         }
 
@@ -267,7 +276,9 @@ namespace Amuse.UI.Models
                 UseKarrasSigmas = model.UseKarrasSigmas,
                 VarianceType = model.VarianceType,
                 OriginalInferenceSteps = model.OriginalInferenceSteps,
-                SchedulerType = model.SchedulerType
+                SchedulerType = model.SchedulerType,
+               // IsControlImageProcessingEnabled = model.IsControlImageProcessingEnabled,
+                ConditioningScale = model.ConditioningScale,
             };
         }
 

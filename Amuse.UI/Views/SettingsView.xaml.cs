@@ -1,9 +1,12 @@
 ﻿using Amuse.UI.Commands;
+using Amuse.UI.Dialogs;
 using Amuse.UI.Models;
+using Amuse.UI.Services;
 using Microsoft.Extensions.Logging;
 using OnnxStack.Core.Config;
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
@@ -17,6 +20,8 @@ namespace Amuse.UI.Views
     public partial class SettingsView : UserControl, INavigatable, INotifyPropertyChanged
     {
         private readonly ILogger<SettingsView> _logger;
+        private readonly IDialogService _dialogService;
+        private ControlNetModelSetViewModel _selectedControlNetModel;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SettingsView"/> class.
@@ -24,13 +29,24 @@ namespace Amuse.UI.Views
         public SettingsView()
         {
             if (!DesignerProperties.GetIsInDesignMode(this))
+            {
                 _logger = App.GetService<ILogger<SettingsView>>();
+                _dialogService = App.GetService<IDialogService>();
+            }
+
 
             SaveCommand = new AsyncRelayCommand(Save);
+
+            AddControlNetModelCommand = new AsyncRelayCommand(AddControlNetModel);
+            UpdateControlNetModelCommand = new AsyncRelayCommand(UpdateControlNetModel, () => SelectedControlNetModel is not null);
+            RemoveControlNetModelCommand = new AsyncRelayCommand(RemoveControlNetModel, () => SelectedControlNetModel is not null);
             InitializeComponent();
         }
 
         public AsyncRelayCommand SaveCommand { get; }
+        public AsyncRelayCommand AddControlNetModelCommand { get; }
+        public AsyncRelayCommand UpdateControlNetModelCommand { get; }
+        public AsyncRelayCommand RemoveControlNetModelCommand { get; }
 
         public AmuseSettings UISettings
         {
@@ -40,7 +56,11 @@ namespace Amuse.UI.Views
         public static readonly DependencyProperty UISettingsProperty =
             DependencyProperty.Register("UISettings", typeof(AmuseSettings), typeof(SettingsView));
 
-
+        public ControlNetModelSetViewModel SelectedControlNetModel
+        {
+            get { return _selectedControlNetModel; }
+            set { _selectedControlNetModel = value; NotifyPropertyChanged(); }
+        }
 
         public Task NavigateAsync(ImageResult imageResult)
         {
@@ -65,6 +85,60 @@ namespace Amuse.UI.Views
             }
             return Task.CompletedTask;
         }
+
+        #region ControlNet
+
+        private async Task AddControlNetModel()
+        {
+            var addModelDialog = _dialogService.GetDialog<AddControlNetModelDialog>();
+            if (addModelDialog.ShowDialog())
+            {
+                var model = new ControlNetModelSetViewModel
+                {
+                    Name = addModelDialog.ModelSetResult.Name,
+                    ModelSet = addModelDialog.ModelSetResult
+                };
+                UISettings.ControlNetModelSets.Add(model);
+                SelectedControlNetModel = model;
+                await Save();
+            }
+        }
+
+
+        private async Task UpdateControlNetModel()
+        {
+            if (SelectedControlNetModel.IsLoaded)
+            {
+                MessageBox.Show("Please unload model before updating", "Model In Use", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var updateModelDialog = _dialogService.GetDialog<UpdateControlNetModelDialog>();
+            if (updateModelDialog.ShowDialog(SelectedControlNetModel.ModelSet))
+            {
+                var modelSet = updateModelDialog.ModelSetResult;
+                SelectedControlNetModel.ModelSet = modelSet;
+                SelectedControlNetModel.Name = modelSet.Name;
+                UISettings.ControlNetModelSets.ForceNotifyCollectionChanged();
+                await Save();
+            }
+        }
+
+
+        private async Task RemoveControlNetModel()
+        {
+            if (SelectedControlNetModel.IsLoaded)
+            {
+                MessageBox.Show("Please unload model before uninstalling", "Model In Use", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            UISettings.ControlNetModelSets.Remove(SelectedControlNetModel);
+            SelectedControlNetModel = UISettings.ControlNetModelSets.FirstOrDefault();
+            await Save();
+        }
+
+        #endregion
 
         #region INotifyPropertyChanged
         public event PropertyChangedEventHandler PropertyChanged;

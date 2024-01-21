@@ -61,7 +61,12 @@ namespace Amuse.UI.Services
             };
 
 
+            var isControlNet = modelTemplate.DiffuserTypes.Any(x => x == DiffuserType.ControlNet || x == DiffuserType.ControlNetImage);
             var unetPath = Path.Combine(folder, "unet", "model.onnx");
+            var controlNetUnetPath = Path.Combine(folder, "controlnet", "model.onnx");
+            if (isControlNet && File.Exists(controlNetUnetPath))
+                unetPath = controlNetUnetPath;
+
             var tokenizerPath = Path.Combine(folder, "tokenizer", "model.onnx");
             var textEncoderPath = Path.Combine(folder, "text_encoder", "model.onnx");
             var vaeDecoder = Path.Combine(folder, "vae_decoder", "model.onnx");
@@ -140,6 +145,28 @@ namespace Amuse.UI.Services
                 InterOpNumThreads = _settings.DefaultInterOpNumThreads,
                 IntraOpNumThreads = _settings.DefaultIntraOpNumThreads,
                 ModelConfigurations = new List<OnnxModelConfig> { new OnnxModelConfig { Type = OnnxModelType.Upscaler, OnnxModelPath = filename } }
+            };
+        }
+
+        public ControlNetModelSet CreateControlNetModelSet(string name, ControlNetType controlNetType, DiffuserPipelineType pipelineType, string modelFilename, string annotationFilename)
+        {
+            var models = new List<OnnxModelConfig> { new OnnxModelConfig { Type = OnnxModelType.ControlNet, OnnxModelPath = modelFilename } };
+            if (!string.IsNullOrEmpty(annotationFilename))
+                models.Add(new OnnxModelConfig { Type = OnnxModelType.Annotation, OnnxModelPath = annotationFilename });
+
+            return new ControlNetModelSet
+            {
+                Name = name,
+                Type = controlNetType,
+                PipelineType = pipelineType,
+                ModelConfigurations = models,
+
+                IsEnabled = true,
+                DeviceId = _settings.DefaultDeviceId,
+                ExecutionMode = _settings.DefaultExecutionMode,
+                ExecutionProvider = _settings.DefaultExecutionProvider,
+                InterOpNumThreads = _settings.DefaultInterOpNumThreads,
+                IntraOpNumThreads = _settings.DefaultIntraOpNumThreads
             };
         }
     }

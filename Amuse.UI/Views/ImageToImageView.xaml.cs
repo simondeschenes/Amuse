@@ -1,6 +1,7 @@
 ﻿using Amuse.UI.Commands;
 using Amuse.UI.Models;
 using Amuse.UI.Services;
+using Amuse.UI.UserControls;
 using Microsoft.Extensions.Logging;
 using Models;
 using OnnxStack.Core.Image;
@@ -18,6 +19,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media.Imaging;
 
 namespace Amuse.UI.Views
 {
@@ -29,6 +31,7 @@ namespace Amuse.UI.Views
         private readonly ILogger<ImageToImageView> _logger;
         private readonly IFileService _fileService;
         private readonly IStableDiffusionService _stableDiffusionService;
+        private readonly IControlNetImageService _controlNetImageService;
 
         private bool _hasResult;
         private int _progressMax;
@@ -40,11 +43,16 @@ namespace Amuse.UI.Views
         private ImageInput _inputImage;
         private ImageResult _resultImage;
         private StableDiffusionModelSetViewModel _selectedModel;
+        private ControlNetModelSetViewModel _selectedControlNetModel;
         private PromptOptionsModel _promptOptionsModel;
         private SchedulerOptionsModel _schedulerOptions;
         private BatchOptionsModel _batchOptions;
         private CancellationTokenSource _cancelationTokenSource;
         private string _progressText;
+        private bool _isControlImageProcessingEnabled;
+        private bool _isControlImageProcessingPreviewEnabled;
+        private BitmapSource _inputControlImagePreviewCache;
+        private BitmapSource _inputControlImagePreview;
 
 
         /// <summary>
@@ -57,9 +65,10 @@ namespace Amuse.UI.Views
                 _logger = App.GetService<ILogger<ImageToImageView>>();
                 _fileService = App.GetService<IFileService>();
                 _stableDiffusionService = App.GetService<IStableDiffusionService>();
+                _controlNetImageService = App.GetService<IControlNetImageService>();
             }
 
-            SupportedDiffusers = new() { DiffuserType.ImageToImage };
+            SupportedDiffusers = new() { DiffuserType.ImageToImage, DiffuserType.ControlNet, DiffuserType.ControlNetImage };
             CancelCommand = new AsyncRelayCommand(Cancel, CanExecuteCancel);
             GenerateCommand = new AsyncRelayCommand(Generate, CanExecuteGenerate);
             ClearHistoryCommand = new AsyncRelayCommand(ClearHistory, CanExecuteClearHistory);
@@ -75,13 +84,13 @@ namespace Amuse.UI.Views
             InitializeComponent();
         }
 
-        public AmuseSettings UISettings
+        public AmuseSettings Settings
         {
-            get { return (AmuseSettings)GetValue(UISettingsProperty); }
-            set { SetValue(UISettingsProperty, value); }
+            get { return (AmuseSettings)GetValue(SettingsProperty); }
+            set { SetValue(SettingsProperty, value); }
         }
-        public static readonly DependencyProperty UISettingsProperty =
-            DependencyProperty.Register("UISettings", typeof(AmuseSettings), typeof(ImageToImageView));
+        public static readonly DependencyProperty SettingsProperty =
+            DependencyProperty.Register("Settings", typeof(AmuseSettings), typeof(ImageToImageView));
 
         public List<DiffuserType> SupportedDiffusers { get; }
         public AsyncRelayCommand CancelCommand { get; }
@@ -96,6 +105,12 @@ namespace Amuse.UI.Views
         {
             get { return _selectedModel; }
             set { _selectedModel = value; NotifyPropertyChanged(); }
+        }
+
+        public ControlNetModelSetViewModel SelectedControlNetModel
+        {
+            get { return _selectedControlNetModel; }
+            set { _selectedControlNetModel = value; NotifyPropertyChanged(); }
         }
 
         public PromptOptionsModel PromptOptions
@@ -125,7 +140,7 @@ namespace Amuse.UI.Views
         public ImageInput InputImage
         {
             get { return _inputImage; }
-            set { _inputImage = value; NotifyPropertyChanged(); }
+            set { _inputImage = value; NotifyPropertyChanged(); InputControlImagePreview = null; _inputControlImagePreviewCache = null; }
         }
 
         public int ProgressValue
@@ -176,6 +191,34 @@ namespace Amuse.UI.Views
             set { _isControlsEnabled = value; NotifyPropertyChanged(); }
         }
 
+        public bool IsControlImageProcessingEnabled
+        {
+            get { return _isControlImageProcessingEnabled; }
+            set
+            {
+                _isControlImageProcessingEnabled = value;
+                InputControlImagePreview = _isControlImageProcessingEnabled && _isControlImageProcessingPreviewEnabled ? _inputControlImagePreviewCache : null;
+                NotifyPropertyChanged();
+            }
+        }
+
+        public bool IsControlImageProcessingPreviewEnabled
+        {
+            get { return _isControlImageProcessingPreviewEnabled; }
+            set
+            {
+                _isControlImageProcessingPreviewEnabled = value;
+                InputControlImagePreview = _isControlImageProcessingEnabled && _isControlImageProcessingPreviewEnabled ? _inputControlImagePreviewCache : null;
+                NotifyPropertyChanged();
+            }
+        }
+
+        public BitmapSource InputControlImagePreview
+        {
+            get { return _inputControlImagePreview; }
+            set { _inputControlImagePreview = value; NotifyPropertyChanged(); }
+        }
+
 
         /// <summary>
         /// Called on Navigate
@@ -219,13 +262,13 @@ namespace Amuse.UI.Views
             IsGenerating = true;
             IsControlsEnabled = false;
             ResultImage = null;
-            var promptOptions = GetPromptOptions(PromptOptions, InputImage);
+            var promptOptions = await GetPromptOptionsAsync(PromptOptions, InputImage);
             var batchOptions = BatchOptionsModel.ToBatchOptions(BatchOptions);
             var schedulerOptions = SchedulerOptionsModel.ToSchedulerOptions(SchedulerOptions);
 
             try
             {
-                await foreach (var resultImage in ExecuteStableDiffusion(_selectedModel.ModelSet, promptOptions, schedulerOptions, batchOptions))
+                await foreach (var resultImage in ExecuteStableDiffusion(_selectedModel.ModelSet, _selectedControlNetModel?.ModelSet, promptOptions, schedulerOptions, batchOptions))
                 {
                     if (resultImage != null)
                     {
@@ -233,7 +276,7 @@ namespace Amuse.UI.Views
                         HasResult = true;
                         if (BatchOptions.IsAutomationEnabled && BatchOptions.DisableHistory)
                             continue;
-                        if (BatchOptions.IsRealtimeEnabled && !UISettings.RealtimeHistoryEnabled)
+                        if (BatchOptions.IsRealtimeEnabled && !Settings.RealtimeHistoryEnabled)
                             continue;
 
                         ImageResults.Add(resultImage);
@@ -262,8 +305,9 @@ namespace Amuse.UI.Views
         private bool CanExecuteGenerate()
         {
             return !IsGenerating
-               // && !string.IsNullOrEmpty(PromptOptions.Prompt)
-                && HasInputResult;
+                   && HasInputResult
+                   && SelectedModel is not null
+                   && (!SelectedModel.IsControlNet || (SelectedModel.IsControlNet && SelectedControlNetModel?.IsLoaded == true));
         }
 
 
@@ -350,7 +394,7 @@ namespace Amuse.UI.Views
         /// <param name="schedulerOptions">The scheduler options.</param>
         /// <param name="batchOptions">The batch options.</param>
         /// <returns></returns>
-        private async IAsyncEnumerable<ImageResult> ExecuteStableDiffusion(StableDiffusionModelSet modelOptions, PromptOptions promptOptions, SchedulerOptions schedulerOptions, BatchOptions batchOptions)
+        private async IAsyncEnumerable<ImageResult> ExecuteStableDiffusion(StableDiffusionModelSet modelOptions, ControlNetModelSet controlNetModel, PromptOptions promptOptions, SchedulerOptions schedulerOptions, BatchOptions batchOptions)
         {
             _cancelationTokenSource = new CancellationTokenSource();
 
@@ -359,7 +403,7 @@ namespace Amuse.UI.Views
                 if (!BatchOptions.IsAutomationEnabled)
                 {
                     var timestamp = Stopwatch.GetTimestamp();
-                    var result = await _stableDiffusionService.GenerateAsBytesAsync(new ModelOptions(modelOptions), promptOptions, schedulerOptions, ProgressCallback(), _cancelationTokenSource.Token);
+                    var result = await _stableDiffusionService.GenerateAsBytesAsync(new ModelOptions(modelOptions, controlNetModel), promptOptions, schedulerOptions, ProgressCallback(), _cancelationTokenSource.Token);
                     yield return await GenerateResultAsync(result, promptOptions, schedulerOptions, timestamp);
                 }
                 else
@@ -367,7 +411,7 @@ namespace Amuse.UI.Views
                     if (!BatchOptions.IsRealtimeEnabled)
                     {
                         var timestamp = Stopwatch.GetTimestamp();
-                        await foreach (var batchResult in _stableDiffusionService.GenerateBatchAsync(new ModelOptions(modelOptions), promptOptions, schedulerOptions, batchOptions, ProgressBatchCallback(), _cancelationTokenSource.Token))
+                        await foreach (var batchResult in _stableDiffusionService.GenerateBatchAsync(new ModelOptions(modelOptions, controlNetModel), promptOptions, schedulerOptions, batchOptions, ProgressBatchCallback(), _cancelationTokenSource.Token))
                         {
                             yield return await GenerateResultAsync(batchResult.ImageResult.ToImageBytes(), promptOptions, batchResult.SchedulerOptions, timestamp);
                             timestamp = Stopwatch.GetTimestamp();
@@ -388,30 +432,59 @@ namespace Amuse.UI.Views
                     {
                         PromptOptions.HasChanged = false;
                         SchedulerOptions.HasChanged = false;
-                        var realtimePromptOptions = GetPromptOptions(PromptOptions, InputImage);
+                        var realtimePromptOptions = await GetPromptOptionsAsync(PromptOptions, InputImage);
                         var realtimeSchedulerOptions = SchedulerOptionsModel.ToSchedulerOptions(SchedulerOptions);
 
                         var timestamp = Stopwatch.GetTimestamp();
-                        var result = await _stableDiffusionService.GenerateAsBytesAsync(new ModelOptions(modelOptions), realtimePromptOptions, realtimeSchedulerOptions, RealtimeProgressCallback(), _cancelationTokenSource.Token);
+                        var result = await _stableDiffusionService.GenerateAsBytesAsync(new ModelOptions(modelOptions, controlNetModel), realtimePromptOptions, realtimeSchedulerOptions, RealtimeProgressCallback(), _cancelationTokenSource.Token);
                         yield return await GenerateResultAsync(result, realtimePromptOptions, realtimeSchedulerOptions, timestamp);
                     }
-                    await Utils.RefreshDelay(refreshTimestamp, UISettings.RealtimeRefreshRate, _cancelationTokenSource.Token);
+                    await Utils.RefreshDelay(refreshTimestamp, Settings.RealtimeRefreshRate, _cancelationTokenSource.Token);
                 }
             }
         }
 
-
-        private PromptOptions GetPromptOptions(PromptOptionsModel promptOptionsModel, ImageInput imageInput)
+        private async Task<PromptOptions> GetPromptOptionsAsync(PromptOptionsModel promptOptionsModel, ImageInput imageInput)
         {
+            var imageBytes = imageInput.Image.GetImageBytes();
+            if (_selectedModel.IsControlNet)
+            {
+                var controlNetDiffuserType = _schedulerOptions.Strength >= 1
+                        ? DiffuserType.ControlNet
+                        : DiffuserType.ControlNetImage;
+
+                var inputImage = default(InputImage);
+                if (controlNetDiffuserType == DiffuserType.ControlNetImage)
+                    inputImage = new InputImage(imageBytes);
+
+                InputControlImagePreview = null;
+                _inputControlImagePreviewCache = null;
+                var controlImage = new InputImage(imageBytes);
+                if (IsControlImageProcessingEnabled && _selectedControlNetModel.HasAnnotator)
+                {
+                    controlImage = await _controlNetImageService.PrepareInputImage(_selectedControlNetModel.ModelSet, controlImage, _schedulerOptions.Height, _schedulerOptions.Width);
+                    _inputControlImagePreviewCache = Utils.GetImage(controlImage.Image);
+                    if (IsControlImageProcessingPreviewEnabled)
+                        InputControlImagePreview = _inputControlImagePreviewCache;
+                }
+
+
+                return new PromptOptions
+                {
+                    Prompt = promptOptionsModel.Prompt,
+                    NegativePrompt = promptOptionsModel.NegativePrompt,
+                    DiffuserType = controlNetDiffuserType,
+                    InputImage = inputImage,
+                    InputContolImage = controlImage
+                };
+            }
+
             return new PromptOptions
             {
                 Prompt = promptOptionsModel.Prompt,
                 NegativePrompt = promptOptionsModel.NegativePrompt,
                 DiffuserType = DiffuserType.ImageToImage,
-                InputImage = new InputImage
-                {
-                    ImageBytes = imageInput.Image.GetImageBytes()
-                }
+                InputImage = new InputImage(imageBytes)
             };
         }
 
@@ -439,8 +512,8 @@ namespace Amuse.UI.Views
                 Elapsed = Stopwatch.GetElapsedTime(timestamp).TotalSeconds
             };
 
-           
-                await _fileService.AutoSaveImageFile(imageResult, "ImageToImage");
+
+            await _fileService.AutoSaveImageFile(imageResult, "ImageToImage");
             return imageResult;
         }
 

@@ -35,9 +35,7 @@ namespace Amuse.UI.Dialogs
             WindowMaximizeCommand = new AsyncRelayCommand(WindowMaximize);
             SaveCommand = new AsyncRelayCommand(Save, CanExecuteSave);
             CancelCommand = new AsyncRelayCommand(Cancel, CanExecuteCancel);
-            _invalidOptions = _uiSettings.StableDiffusionModelSets
-                .Select(x => x.ModelSet.Name)
-                .ToList();
+            _invalidOptions = _uiSettings.GetModelNames();
             InitializeComponent();
         }
 

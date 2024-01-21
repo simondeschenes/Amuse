@@ -125,6 +125,12 @@
         </ObjectDataProvider>
 
 
+        <ObjectDataProvider x:Key="ControlNetType" MethodName="GetValues" ObjectType="{x:Type system:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="SD_Enums:ControlNetType"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+
         <!--Accents-->
         <SolidColorBrush x:Key="AccentColour1" Color="#FF0d72ba" />
         <SolidColorBrush x:Key="AccentColour2" Color="#FF74b768" />

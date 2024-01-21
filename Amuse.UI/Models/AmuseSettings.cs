@@ -2,8 +2,11 @@
 using OnnxStack.Common.Config;
 using OnnxStack.Core.Config;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
+using System.Runtime;
 using System.Text.Json.Serialization;
 
 namespace Amuse.UI.Models
@@ -31,7 +34,7 @@ namespace Amuse.UI.Models
         public ObservableCollection<ModelTemplateViewModel> Templates { get; set; } = new ObservableCollection<ModelTemplateViewModel>();
         public ObservableCollection<UpscaleModelSetViewModel> UpscaleModelSets { get; set; } = new ObservableCollection<UpscaleModelSetViewModel>();
         public ObservableCollection<StableDiffusionModelSetViewModel> StableDiffusionModelSets { get; set; } = new ObservableCollection<StableDiffusionModelSetViewModel>();
-
+        public ObservableCollection<ControlNetModelSetViewModel> ControlNetModelSets { get; set; } = new ObservableCollection<ControlNetModelSetViewModel>();
 
         [JsonIgnore]
         public string DirectoryTemp { get; set; }
@@ -66,6 +69,13 @@ namespace Amuse.UI.Models
                 DirectoryCache = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".cache");
         }
 
+        public List<string> GetModelNames()
+        {
+            return Templates
+                .Where(x => x.IsUserTemplate)
+                .Select(x => x.Name)
+                .ToList();
+        }
     }
 
     public enum ModelCacheMode

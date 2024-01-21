@@ -121,9 +121,31 @@
                     </DockPanel>
                 </GroupBox>
 
+
+
+              
+
             </UniformGrid>
 
-            <StackPanel></StackPanel>
+            <UniformGrid Columns="3">
+
+                <GroupBox  MinWidth="200" Margin="0,10,0,0" >
+                    <GroupBox.Header>
+                        <TextBlock Text="Settings" FontSize="15" />
+                    </GroupBox.Header>
+                    <DockPanel Margin="0,5,0,0">
+
+                        <UniformGrid DockPanel.Dock="Bottom" Columns="3">
+                            <Button Content="Add" Command="{Binding AddControlNetModelCommand}"/>
+                            <Button Content="Edit"  Command="{Binding UpdateControlNetModelCommand}"/>
+                            <Button Content="Remove"  Command="{Binding RemoveControlNetModelCommand}"/>
+                        </UniformGrid>
+                        <ListBox ItemsSource="{Binding UISettings.ControlNetModelSets}" SelectedItem="{Binding SelectedControlNetModel}" DisplayMemberPath="Name" />
+
+                    </DockPanel>
+                </GroupBox>
+
+            </UniformGrid>
 
         </DockPanel>
     </Grid>
