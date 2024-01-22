@@ -253,7 +253,7 @@ namespace Amuse.UI.Models
                 OriginalInferenceSteps = model.OriginalInferenceSteps,
                 SchedulerType = model.SchedulerType,
                 ConditioningScale = model.ConditioningScale,
-                IsControlImageProcessingEnabled = false // Amuse will handle pre-processing not OnnxStack
+                IsControlImageProcessingEnabled = model.IsControlImageProcessingEnabled,
             };
         }
 
@@ -286,6 +286,7 @@ namespace Amuse.UI.Models
                 OriginalInferenceSteps = model.OriginalInferenceSteps,
                 SchedulerType = model.SchedulerType,
                 ConditioningScale = model.ConditioningScale,
+                IsControlImageProcessingEnabled = model.IsControlImageProcessingEnabled,
             };
         }
 

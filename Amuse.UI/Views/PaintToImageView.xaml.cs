@@ -29,7 +29,6 @@ namespace Amuse.UI.Views
         private readonly ILogger<PaintToImageView> _logger;
         private readonly IFileService _fileService;
         private readonly IStableDiffusionService _stableDiffusionService;
-        private readonly IControlNetImageService _controlNetImageService;
 
         private bool _hasResult;
         private int _progressMax;
@@ -60,7 +59,6 @@ namespace Amuse.UI.Views
                 _logger = App.GetService<ILogger<PaintToImageView>>();
                 _fileService = App.GetService<IFileService>();
                 _stableDiffusionService = App.GetService<IStableDiffusionService>();
-                _controlNetImageService = App.GetService<IControlNetImageService>();
             }
 
             SupportedDiffusers = new() { DiffuserType.ImageToImage, DiffuserType.ControlNet, DiffuserType.ControlNetImage };
@@ -240,7 +238,7 @@ namespace Amuse.UI.Views
             IsGenerating = true;
             IsControlsEnabled = false;
             ResultImage = null;
-            var promptOptions = await GetPromptOptionsAsync(PromptOptions, SchedulerOptions, CanvasImage);
+            var promptOptions = GetPromptOptions(PromptOptions, CanvasImage);
             var batchOptions = BatchOptionsModel.ToBatchOptions(BatchOptions);
             var schedulerOptions = SchedulerOptionsModel.ToSchedulerOptions(SchedulerOptions);
 
@@ -411,7 +409,7 @@ namespace Amuse.UI.Views
                         HasCanvasChanged = false;
                         PromptOptions.HasChanged = false;
                         SchedulerOptions.HasChanged = false;
-                        var realtimePromptOptions = await GetPromptOptionsAsync(PromptOptions, SchedulerOptions, CanvasImage);
+                        var realtimePromptOptions = GetPromptOptions(PromptOptions, CanvasImage);
                         var realtimeSchedulerOptions = SchedulerOptionsModel.ToSchedulerOptions(SchedulerOptions);
 
                         var timestamp = Stopwatch.GetTimestamp();
@@ -424,7 +422,7 @@ namespace Amuse.UI.Views
         }
 
 
-        private async Task<PromptOptions> GetPromptOptionsAsync(PromptOptionsModel promptOptionsModel, SchedulerOptionsModel schedulerOptionsModel, ImageInput imageInput)
+        private PromptOptions GetPromptOptions(PromptOptionsModel promptOptionsModel, ImageInput imageInput)
         {
             var imageBytes = imageInput.Image.GetImageBytes();
             if (_selectedModel.IsControlNet)
@@ -437,17 +435,13 @@ namespace Amuse.UI.Views
                 if (controlNetDiffuserType == DiffuserType.ControlNetImage)
                     inputImage = new InputImage(imageBytes);
 
-                var controlImage = new InputImage(imageBytes);
-                if (_selectedControlNetModel.HasAnnotator && schedulerOptionsModel.IsControlImageProcessingEnabled)
-                    controlImage = await _controlNetImageService.PrepareInputImage(_selectedControlNetModel.ModelSet, controlImage, _schedulerOptions.Height, _schedulerOptions.Width);
-
                 return new PromptOptions
                 {
                     Prompt = promptOptionsModel.Prompt,
                     NegativePrompt = promptOptionsModel.NegativePrompt,
                     DiffuserType = controlNetDiffuserType,
                     InputImage = inputImage,
-                    InputContolImage = controlImage
+                    InputContolImage = new InputImage(imageBytes)
                 };
             }
 
