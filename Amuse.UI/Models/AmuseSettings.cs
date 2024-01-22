@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Runtime;
 using System.Text.Json.Serialization;
 
 namespace Amuse.UI.Models
@@ -74,6 +73,8 @@ namespace Amuse.UI.Models
             return Templates
                 .Where(x => x.IsUserTemplate)
                 .Select(x => x.Name)
+                .Concat(ControlNetModelSets.Select(x => x.Name))
+                .Distinct()
                 .ToList();
         }
     }
