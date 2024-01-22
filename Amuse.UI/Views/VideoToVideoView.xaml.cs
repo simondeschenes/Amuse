@@ -9,7 +9,6 @@ using OnnxStack.Core.Video;
 using OnnxStack.StableDiffusion.Common;
 using OnnxStack.StableDiffusion.Config;
 using OnnxStack.StableDiffusion.Enums;
-using OnnxStack.StableDiffusion.Helpers;
 using OnnxStack.StableDiffusion.Models;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -49,6 +48,7 @@ namespace Amuse.UI.Views
         private VideoInputModel _inputVideo;
         private VideoResultModel _resultVideo;
         private StableDiffusionModelSetViewModel _selectedModel;
+        private ControlNetModelSetViewModel _selectedControlNetModel;
         private PromptOptionsModel _promptOptionsModel;
         private SchedulerOptionsModel _schedulerOptions;
         private BatchOptionsModel _batchOptions;
@@ -71,7 +71,7 @@ namespace Amuse.UI.Views
                 _stableDiffusionService = App.GetService<IStableDiffusionService>();
             }
 
-            SupportedDiffusers = new() { DiffuserType.ImageToImage };
+            SupportedDiffusers = new() { DiffuserType.ImageToImage, DiffuserType.ControlNet, DiffuserType.ControlNetImage };
             CancelCommand = new AsyncRelayCommand(Cancel, CanExecuteCancel);
             GenerateCommand = new AsyncRelayCommand(Generate, CanExecuteGenerate);
             ClearHistoryCommand = new AsyncRelayCommand(ClearHistory, CanExecuteClearHistory);
@@ -120,6 +120,11 @@ namespace Amuse.UI.Views
         {
             get { return _selectedModel; }
             set { _selectedModel = value; NotifyPropertyChanged(); }
+        }
+        public ControlNetModelSetViewModel SelectedControlNetModel
+        {
+            get { return _selectedControlNetModel; }
+            set { _selectedControlNetModel = value; NotifyPropertyChanged(); }
         }
 
         public PromptOptionsModel PromptOptions
@@ -273,8 +278,7 @@ namespace Amuse.UI.Views
                 }
 
                 var promptOptions = GetPromptOptions(PromptOptions, _videoFrames);
-
-                await foreach (var resultVideo in ExecuteStableDiffusion(_selectedModel.ModelSet, promptOptions, schedulerOptions, batchOptions))
+                await foreach (var resultVideo in ExecuteStableDiffusion(_selectedModel.ModelSet, _selectedControlNetModel?.ModelSet, promptOptions, schedulerOptions, batchOptions))
                 {
                     if (resultVideo != null)
                     {
@@ -312,7 +316,9 @@ namespace Amuse.UI.Views
         private bool CanExecuteGenerate()
         {
             return !IsGenerating
-                && HasInputResult;
+                && HasInputResult
+                && SelectedModel is not null
+                && (!SelectedModel.IsControlNet || (SelectedModel.IsControlNet && SelectedControlNetModel?.IsLoaded == true));
         }
 
 
@@ -405,14 +411,14 @@ namespace Amuse.UI.Views
         /// <param name="schedulerOptions">The scheduler options.</param>
         /// <param name="batchOptions">The batch options.</param>
         /// <returns></returns>
-        private async IAsyncEnumerable<VideoResultModel> ExecuteStableDiffusion(StableDiffusionModelSet modelOptions, PromptOptions promptOptions, SchedulerOptions schedulerOptions, BatchOptions batchOptions)
+        private async IAsyncEnumerable<VideoResultModel> ExecuteStableDiffusion(StableDiffusionModelSet modelOptions, ControlNetModelSet controlNetModel, PromptOptions promptOptions, SchedulerOptions schedulerOptions, BatchOptions batchOptions)
         {
             if (!BatchOptions.IsRealtimeEnabled)
             {
                 if (!BatchOptions.IsAutomationEnabled)
                 {
                     var timestamp = Stopwatch.GetTimestamp();
-                    var result = await _stableDiffusionService.GenerateAsBytesAsync(new ModelOptions(modelOptions), promptOptions, schedulerOptions, ProgressCallback(), _cancelationTokenSource.Token);
+                    var result = await _stableDiffusionService.GenerateAsBytesAsync(new ModelOptions(modelOptions, controlNetModel), promptOptions, schedulerOptions, ProgressCallback(), _cancelationTokenSource.Token);
                     yield return await GenerateResultAsync(result, _selectedModel, promptOptions, schedulerOptions, timestamp);
                 }
             }
@@ -433,7 +439,7 @@ namespace Amuse.UI.Views
                         var refreshTimestamp = Stopwatch.GetTimestamp();
                         var realtimePromptOptions = GetLivePromptOptions(PromptOptions, videoFrame);
                         var realtimeSchedulerOptions = SchedulerOptionsModel.ToSchedulerOptions(SchedulerOptions);
-                        var result = await _stableDiffusionService.GenerateAsBytesAsync(new ModelOptions(modelOptions), realtimePromptOptions, realtimeSchedulerOptions, RealtimeProgressCallback(), _cancelationTokenSource.Token);
+                        var result = await _stableDiffusionService.GenerateAsBytesAsync(new ModelOptions(modelOptions, controlNetModel), realtimePromptOptions, realtimeSchedulerOptions, RealtimeProgressCallback(), _cancelationTokenSource.Token);
                         resultVideoFrames.Add(result);
                         PreviewResult = Utils.CreateBitmap(result);
                         PreviewSource = Utils.CreateBitmap(videoFrame);
@@ -451,11 +457,19 @@ namespace Amuse.UI.Views
 
         private PromptOptions GetPromptOptions(PromptOptionsModel promptOptionsModel, VideoFrames videoFrames)
         {
+            var diffuserType = DiffuserType.ImageToImage;
+            if (_selectedModel.IsControlNet)
+            {
+                diffuserType = _schedulerOptions.Strength >= 1
+                        ? DiffuserType.ControlNet
+                        : DiffuserType.ControlNetImage;
+            }
+
             return new PromptOptions
             {
                 Prompt = string.IsNullOrEmpty(promptOptionsModel.Prompt) ? " " : promptOptionsModel.Prompt,
                 NegativePrompt = promptOptionsModel.NegativePrompt,
-                DiffuserType = DiffuserType.ImageToImage,
+                DiffuserType = diffuserType,
                 InputVideo = new VideoInput(videoFrames),
                 VideoInputFPS = promptOptionsModel.VideoInputFPS,
                 VideoOutputFPS = promptOptionsModel.VideoOutputFPS,

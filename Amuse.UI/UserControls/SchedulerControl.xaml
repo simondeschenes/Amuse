@@ -204,32 +204,27 @@
                                         <DataTrigger Binding="{Binding Path=DiffuserType}" Value="ImageInpaint">
                                             <Setter Property="Visibility" Value="Collapsed" />
                                         </DataTrigger>
+                                        <DataTrigger Binding="{Binding Path=DiffuserType}" Value="ControlNet">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </StackPanel.Style>
                         </StackPanel>
 
 
-                        <!--<StackPanel Margin="5,0,0,0">
+                        <StackPanel Margin="0,0,5,0" Visibility="{Binding SelectedModel.IsControlNet, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Collapsed}">
                             <DockPanel>
-                                <Label>Initial Noise</Label>
-                                <TextBlock Text="{Binding ElementName=SliderInitialNoiseLevel, Path=Value, StringFormat={}{0:F2}}" VerticalAlignment="Bottom" HorizontalAlignment="Right" FontSize="10" Margin="0,0,6,0" FontWeight="Medium" />
+                                <Label>Conditioning Scale</Label>
+                                <TextBlock Text="{Binding ElementName=SliderInitialConditioningScale, Path=Value, StringFormat={}{0:F2}}" VerticalAlignment="Bottom" HorizontalAlignment="Right" FontSize="10" Margin="0,0,6,0" FontWeight="Medium" />
                             </DockPanel>
-                            <Slider Name="SliderInitialNoiseLevel" Value="{Binding SchedulerOptions.InitialNoiseLevel}" Minimum="-1" Maximum="1" TickFrequency="0.1" IsSnapToTickEnabled="true" SmallChange="0.1" LargeChange="0.1">
+                            <Slider Name="SliderInitialConditioningScale" Value="{Binding SchedulerOptions.ConditioningScale}" Minimum="0" Maximum="1" TickFrequency="0.01" IsSnapToTickEnabled="true" SmallChange="0.01" LargeChange="0.01">
                                 <i:Interaction.Behaviors>
                                     <behaviors:SliderMouseWheelBehavior />
                                 </i:Interaction.Behaviors>
                             </Slider>
-                            <StackPanel.Style>
-                                <Style TargetType="{x:Type StackPanel}">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Path=DiffuserType}" Value="TextToImage">
-                                            <Setter Property="Visibility" Value="Collapsed" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </StackPanel.Style>
-                        </StackPanel>-->
+
+                        </StackPanel>
 
                     </UniformGrid>
 
@@ -273,9 +268,28 @@
 
                     </UniformGrid>
 
-                    <UniformGrid>
-
-                    </UniformGrid>
+                    <DockPanel DockPanel.Dock="Bottom" Visibility="{Binding SelectedModel.IsControlNet, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Collapsed}">
+                        <UniformGrid Columns="2" Margin="0,0,0,10" >
+                            <CheckBox IsChecked="{Binding SchedulerOptions.IsControlImageProcessingEnabled}" Content="Process Input Image" />
+                            <!--<CheckBox IsChecked="{Binding IsControlImageProcessingPreviewEnabled}" IsEnabled="{Binding IsControlImageProcessingEnabled}" Content="Preview Processed Input" Margin="5,0,0,0" />-->
+                            <UniformGrid.Style>
+                                <Style TargetType="{x:Type UniformGrid}">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedControlNetModel.Type}" Value="Canny">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding SelectedControlNetModel.Type}" Value="Depth">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding SelectedControlNetModel.Type}" Value="HED">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </UniformGrid.Style>
+                        </UniformGrid>
+                    </DockPanel>
                 </StackPanel>
             </TabItem>
 

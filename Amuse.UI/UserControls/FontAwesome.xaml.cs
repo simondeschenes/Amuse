@@ -1,6 +1,10 @@
-﻿using System.Windows;
+﻿using OnnxStack.StableDiffusion.Enums;
+using System;
+using System.Collections.Generic;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 
 namespace Amuse.UI.UserControls
 {
@@ -9,9 +13,11 @@ namespace Amuse.UI.UserControls
     /// </summary>
     public partial class FontAwesome : UserControl
     {
+        private readonly Storyboard _spinAnimation;
         public FontAwesome()
         {
             InitializeComponent();
+            _spinAnimation = FindResource("SpinAnimation") as Storyboard;
         }
 
         public static readonly DependencyProperty SizeProperty =
@@ -26,6 +32,10 @@ namespace Amuse.UI.UserControls
         public static readonly DependencyProperty IconStyleProperty =
             DependencyProperty.Register("IconStyle", typeof(FontAwesomeIconStyle), typeof(FontAwesome), new PropertyMetadata(FontAwesomeIconStyle.Regular));
 
+        public static readonly DependencyProperty IsSpinnerProperty =
+            DependencyProperty.Register("IsSpinner", typeof(bool), typeof(FontAwesome)
+            , new PropertyMetadata((d, e) => { if (d is FontAwesome control) control.OnIsSpinnerChanged(); }));
+    
 
         /// <summary>
         /// Gets or sets the icon.
@@ -64,6 +74,31 @@ namespace Amuse.UI.UserControls
         {
             get { return (FontAwesomeIconStyle)GetValue(IconStyleProperty); }
             set { SetValue(IconStyleProperty, IconStyle); }
+        }
+
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is spinning icon.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is spinner; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsSpinner
+        {
+            get { return (bool)GetValue(IsSpinnerProperty); }
+            set { SetValue(IsSpinnerProperty, value); }
+        }
+
+
+        private void OnIsSpinnerChanged()
+        {
+            if (_spinAnimation is null)
+                return;
+
+            if (IsSpinner)
+                _spinAnimation.Begin();
+            else if (!IsSpinner)
+                _spinAnimation.Stop();
         }
     }
 

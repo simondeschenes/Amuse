@@ -3,7 +3,7 @@ using OnnxStack.Core.Config;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace Amuse.UI.Views
+namespace Amuse.UI.Models
 {
     public class ModelFileViewModel : INotifyPropertyChanged
     {

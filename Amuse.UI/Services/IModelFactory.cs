@@ -1,5 +1,6 @@
 ﻿using Amuse.UI.Models;
 using OnnxStack.StableDiffusion.Config;
+using OnnxStack.StableDiffusion.Enums;
 
 namespace Amuse.UI.Services
 {
@@ -9,5 +10,6 @@ namespace Amuse.UI.Services
         UpscaleModelSet CreateUpscaleModelSet(string name, string filename, UpscaleModelTemplate modelTemplate);
         StableDiffusionModelSet CreateStableDiffusionModelSet(string name, string folder, string modelTemplateType);
         StableDiffusionModelSet CreateStableDiffusionModelSet(string name, string folder, StableDiffusionModelTemplate modelTemplate);
+        ControlNetModelSet CreateControlNetModelSet(string name, ControlNetType controlNetType, DiffuserPipelineType pipelineType, string modelFilename, string annotationFilename);
     }
 }

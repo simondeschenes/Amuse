@@ -3,7 +3,6 @@ using Amuse.UI.Models;
 using Microsoft.Extensions.Logging;
 using OnnxStack.Core;
 using OnnxStack.StableDiffusion.Common;
-using OnnxStack.StableDiffusion.Config;
 using OnnxStack.StableDiffusion.Enums;
 using System;
 using System.Collections.Generic;
@@ -25,6 +24,7 @@ namespace Amuse.UI.UserControls
         private readonly ILogger<ModelPickerControl> _logger;
         private readonly IStableDiffusionService _stableDiffusionService;
         private ICollectionView _modelCollectionView;
+        private ICollectionView _controlNetModelCollectionView;
 
         /// <summary>Initializes a new instance of the <see cref="ModelPickerControl" /> class.</summary>
         public ModelPickerControl()
@@ -35,25 +35,54 @@ namespace Amuse.UI.UserControls
                 _stableDiffusionService = App.GetService<IStableDiffusionService>();
             }
 
-            LoadCommand = new AsyncRelayCommand(LoadModel);
-            UnloadCommand = new AsyncRelayCommand(UnloadModel);
+            LoadCommand = new AsyncRelayCommand<StableDiffusionModelSetViewModel>(LoadModel);
+            UnloadCommand = new AsyncRelayCommand<StableDiffusionModelSetViewModel>(UnloadModel);
+            LoadControlNetCommand = new AsyncRelayCommand<ControlNetModelSetViewModel>(LoadControlNetModel);
+            UnloadControlNetCommand = new AsyncRelayCommand<ControlNetModelSetViewModel>(UnloadControlNetModel);
             InitializeComponent();
         }
 
-        public AsyncRelayCommand LoadCommand { get; set; }
-        public AsyncRelayCommand UnloadCommand { get; set; }
+        public static readonly DependencyProperty SettingsProperty =
+            DependencyProperty.Register("Settings", typeof(AmuseSettings), typeof(ModelPickerControl), new PropertyMetadata(OnSettingsChangedCalback()));
 
-        public AmuseSettings UISettings
+        public static readonly DependencyProperty SupportedDiffusersProperty =
+            DependencyProperty.Register("SupportedDiffusers", typeof(List<DiffuserType>), typeof(ModelPickerControl), new PropertyMetadata(OnSupportedDiffusersChangedCallback()));
+
+        public static readonly DependencyProperty SelectedModelProperty =
+            DependencyProperty.Register("SelectedModel", typeof(StableDiffusionModelSetViewModel), typeof(ModelPickerControl), new PropertyMetadata(OnSelectedModelChangedCallback()));
+
+        public static readonly DependencyProperty SelectedControlNetModelProperty =
+            DependencyProperty.Register("SelectedControlNetModel", typeof(ControlNetModelSetViewModel), typeof(ModelPickerControl));
+
+
+        /// <summary>
+        /// Gets or sets the load StableDiffusion model command.
+        /// </summary>
+        public AsyncRelayCommand<StableDiffusionModelSetViewModel> LoadCommand { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unload StableDiffusion model command.
+        /// </summary>
+        public AsyncRelayCommand<StableDiffusionModelSetViewModel> UnloadCommand { get; set; }
+
+        /// <summary>
+        /// Gets or sets the load ControlNet model command.
+        /// </summary>
+        public AsyncRelayCommand<ControlNetModelSetViewModel> LoadControlNetCommand { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unload ControlNet model command.
+        /// </summary>
+        public AsyncRelayCommand<ControlNetModelSetViewModel> UnloadControlNetCommand { get; set; }
+
+        /// <summary>
+        /// Gets or sets the settings.
+        /// </summary>
+        public AmuseSettings Settings
         {
-            get { return (AmuseSettings)GetValue(UISettingsProperty); }
-            set { SetValue(UISettingsProperty, value); }
+            get { return (AmuseSettings)GetValue(SettingsProperty); }
+            set { SetValue(SettingsProperty, value); }
         }
-        public static readonly DependencyProperty UISettingsProperty =
-            DependencyProperty.Register("UISettings", typeof(AmuseSettings), typeof(ModelPickerControl), new PropertyMetadata((d, e) =>
-            {
-                if (d is ModelPickerControl control && e.NewValue is AmuseSettings settings)
-                    control.InitializeModels();
-            }));
 
         /// <summary>
         /// Gets or sets the supported diffusers.
@@ -63,12 +92,6 @@ namespace Amuse.UI.UserControls
             get { return (List<DiffuserType>)GetValue(SupportedDiffusersProperty); }
             set { SetValue(SupportedDiffusersProperty, value); }
         }
-        public static readonly DependencyProperty SupportedDiffusersProperty =
-            DependencyProperty.Register("SupportedDiffusers", typeof(List<DiffuserType>), typeof(ModelPickerControl), new PropertyMetadata((d, e) =>
-            {
-                if (d is ModelPickerControl control && e.NewValue is List<DiffuserType> diffusers)
-                    control.ModelCollectionView?.Refresh();
-            }));
 
         /// <summary>
         /// Gets or sets the selected model.
@@ -78,20 +101,153 @@ namespace Amuse.UI.UserControls
             get { return (StableDiffusionModelSetViewModel)GetValue(SelectedModelProperty); }
             set { SetValue(SelectedModelProperty, value); }
         }
-        public static readonly DependencyProperty SelectedModelProperty =
-            DependencyProperty.Register("SelectedModel", typeof(StableDiffusionModelSetViewModel), typeof(ModelPickerControl));
 
+        /// <summary>
+        /// Gets or sets the selected ControlNet model.
+        /// </summary>
+        public ControlNetModelSetViewModel SelectedControlNetModel
+        {
+            get { return (ControlNetModelSetViewModel)GetValue(SelectedControlNetModelProperty); }
+            set { SetValue(SelectedControlNetModelProperty, value); }
+        }
 
+        /// <summary>
+        /// Gets or sets the model collection view.
+        /// </summary>
         public ICollectionView ModelCollectionView
         {
             get { return _modelCollectionView; }
             set { _modelCollectionView = value; NotifyPropertyChanged(); }
         }
 
-
-        private void InitializeModels()
+        /// <summary>
+        /// Gets or sets the ControlNet model collection view.
+        /// </summary>
+        public ICollectionView ControlNetModelCollectionView
         {
-            ModelCollectionView = new ListCollectionView(UISettings.StableDiffusionModelSets);
+            get { return _controlNetModelCollectionView; }
+            set { _controlNetModelCollectionView = value; NotifyPropertyChanged(); }
+        }
+
+
+        /// <summary>
+        /// Loads the model.
+        /// </summary>
+        private async Task LoadModel(StableDiffusionModelSetViewModel stableDiffusionModel)
+        {
+            if (_stableDiffusionService.IsModelLoaded(stableDiffusionModel.ModelSet))
+                return;
+
+            var elapsed = _logger.LogBegin($"StableDiffusion model '{stableDiffusionModel.Name}' Loading...");
+            stableDiffusionModel.IsLoaded = false;
+            stableDiffusionModel.IsLoading = true;
+
+            try
+            {
+                if (Settings.ModelCacheMode == ModelCacheMode.Single)
+                {
+                    foreach (var model in Settings.StableDiffusionModelSets.Where(x => x.IsLoaded))
+                    {
+                        await UnloadModel(model);
+                    }
+                }
+                stableDiffusionModel.IsLoaded = await _stableDiffusionService.LoadModelAsync(stableDiffusionModel.ModelSet);
+                _logger.LogEnd($"StableDiffusion model '{stableDiffusionModel.Name}' Loaded.", elapsed);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("An error occured while loading StableDiffusion model  '{Name}'\nException Message: {Message}", stableDiffusionModel.Name, ex.Message);
+            }
+
+            stableDiffusionModel.IsLoading = false;
+        }
+
+
+        /// <summary>
+        /// Unloads the model.
+        /// </summary>
+        private async Task UnloadModel(StableDiffusionModelSetViewModel stableDiffusionModel)
+        {
+            if (!_stableDiffusionService.IsModelLoaded(stableDiffusionModel.ModelSet))
+                return;
+
+            _logger.LogInformation("StableDiffusion model '{stableDiffusionModel.Name}' Unloading...", stableDiffusionModel.Name);
+            stableDiffusionModel.IsLoading = true;
+            if (stableDiffusionModel.IsControlNet)
+            {
+                _logger.LogInformation("Unloading ControlNet models...");
+                foreach (var controlNetModel in Settings.ControlNetModelSets.Where(x => x.IsLoaded))
+                {
+                    await UnloadControlNetModel(controlNetModel);
+                }
+            }
+
+            await _stableDiffusionService.UnloadModelAsync(stableDiffusionModel.ModelSet);
+            stableDiffusionModel.IsLoading = false;
+            stableDiffusionModel.IsLoaded = false;
+            _logger.LogInformation("StableDiffusion model '{stableDiffusionModel.Name}' Unloaded.", stableDiffusionModel.Name);
+        }
+
+
+        /// <summary>
+        /// Loads a ControlNet model.
+        /// </summary>
+        /// <param name="controlNetModel">The control net model.</param>
+        private async Task LoadControlNetModel(ControlNetModelSetViewModel controlNetModel)
+        {
+            if (_stableDiffusionService.IsModelLoaded(controlNetModel.ModelSet))
+                return;
+
+            var elapsed = _logger.LogBegin($"ControlNet model '{controlNetModel.Name}' Loading...");
+            controlNetModel.IsLoaded = false;
+            controlNetModel.IsLoading = true;
+
+            try
+            {
+                if (Settings.ModelCacheMode == ModelCacheMode.Single)
+                {
+                    foreach (var loadedControlNetModel in Settings.ControlNetModelSets.Where(x => x.IsLoaded))
+                    {
+                        await UnloadControlNetModel(loadedControlNetModel);
+                    }
+                }
+                controlNetModel.IsLoaded = await _stableDiffusionService.LoadModelAsync(controlNetModel.ModelSet);
+                _logger.LogEnd($"ControlNet model '{controlNetModel.Name}' Loaded.", elapsed);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("An error occured while loading ControlNet model '{Name}'\nException Message: {Message}", controlNetModel.Name, ex.Message);
+            }
+
+            controlNetModel.IsLoading = false;
+        }
+
+
+        /// <summary>
+        /// Unloads a ControlNet model.
+        /// </summary>
+        /// <param name="controlNetModel">The control net model.</param>
+        private async Task UnloadControlNetModel(ControlNetModelSetViewModel controlNetModel)
+        {
+            if (!_stableDiffusionService.IsModelLoaded(controlNetModel.ModelSet))
+                return;
+
+            _logger.LogInformation("ControlNet model '{controlNetModel.Name}' Unloading...", controlNetModel.Name);
+            controlNetModel.IsLoading = true;
+            await _stableDiffusionService.UnloadModelAsync(controlNetModel.ModelSet);
+            controlNetModel.IsLoading = false;
+            controlNetModel.IsLoaded = false;
+            _logger.LogInformation("ControlNet model '{controlNetModel.Name}' Unloaded.", controlNetModel.Name);
+        }
+
+
+        /// <summary>
+        /// Called when Settings has changed.
+        /// </summary>
+        private void OnSettingsChanged()
+        {
+            // Base Models
+            ModelCollectionView = new ListCollectionView(Settings.StableDiffusionModelSets);
             ModelCollectionView.Filter = (obj) =>
             {
                 if (obj is not StableDiffusionModelSetViewModel viewModel)
@@ -99,60 +255,85 @@ namespace Amuse.UI.UserControls
 
                 return viewModel.ModelSet.Diffusers.Intersect(SupportedDiffusers).Any();
             };
+
+            //ControlNet models
+            ControlNetModelCollectionView = new ListCollectionView(Settings.ControlNetModelSets);
+            ControlNetModelCollectionView.Filter = (obj) =>
+            {
+                if (obj is not ControlNetModelSetViewModel viewModel)
+                    return false;
+
+                if (SelectedModel is null)
+                    return false;
+
+                if (!SelectedModel.IsControlNet)
+                    return false;
+
+                return viewModel.ModelSet.PipelineType == SelectedModel.ModelSet.PipelineType;
+            };
         }
 
 
         /// <summary>
-        /// Loads the model.
+        /// Called when SupportedDiffusers has changed.
         /// </summary>
-        private async Task LoadModel()
+        private void OnSelectedModelChanged()
         {
-            if (_stableDiffusionService.IsModelLoaded(SelectedModel.ModelSet))
-                return;
-
-            var elapsed = _logger.LogBegin($"'{SelectedModel.Name}' Loading...");
-            SelectedModel.IsLoaded = false;
-            SelectedModel.IsLoading = true;
-
-            try
-            {
-                if (UISettings.ModelCacheMode == ModelCacheMode.Single)
-                {
-                    foreach (var model in UISettings.StableDiffusionModelSets.Where(x => x.IsLoaded))
-                    {
-                        _logger.LogInformation($"'{model.Name}' Unloading...");
-                        await _stableDiffusionService.UnloadModelAsync(model.ModelSet);
-                        model.IsLoaded = false;
-                    }
-                }
-
-                SelectedModel.IsLoaded = await _stableDiffusionService.LoadModelAsync(SelectedModel.ModelSet);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"An error occured while loading model '{SelectedModel.Name}' \n {ex}");
-            }
-
-            SelectedModel.IsLoading = false;
-            _logger.LogEnd($"'{SelectedModel.Name}' Loaded.", elapsed);
+            ControlNetModelCollectionView?.Refresh();
+            SelectedControlNetModel = Settings.ControlNetModelSets.FirstOrDefault(x => x.IsLoaded && x.ModelSet.PipelineType == SelectedModel.ModelSet.PipelineType);
         }
 
 
         /// <summary>
-        /// Unloads the model.
+        /// Called when SelectedModel has changed.
         /// </summary>
-        private async Task UnloadModel()
+        private void OnSupportedDiffusersChanged()
         {
-            if (!_stableDiffusionService.IsModelLoaded(SelectedModel.ModelSet))
-                return;
-
-            _logger.LogInformation($"'{SelectedModel.Name}' Unloading...");
-            SelectedModel.IsLoading = true;
-            await _stableDiffusionService.UnloadModelAsync(SelectedModel.ModelSet);
-            SelectedModel.IsLoading = false;
-            SelectedModel.IsLoaded = false;
-            _logger.LogInformation($"'{SelectedModel.Name}' Unloaded.");
+            ModelCollectionView?.Refresh();
         }
+
+
+        /// <summary>
+        /// Settings PropertyChangedCallback
+        /// </summary>
+        /// <returns></returns>
+        private static PropertyChangedCallback OnSettingsChangedCalback()
+        {
+            return (d, e) =>
+            {
+                if (d is ModelPickerControl control && e.NewValue is AmuseSettings settings)
+                    control.OnSettingsChanged();
+            };
+        }
+
+
+        /// <summary>
+        /// SupportedDiffusers PropertyChangedCallback
+        /// </summary>
+        /// <returns></returns>
+        private static PropertyChangedCallback OnSupportedDiffusersChangedCallback()
+        {
+            return (d, e) =>
+            {
+                if (d is ModelPickerControl control && e.NewValue is List<DiffuserType> diffusers)
+                    control.OnSupportedDiffusersChanged();
+            };
+        }
+
+
+        /// <summary>
+        /// SelectedModel PropertyChangedCallback
+        /// </summary>
+        /// <returns></returns>
+        private static PropertyChangedCallback OnSelectedModelChangedCallback()
+        {
+            return (d, e) =>
+            {
+                if (d is ModelPickerControl control)
+                    control.OnSelectedModelChanged();
+            };
+        }
+
 
         #region INotifyPropertyChanged
         public event PropertyChangedEventHandler PropertyChanged;

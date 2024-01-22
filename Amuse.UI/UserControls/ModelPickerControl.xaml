@@ -6,62 +6,82 @@
              xmlns:local="clr-namespace:Amuse.UI.UserControls"
              mc:Ignorable="d" 
              d:DesignWidth="500" Name="UI">
-    <UserControl.Resources>
-        <Style TargetType="{x:Type Label}">
-            <Setter Property="Margin" Value="-4,0,0,-4"/>
-        </Style>
-        <Storyboard x:Key="LoadingAnimation" >
-            <DoubleAnimation Storyboard.TargetName="SpinnerIcon" Storyboard.TargetProperty="(Image.RenderTransform).(RotateTransform.Angle)" To="360" Duration="0:0:1" RepeatBehavior="Forever" />
-        </Storyboard>
-    </UserControl.Resources>
 
-    <DockPanel DataContext="{Binding ElementName=UI}">
-        <TextBlock DockPanel.Dock="Top" Text="Models"/>
+    <StackPanel DataContext="{Binding ElementName=UI}" >
+
+        <!--Base Model-->
         <DockPanel>
-            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Visibility="{Binding SelectedModel, Converter={StaticResource NullVisibilityConverter}}">
-                <Button BorderThickness="0,1,1,1" ToolTip="Load Model" Width="80"
-                    Command="{Binding LoadCommand}" 
-                    Visibility="{Binding SelectedModel.IsLoaded, FallbackValue=Visible, TargetNullValue=Visible, Converter={StaticResource InverseBooleanToVisibilityConverter}}" 
-                    IsEnabled="{Binding SelectedModel.IsLoading, Converter={StaticResource InverseBoolConverter}}">
-                    <StackPanel Orientation="Horizontal">
-                        <local:FontAwesome x:Name="SpinnerIcon" Icon="&#xf110;"  Size="12" Margin="0,0,4,0" Width="12" Height="12"
-                            RenderTransformOrigin="0.5,0.5"
-                            Visibility="{Binding SelectedModel.IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
-                            <local:FontAwesome.RenderTransform>
-                                <RotateTransform Angle="0"  />
-                            </local:FontAwesome.RenderTransform>
-                        </local:FontAwesome>
-                        <TextBlock Text="Load"/>
-                    </StackPanel>
-                    <Button.Triggers>
-                        <EventTrigger RoutedEvent="Loaded">
-                            <BeginStoryboard x:Name="SpinnerIconAnimation" Storyboard="{StaticResource LoadingAnimation}" />
-                        </EventTrigger>
-                        <EventTrigger RoutedEvent="Unloaded">
-                            <StopStoryboard BeginStoryboardName="SpinnerIconAnimation" />
-                        </EventTrigger>
-                    </Button.Triggers>
-                </Button>
-                <Button BorderThickness="0,1,1,1" ToolTip="Unload Model" Width="80"
-                    Command="{Binding UnloadCommand}" 
-                    Visibility="{Binding SelectedModel.IsLoaded, FallbackValue=Collapsed, TargetNullValue=Collapsed, Converter={StaticResource BooleanToVisibilityConverter}}"
-                    IsEnabled="{Binding SelectedModel.IsLoading, Converter={StaticResource InverseBoolConverter}}">
-                    <TextBlock Text="Unload"/>
-                </Button>
-            </StackPanel>
-            <Grid>
-                <ComboBox 
-                     DisplayMemberPath="Name" 
-                     ItemsSource="{Binding ModelCollectionView}" 
-                     SelectedItem="{Binding SelectedModel}" 
-                     IsSynchronizedWithCurrentItem="False"
-                     IsEnabled="{Binding SelectedModel.IsLoading, FallbackValue=True, TargetNullValue=True, Converter={StaticResource InverseBoolConverter}}" > 
-                </ComboBox>
-                <TextBlock Text="-- Select Model --" Visibility="{Binding SelectedModel, Converter={StaticResource InverseNullVisibilityConverter}}" IsHitTestVisible="False" Margin="3,2" FontStyle="Italic" Opacity=".7" />
-            </Grid>
-
-       
+            <TextBlock DockPanel.Dock="Top" Text="Models"/>
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Visibility="{Binding SelectedModel, Converter={StaticResource NullVisibilityConverter}}">
+                    <Button BorderThickness="0,1,1,1" ToolTip="Load Model" Width="80"
+                        Command="{Binding LoadCommand}" 
+                        CommandParameter="{Binding SelectedModel}"
+                        Visibility="{Binding SelectedModel.IsLoaded, FallbackValue=Visible, TargetNullValue=Visible, Converter={StaticResource InverseBooleanToVisibilityConverter}}" 
+                        IsEnabled="{Binding SelectedModel.IsLoading, Converter={StaticResource InverseBoolConverter}}">
+                        <StackPanel Orientation="Horizontal">
+                            <local:FontAwesome Icon="&#xf110;" Size="12" IsSpinner="True" Visibility="{Binding SelectedModel.IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"  Margin="0,0,4,0" Width="12" Height="12" />
+                            <TextBlock Text="Load"/>
+                        </StackPanel>
+                    </Button>
+                    <Button BorderThickness="0,1,1,1" ToolTip="Unload Model" Width="80"
+                        Command="{Binding UnloadCommand}" 
+                        CommandParameter="{Binding SelectedModel}"
+                        Visibility="{Binding SelectedModel.IsLoaded, FallbackValue=Collapsed, TargetNullValue=Collapsed, Converter={StaticResource BooleanToVisibilityConverter}}"
+                        IsEnabled="{Binding SelectedModel.IsLoading, Converter={StaticResource InverseBoolConverter}}">
+                        <TextBlock Text="Unload"/>
+                    </Button>
+                </StackPanel>
+                <Grid>
+                    <ComboBox 
+                        DisplayMemberPath="Name" 
+                        ItemsSource="{Binding ModelCollectionView}" 
+                        SelectedItem="{Binding SelectedModel}" 
+                        IsSynchronizedWithCurrentItem="False"
+                        IsEnabled="{Binding SelectedModel.IsLoading, FallbackValue=True, TargetNullValue=True, Converter={StaticResource InverseBoolConverter}}" />
+                    <TextBlock Text="-- Select Model --" Visibility="{Binding SelectedModel, Converter={StaticResource InverseNullVisibilityConverter}}" IsHitTestVisible="False" Margin="3,2" FontStyle="Italic" Opacity=".7" />
+                </Grid>
+            </DockPanel>
         </DockPanel>
-    </DockPanel>
+
+
+        <!--ControlNet-->
+        <DockPanel Margin="0,5,0,0" Visibility="{Binding SelectedModel.IsControlNet, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Collapsed}">
+            <Border DockPanel.Dock="Left" BorderBrush="{StaticResource ButtonBorderDefault}" BorderThickness="1,1,0,1" Padding="10,0">
+                <TextBlock  Text="ControlNet" VerticalAlignment="Center"/>
+            </Border>
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Visibility="{Binding SelectedControlNetModel, Converter={StaticResource NullVisibilityConverter}}">
+                    <Button BorderThickness="0,1,1,1" ToolTip="Load Model" Width="80"
+                            Command="{Binding LoadControlNetCommand}" 
+                            CommandParameter="{Binding SelectedControlNetModel}"
+                            Visibility="{Binding SelectedControlNetModel.IsLoaded, FallbackValue=Visible, TargetNullValue=Visible, Converter={StaticResource InverseBooleanToVisibilityConverter}}" 
+                            IsEnabled="{Binding SelectedControlNetModel.IsLoading, Converter={StaticResource InverseBoolConverter}}">
+                        <StackPanel Orientation="Horizontal">
+                            <local:FontAwesome Icon="&#xf110;" Size="12" IsSpinner="True" Visibility="{Binding SelectedControlNetModel.IsLoading, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Collapsed}"  Margin="0,0,4,0" Width="12" Height="12" />
+                            <TextBlock Text="Load"/>
+                        </StackPanel>
+                    </Button>
+                    <Button BorderThickness="0,1,1,1" ToolTip="Unload Model" Width="80"
+                        Command="{Binding UnloadControlNetCommand}"
+                        CommandParameter="{Binding SelectedControlNetModel}"
+                        Visibility="{Binding SelectedControlNetModel.IsLoaded, FallbackValue=Collapsed, TargetNullValue=Collapsed, Converter={StaticResource BooleanToVisibilityConverter}}"
+                        IsEnabled="{Binding SelectedControlNetModel.IsLoading, Converter={StaticResource InverseBoolConverter}}">
+                        <TextBlock Text="Unload"/>
+                    </Button>
+                </StackPanel>
+                <Grid>
+                    <ComboBox 
+                       DisplayMemberPath="Name" 
+                       ItemsSource="{Binding ControlNetModelCollectionView}" 
+                       SelectedItem="{Binding SelectedControlNetModel}" 
+                       IsSynchronizedWithCurrentItem="False"
+                       IsEnabled="{Binding SelectedControlNetModel.IsLoading, FallbackValue=True, TargetNullValue=True, Converter={StaticResource InverseBoolConverter}}" />
+                    <TextBlock Text="-- Select ControlNet --" Visibility="{Binding SelectedControlNetModel, Converter={StaticResource InverseNullVisibilityConverter}}" IsHitTestVisible="False" Margin="3,2" FontStyle="Italic" Opacity=".7" />
+                </Grid>
+            </DockPanel>
+        </DockPanel>
+
+    </StackPanel>
 
 </UserControl>

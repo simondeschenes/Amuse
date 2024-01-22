@@ -47,7 +47,7 @@
                         <TextBlock Text="Image To Image" Margin="5,0,0,2" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
-                <views:ImageToImageView UISettings="{Binding UISettings}" Margin="0,6,0,0"/>
+                <views:ImageToImageView Settings="{Binding UISettings}" Margin="0,6,0,0"/>
             </TabItem>
 
             <!--Image Inpaint-->

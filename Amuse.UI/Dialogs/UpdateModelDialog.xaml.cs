@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
@@ -32,10 +33,7 @@ namespace Amuse.UI.Dialogs
             WindowMaximizeCommand = new AsyncRelayCommand(WindowMaximize);
             SaveCommand = new AsyncRelayCommand(Save, CanExecuteSave);
             CancelCommand = new AsyncRelayCommand(Cancel, CanExecuteCancel);
-            _invalidOptions = _uiSettings.Templates
-                .Where(x => x.IsUserTemplate)
-                .Select(x => x.Name)
-                .ToList();
+            _invalidOptions = _uiSettings.GetModelNames();
             InitializeComponent();
         }
 

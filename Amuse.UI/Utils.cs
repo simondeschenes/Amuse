@@ -1,4 +1,6 @@
-﻿using System;
+﻿using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
@@ -57,6 +59,20 @@ namespace Amuse.UI
             }
         }
 
+        internal static BitmapSource GetImage(Image<Rgba32> inputImage)
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                inputImage.SaveAsPng(memoryStream);
+                var image = new BitmapImage();
+                image.BeginInit();
+                image.CacheOption = BitmapCacheOption.OnLoad;
+                image.StreamSource = memoryStream;
+                image.EndInit();
+                image.Freeze();
+                return image;
+            }
+        }
 
         internal static async Task RefreshDelay(long startTime, int refreshRate, CancellationToken cancellationToken)
         {
@@ -109,5 +125,7 @@ namespace Amuse.UI
             // Hack: Moving an item will invoke a collection changed event
             collection?.Move(0, 0);
         }
+
+       
     }
 }

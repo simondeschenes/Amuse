@@ -1,8 +1,9 @@
-﻿using Amuse.UI.Commands;
+﻿using Microsoft.Extensions.Logging;
+using OnnxStack.StableDiffusion.Config;
+using OnnxStack.StableDiffusion.Enums;
+using Amuse.UI.Commands;
 using Amuse.UI.Models;
 using Amuse.UI.Services;
-using Microsoft.Extensions.Logging;
-using OnnxStack.StableDiffusion.Config;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -16,21 +17,22 @@ using System.Windows;
 namespace Amuse.UI.Dialogs
 {
     /// <summary>
-    /// Interaction logic for AddModelDialog.xaml
+    /// Interaction logic for AddControlNetModelDialog.xaml
     /// </summary>
-    public partial class AddModelDialog : Window, INotifyPropertyChanged
+    public partial class AddControlNetModelDialog : Window, INotifyPropertyChanged
     {
-        private readonly ILogger<AddModelDialog> _logger;
+        private readonly ILogger<AddControlNetModelDialog> _logger;
 
-        private List<string> _invalidOptions;
-        private string _modelFolder;
+        private readonly List<string> _invalidOptions;
         private string _modelName;
+        private string _modelFile;
+        private string _annotationModelFile;
+        private ControlNetType _selectedControlNetType;
         private IModelFactory _modelFactory;
         private AmuseSettings _settings;
-        private ModelTemplateViewModel _modelTemplate;
-        private StableDiffusionModelSet _modelSetResult;
+        private ControlNetModelSet _modelSetResult;
 
-        public AddModelDialog(AmuseSettings settings, IModelFactory modelFactory, ILogger<AddModelDialog> logger)
+        public AddControlNetModelDialog(AmuseSettings settings, IModelFactory modelFactory, ILogger<AddControlNetModelDialog> logger)
         {
             _logger = logger;
             _settings = settings;
@@ -41,12 +43,11 @@ namespace Amuse.UI.Dialogs
             WindowMaximizeCommand = new AsyncRelayCommand(WindowMaximize);
             SaveCommand = new AsyncRelayCommand(Save, CanExecuteSave);
             CancelCommand = new AsyncRelayCommand(Cancel);
-            ModelTemplates = _settings.Templates.Where(x => !x.IsUserTemplate).ToList();
             _invalidOptions = _settings.GetModelNames();
             InitializeComponent();
+            SelectedControlNetType = ControlNetType.Canny;
         }
 
-        public AmuseSettings Settings => _settings;
         public AsyncRelayCommand WindowMinimizeCommand { get; }
         public AsyncRelayCommand WindowRestoreCommand { get; }
         public AsyncRelayCommand WindowMaximizeCommand { get; }
@@ -54,13 +55,6 @@ namespace Amuse.UI.Dialogs
         public AsyncRelayCommand SaveCommand { get; }
         public AsyncRelayCommand CancelCommand { get; }
         public ObservableCollection<ValidationResult> ValidationResults { get; set; } = new ObservableCollection<ValidationResult>();
-        public List<ModelTemplateViewModel> ModelTemplates { get; set; }
-
-        public ModelTemplateViewModel ModelTemplate
-        {
-            get { return _modelTemplate; }
-            set { _modelTemplate = value; NotifyPropertyChanged(); CreateModelSet(); }
-        }
 
         public string ModelName
         {
@@ -68,16 +62,15 @@ namespace Amuse.UI.Dialogs
             set { _modelName = value; _modelName?.Trim(); NotifyPropertyChanged(); CreateModelSet(); }
         }
 
-        public string ModelFolder
+        public string ModelFile
         {
-            get { return _modelFolder; }
+            get { return _modelFile; }
             set
             {
-                _modelFolder = value;
-                if (_modelTemplate is not null && !_modelTemplate.IsUserTemplate)
-                    _modelName = string.IsNullOrEmpty(_modelFolder)
-                        ? string.Empty
-                        : Path.GetFileName(_modelFolder);
+                _modelFile = value;
+                _modelName = string.IsNullOrEmpty(_modelFile)
+                    ? string.Empty
+                    : Path.GetFileNameWithoutExtension(_modelFile);
 
                 NotifyPropertyChanged();
                 NotifyPropertyChanged(nameof(ModelName));
@@ -85,36 +78,36 @@ namespace Amuse.UI.Dialogs
             }
         }
 
-        public StableDiffusionModelSet ModelSetResult
+        public string AnnotationModelFile
+        {
+            get { return _annotationModelFile; }
+            set { _annotationModelFile = value; NotifyPropertyChanged(); CreateModelSet(); }
+        }
+
+        public ControlNetType SelectedControlNetType
+        {
+            get { return _selectedControlNetType; }
+            set { _selectedControlNetType = value; NotifyPropertyChanged(); CreateModelSet(); }
+
+        }
+
+        private DiffuserPipelineType _selectedPipelineType;
+
+        public DiffuserPipelineType SelectedPipelineType
+        {
+            get { return _selectedPipelineType; }
+            set { _selectedPipelineType = value; NotifyPropertyChanged(); CreateModelSet(); }
+        }
+
+
+        public ControlNetModelSet ModelSetResult
         {
             get { return _modelSetResult; }
         }
 
-        private bool _enableTemplateSelection = true;
 
-        public bool EnableTemplateSelection
+        public new bool ShowDialog()
         {
-            get { return _enableTemplateSelection; }
-            set { _enableTemplateSelection = value; NotifyPropertyChanged(); }
-        }
-
-        private bool _enableNameSelection = true;
-        public bool EnableNameSelection
-        {
-            get { return _enableNameSelection; }
-            set { _enableNameSelection = value; NotifyPropertyChanged(); }
-        }
-
-
-        public bool ShowDialog(ModelTemplateViewModel selectedTemplate = null)
-        {
-            if (selectedTemplate is not null)
-            {
-                EnableNameSelection = !selectedTemplate.IsUserTemplate;
-                EnableTemplateSelection = false;
-                ModelTemplate = selectedTemplate;
-                ModelName = selectedTemplate.IsUserTemplate ? selectedTemplate.Name : string.Empty;
-            }
             return base.ShowDialog() ?? false;
         }
 
@@ -123,15 +116,13 @@ namespace Amuse.UI.Dialogs
         {
             _modelSetResult = null;
             ValidationResults.Clear();
-            if (string.IsNullOrEmpty(_modelFolder))
+            if (string.IsNullOrEmpty(_modelFile))
                 return;
 
-            _modelSetResult = _modelFactory.CreateStableDiffusionModelSet(ModelName.Trim(), ModelFolder, _modelTemplate.StableDiffusionTemplate);
+            _modelSetResult = _modelFactory.CreateControlNetModelSet(ModelName.Trim(), _selectedControlNetType, _selectedPipelineType, _modelFile, _annotationModelFile);
 
             // Validate
-            if (_enableNameSelection)
-                ValidationResults.Add(new ValidationResult("Name", !_invalidOptions.Contains(_modelName.ToLower()) && _modelName.Length > 2 && _modelName.Length < 50));
-
+            ValidationResults.Add(new ValidationResult("Name", !_invalidOptions.Contains(_modelName, StringComparer.OrdinalIgnoreCase) && _modelName.Length > 2 && _modelName.Length < 50));
             foreach (var validationResult in _modelSetResult.ModelConfigurations.Select(x => new ValidationResult(x.Type.ToString(), File.Exists(x.OnnxModelPath))))
             {
                 ValidationResults.Add(validationResult);
@@ -148,7 +139,7 @@ namespace Amuse.UI.Dialogs
 
         private bool CanExecuteSave()
         {
-            if (string.IsNullOrEmpty(_modelFolder))
+            if (string.IsNullOrEmpty(_modelFile))
                 return false;
             if (_modelSetResult is null)
                 return false;
