@@ -21,7 +21,7 @@ namespace Amuse.UI
         private INavigatable _selectedTabItem;
         private readonly ILogger<MainWindow> _logger;
 
-        public MainWindow(AmuseSettings uiSettings, StableDiffusionConfig configuration, ImageUpscalerConfig upscaleConfiguration, ILogger<MainWindow> logger)
+        public MainWindow(AmuseSettings uiSettings, ILogger<MainWindow> logger)
         {
             _logger = logger;
             UISettings = uiSettings;

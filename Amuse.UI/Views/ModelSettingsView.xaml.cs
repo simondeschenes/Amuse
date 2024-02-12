@@ -5,6 +5,7 @@ using Amuse.UI.Services;
 using Microsoft.Extensions.Logging;
 using OnnxStack.Core;
 using OnnxStack.Core.Config;
+using OnnxStack.ImageUpscaler.Common;
 using OnnxStack.StableDiffusion.Config;
 using System;
 using System.Collections.Generic;
@@ -614,13 +615,29 @@ namespace Amuse.UI.Views
         private async Task DownloadStableDiffusionModelComplete(ModelTemplateViewModel modelTemplate, string outputDirectory)
         {
             var modelSet = _modelFactory.CreateStableDiffusionModelSet(modelTemplate.Name, outputDirectory, modelTemplate.StableDiffusionTemplate);
-            var isModelSetValid = modelSet.ModelConfigurations.All(x => File.Exists(x.OnnxModelPath));
-            if (!isModelSetValid)
+
+            var configurations = new OnnxModelConfig[]
             {
-                // Error, Invalid modelset after download
-                modelTemplate.IsDownloading = false;
-                modelTemplate.ErrorMessage = "Error: Download completed but ModelSet is invalid";
-                return;
+                modelSet.UnetConfig,
+                modelSet.TokenizerConfig,
+                modelSet.Tokenizer2Config,
+                modelSet.TextEncoderConfig,
+                modelSet.TextEncoder2Config,
+                modelSet.VaeDecoderConfig,
+                modelSet.VaeEncoderConfig,
+            };
+
+            foreach (var configuration in configurations)
+            {
+                if (configuration == null)
+                    continue;
+
+                if (!File.Exists(configuration.OnnxModelPath))
+                {
+                    modelTemplate.IsDownloading = false;
+                    modelTemplate.ErrorMessage = "Error: Download completed but ModelSet is invalid";
+                    return;
+                }
             }
 
             UISettings.StableDiffusionModelSets.Add(new StableDiffusionModelSetViewModel
@@ -772,7 +789,7 @@ namespace Amuse.UI.Views
             var destinationFile = Path.Combine(destination, filename);
 
             var modelSet = _modelFactory.CreateUpscaleModelSet(modelTemplate.Name, destinationFile, modelTemplate.UpscaleTemplate);
-            var isModelSetValid = modelSet.ModelConfigurations.All(x => File.Exists(x.OnnxModelPath));
+            var isModelSetValid = File.Exists(modelSet.UpscaleModelConfig.OnnxModelPath);
             if (!isModelSetValid)
             {
                 // Error, Invalid modelset after download

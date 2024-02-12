@@ -210,13 +210,6 @@ namespace Amuse.UI.Models
             set { _conditioningScale = value; NotifyPropertyChanged(); }
         }
 
-        public bool IsControlImageProcessingEnabled
-        {
-            get { return _isControlImageProcessingEnabled; }
-            set { _isControlImageProcessingEnabled = value; NotifyPropertyChanged(); }
-        }
-
-
         public bool HasChanged
         {
             get { return _hasChanged; }
@@ -253,7 +246,6 @@ namespace Amuse.UI.Models
                 OriginalInferenceSteps = model.OriginalInferenceSteps,
                 SchedulerType = model.SchedulerType,
                 ConditioningScale = model.ConditioningScale,
-                IsControlImageProcessingEnabled = model.IsControlImageProcessingEnabled,
             };
         }
 
@@ -285,8 +277,7 @@ namespace Amuse.UI.Models
                 VarianceType = model.VarianceType,
                 OriginalInferenceSteps = model.OriginalInferenceSteps,
                 SchedulerType = model.SchedulerType,
-                ConditioningScale = model.ConditioningScale,
-                IsControlImageProcessingEnabled = model.IsControlImageProcessingEnabled,
+                ConditioningScale = model.ConditioningScale
             };
         }
 

@@ -1,7 +1,6 @@
 ﻿using OnnxStack.StableDiffusion.Config;
 using OnnxStack.StableDiffusion.Enums;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 
@@ -34,9 +33,6 @@ namespace Amuse.UI.Models
         }
 
         public ControlNetType Type => ModelSet.Type;
-
-        public bool HasAnnotator => ModelSet.ModelConfigurations.Any(x => x.Type == OnnxStack.Core.Config.OnnxModelType.Annotation);
-
         public ControlNetModelSet ModelSet { get; set; }
 
         #region INotifyPropertyChanged

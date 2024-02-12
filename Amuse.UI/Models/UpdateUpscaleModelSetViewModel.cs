@@ -1,11 +1,7 @@
-﻿using Amuse.UI.Views;
-using Microsoft.ML.OnnxRuntime;
+﻿using Microsoft.ML.OnnxRuntime;
 using OnnxStack.Core.Config;
-using OnnxStack.StableDiffusion.Config;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using OnnxStack.ImageUpscaler.Common;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace Amuse.UI.Models
@@ -18,7 +14,7 @@ namespace Amuse.UI.Models
         private int _intraOpNumThreads;
         private ExecutionMode _executionMode;
         private ExecutionProvider _executionProvider;
-        private ObservableCollection<ModelFileViewModel> _modelFiles;
+        private string _modelFile;
         private int _channels;
         private int _scaleFactor;
         private int _sampleSize;
@@ -76,10 +72,10 @@ namespace Amuse.UI.Models
             set { _executionProvider = value; NotifyPropertyChanged(); }
         }
 
-        public ObservableCollection<ModelFileViewModel> ModelFiles
+        public string ModelFile
         {
-            get { return _modelFiles; }
-            set { _modelFiles = value; NotifyPropertyChanged(); }
+            get { return _modelFile; }
+            set { _modelFile = value; NotifyPropertyChanged(); }
         }
 
 
@@ -88,31 +84,15 @@ namespace Amuse.UI.Models
             return new UpdateUpscaleModelSetViewModel
             {
                 Name = modelset.Name,
-                SampleSize = modelset.SampleSize,
-                ScaleFactor = modelset.ScaleFactor,
-                Channels = modelset.Channels,
-
                 DeviceId = modelset.DeviceId,
                 ExecutionMode = modelset.ExecutionMode,
                 ExecutionProvider = modelset.ExecutionProvider,
                 InterOpNumThreads = modelset.InterOpNumThreads,
                 IntraOpNumThreads = modelset.IntraOpNumThreads,
-                ModelFiles = new ObservableCollection<ModelFileViewModel>(modelset.ModelConfigurations.Select(c => new ModelFileViewModel
-                {
-                    Type = c.Type,
-                    OnnxModelPath = c.OnnxModelPath,
-                    DeviceId = c.DeviceId ?? modelset.DeviceId,
-                    ExecutionMode = c.ExecutionMode ?? modelset.ExecutionMode,
-                    ExecutionProvider = c.ExecutionProvider ?? modelset.ExecutionProvider,
-                    InterOpNumThreads = c.InterOpNumThreads ?? modelset.InterOpNumThreads,
-                    IntraOpNumThreads = c.IntraOpNumThreads ?? modelset.IntraOpNumThreads,
-                    IsOverrideEnabled =
-                             c.DeviceId.HasValue
-                          || c.ExecutionMode.HasValue
-                          || c.ExecutionProvider.HasValue
-                          || c.IntraOpNumThreads.HasValue
-                          || c.InterOpNumThreads.HasValue
-                }))
+                SampleSize = modelset.UpscaleModelConfig.SampleSize,
+                ScaleFactor = modelset.UpscaleModelConfig.ScaleFactor,
+                Channels = modelset.UpscaleModelConfig.Channels,
+                ModelFile = modelset.UpscaleModelConfig.OnnxModelPath
             };
         }
 
@@ -122,24 +102,18 @@ namespace Amuse.UI.Models
             {
                 IsEnabled = true,
                 Name = modelset.Name,
-                SampleSize = modelset.SampleSize,
-                ScaleFactor = modelset.ScaleFactor,
-                Channels = modelset.Channels,
                 DeviceId = modelset.DeviceId,
                 ExecutionMode = modelset.ExecutionMode,
                 ExecutionProvider = modelset.ExecutionProvider,
                 InterOpNumThreads = modelset.InterOpNumThreads,
                 IntraOpNumThreads = modelset.IntraOpNumThreads,
-                ModelConfigurations = new List<OnnxModelConfig>(modelset.ModelFiles.Select(x => new OnnxModelConfig
+                UpscaleModelConfig = new UpscaleModelConfig
                 {
-                    Type = x.Type,
-                    OnnxModelPath = x.OnnxModelPath,
-                    DeviceId = x.IsOverrideEnabled && modelset.DeviceId != x.DeviceId ? x.DeviceId : default,
-                    ExecutionMode = x.IsOverrideEnabled && modelset.ExecutionMode != x.ExecutionMode ? x.ExecutionMode : default,
-                    ExecutionProvider = x.IsOverrideEnabled && modelset.ExecutionProvider != x.ExecutionProvider ? x.ExecutionProvider : default,
-                    IntraOpNumThreads = x.IsOverrideEnabled && modelset.IntraOpNumThreads != x.IntraOpNumThreads ? x.IntraOpNumThreads : default,
-                    InterOpNumThreads = x.IsOverrideEnabled && modelset.InterOpNumThreads != x.InterOpNumThreads ? x.InterOpNumThreads : default,
-                }))
+                    OnnxModelPath = modelset.ModelFile,
+                    Channels = modelset.Channels,
+                    ScaleFactor = modelset.ScaleFactor,
+                    SampleSize = modelset.SampleSize
+                }
             };
         }
 

@@ -1,5 +1,6 @@
 ﻿using Amuse.UI.Commands;
 using Amuse.UI.Models;
+using Amuse.UI.Services;
 using Microsoft.Extensions.Logging;
 using OnnxStack.Core;
 using OnnxStack.StableDiffusion.Common;
@@ -195,7 +196,7 @@ namespace Amuse.UI.UserControls
         /// <param name="controlNetModel">The control net model.</param>
         private async Task LoadControlNetModel(ControlNetModelSetViewModel controlNetModel)
         {
-            if (_stableDiffusionService.IsModelLoaded(controlNetModel.ModelSet))
+            if (_stableDiffusionService.IsControlNetModelLoaded(controlNetModel.ModelSet))
                 return;
 
             var elapsed = _logger.LogBegin($"ControlNet model '{controlNetModel.Name}' Loading...");
@@ -211,7 +212,7 @@ namespace Amuse.UI.UserControls
                         await UnloadControlNetModel(loadedControlNetModel);
                     }
                 }
-                controlNetModel.IsLoaded = await _stableDiffusionService.LoadModelAsync(controlNetModel.ModelSet);
+                controlNetModel.IsLoaded = await _stableDiffusionService.LoadControlNetModelAsync(controlNetModel.ModelSet);
                 _logger.LogEnd($"ControlNet model '{controlNetModel.Name}' Loaded.", elapsed);
             }
             catch (Exception ex)
@@ -229,12 +230,12 @@ namespace Amuse.UI.UserControls
         /// <param name="controlNetModel">The control net model.</param>
         private async Task UnloadControlNetModel(ControlNetModelSetViewModel controlNetModel)
         {
-            if (!_stableDiffusionService.IsModelLoaded(controlNetModel.ModelSet))
+            if (!_stableDiffusionService.IsControlNetModelLoaded(controlNetModel.ModelSet))
                 return;
 
             _logger.LogInformation("ControlNet model '{controlNetModel.Name}' Unloading...", controlNetModel.Name);
             controlNetModel.IsLoading = true;
-            await _stableDiffusionService.UnloadModelAsync(controlNetModel.ModelSet);
+            await _stableDiffusionService.UnloadControlNetModelAsync(controlNetModel.ModelSet);
             controlNetModel.IsLoading = false;
             controlNetModel.IsLoaded = false;
             _logger.LogInformation("ControlNet model '{controlNetModel.Name}' Unloaded.", controlNetModel.Name);

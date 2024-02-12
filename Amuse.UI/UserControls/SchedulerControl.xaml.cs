@@ -151,7 +151,7 @@ namespace Amuse.UI.UserControls
             if (model is null)
                 return;
 
-            SchedulerTypes = new List<SchedulerType>(model.ModelSet.PipelineType.GetSchedulerTypes());
+            SchedulerTypes = new List<SchedulerType>(GetSchedulerTypes(model.ModelSet.PipelineType));
             SchedulerDefaults = UISettings.Templates.FirstOrDefault(x => x.Name == model.Name)?.StableDiffusionTemplate?.SchedulerDefaults
                     ?? new StableDiffusionSchedulerDefaults();
             ResetParameters();
@@ -182,6 +182,42 @@ namespace Amuse.UI.UserControls
         private void RandomSeed()
         {
             SchedulerOptions.Seed = 0;
+        }
+
+        /// <summary>
+        /// TODO: Get from pipeline
+        /// </summary>
+        /// <param name="pipelineType">Type of the pipeline.</param>
+        /// <returns></returns>
+        private static SchedulerType[] GetSchedulerTypes(DiffuserPipelineType pipelineType)
+        {
+            switch (pipelineType)
+            {
+                case DiffuserPipelineType.StableDiffusion:
+                case DiffuserPipelineType.StableDiffusionXL:
+                    return new[]
+                    {
+                        SchedulerType.LMS,
+                        SchedulerType.Euler,
+                        SchedulerType.EulerAncestral,
+                        SchedulerType.DDPM,
+                        SchedulerType.DDIM,
+                        SchedulerType.KDPM2
+                    };
+                case DiffuserPipelineType.LatentConsistency:
+                case DiffuserPipelineType.LatentConsistencyXL:
+                    return new[]
+                    {
+                        SchedulerType.LCM
+                    };
+                case DiffuserPipelineType.InstaFlow:
+                    return new[]
+                    {
+                        SchedulerType.InstaFlow
+                    };
+                default:
+                    return default;
+            }
         }
 
         #region INotifyPropertyChanged

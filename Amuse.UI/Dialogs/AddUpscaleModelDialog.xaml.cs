@@ -2,6 +2,7 @@
 using Amuse.UI.Models;
 using Amuse.UI.Services;
 using Microsoft.Extensions.Logging;
+using OnnxStack.ImageUpscaler.Common;
 using OnnxStack.StableDiffusion.Config;
 using System;
 using System.Collections.Generic;
@@ -132,10 +133,7 @@ namespace Amuse.UI.Dialogs
             if (_enableNameSelection)
                 ValidationResults.Add(new ValidationResult("Name", !_invalidOptions.Contains(_modelName.ToLower()) && _modelName.Length > 2 && _modelName.Length < 50));
 
-            foreach (var validationResult in _modelSetResult.ModelConfigurations.Select(x => new ValidationResult(x.Type.ToString(), File.Exists(x.OnnxModelPath))))
-            {
-                ValidationResults.Add(validationResult);
-            }
+            ValidationResults.Add(new ValidationResult("Model", File.Exists(_modelSetResult.UpscaleModelConfig.OnnxModelPath)));
         }
 
 

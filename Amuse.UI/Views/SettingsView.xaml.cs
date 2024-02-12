@@ -119,7 +119,7 @@ namespace Amuse.UI.Views
                 var modelSet = updateModelDialog.ModelSetResult;
                 SelectedControlNetModel.ModelSet = modelSet;
                 SelectedControlNetModel.Name = modelSet.Name;
-                UISettings.ControlNetModelSets.ForceNotifyCollectionChanged();
+                SelectedControlNetModel.NotifyPropertyChanged("Type");
                 await Save();
             }
         }

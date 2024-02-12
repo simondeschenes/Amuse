@@ -437,12 +437,12 @@ namespace Amuse.UI.Views
                     foreach (var videoFrame in _videoFrames.Frames)
                     {
                         var refreshTimestamp = Stopwatch.GetTimestamp();
-                        var realtimePromptOptions = GetLivePromptOptions(PromptOptions, videoFrame);
+                        var realtimePromptOptions = GetLivePromptOptions(PromptOptions, videoFrame.Frame);
                         var realtimeSchedulerOptions = SchedulerOptionsModel.ToSchedulerOptions(SchedulerOptions);
                         var result = await _stableDiffusionService.GenerateAsBytesAsync(new ModelOptions(modelOptions, controlNetModel), realtimePromptOptions, realtimeSchedulerOptions, RealtimeProgressCallback(), _cancelationTokenSource.Token);
                         resultVideoFrames.Add(result);
                         PreviewResult = Utils.CreateBitmap(result);
-                        PreviewSource = Utils.CreateBitmap(videoFrame);
+                        PreviewSource = Utils.CreateBitmap(videoFrame.Frame);
                         ProgressValue++;
                         await Utils.RefreshDelay(refreshTimestamp, UISettings.RealtimeRefreshRate, _cancelationTokenSource.Token);
                     }
@@ -585,7 +585,7 @@ namespace Amuse.UI.Views
         {
             var frame = _videoFrames.Frames[index];
             using (var memoryStream = new MemoryStream())
-            using (var frameImage = SixLabors.ImageSharp.Image.Load<Rgba32>(frame))
+            using (var frameImage = SixLabors.ImageSharp.Image.Load<Rgba32>(frame.Frame))
             {
                 frameImage.Resize(_schedulerOptions.Height, _schedulerOptions.Width);
                 frameImage.SaveAsPng(memoryStream);

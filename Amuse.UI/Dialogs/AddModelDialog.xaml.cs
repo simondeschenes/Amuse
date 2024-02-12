@@ -132,10 +132,15 @@ namespace Amuse.UI.Dialogs
             if (_enableNameSelection)
                 ValidationResults.Add(new ValidationResult("Name", !_invalidOptions.Contains(_modelName.ToLower()) && _modelName.Length > 2 && _modelName.Length < 50));
 
-            foreach (var validationResult in _modelSetResult.ModelConfigurations.Select(x => new ValidationResult(x.Type.ToString(), File.Exists(x.OnnxModelPath))))
-            {
-                ValidationResults.Add(validationResult);
-            }
+            ValidationResults.Add(new ValidationResult("Unet Model", File.Exists(_modelSetResult.UnetConfig.OnnxModelPath)));
+            ValidationResults.Add(new ValidationResult("Tokenizer Model", File.Exists(_modelSetResult.TokenizerConfig.OnnxModelPath)));
+            if (_modelSetResult.Tokenizer2Config is not null)
+                ValidationResults.Add(new ValidationResult("Tokenizer2 Model", File.Exists(_modelSetResult.Tokenizer2Config.OnnxModelPath)));
+            ValidationResults.Add(new ValidationResult("TextEncoder Model", File.Exists(_modelSetResult.TextEncoderConfig.OnnxModelPath)));
+            if (_modelSetResult.TextEncoder2Config is not null)
+                ValidationResults.Add(new ValidationResult("TextEncoder2 Model", File.Exists(_modelSetResult.TextEncoder2Config.OnnxModelPath)));
+            ValidationResults.Add(new ValidationResult("VaeDecoder Model", File.Exists(_modelSetResult.VaeDecoderConfig.OnnxModelPath)));
+            ValidationResults.Add(new ValidationResult("VaeEncoder Model", File.Exists(_modelSetResult.VaeEncoderConfig.OnnxModelPath)));
         }
 
 

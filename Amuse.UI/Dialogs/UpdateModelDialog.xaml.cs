@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Runtime;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
@@ -73,6 +71,7 @@ namespace Amuse.UI.Dialogs
 
         private Task Save()
         {
+            ValidationError = string.Empty;
             _modelSetResult = UpdateModelSetViewModel.ToModelSet(_updateModelSet);
             if (_invalidOptions.Contains(_modelSetResult.Name))
             {
@@ -80,14 +79,25 @@ namespace Amuse.UI.Dialogs
                 return Task.CompletedTask;
             }
 
-            foreach (var modelFile in _modelSetResult.ModelConfigurations)
-            {
-                if (!File.Exists(modelFile.OnnxModelPath))
-                {
-                    ValidationError = $"'{modelFile.Type}' model file not found";
-                    return Task.CompletedTask;
-                }
-            }
+            if (!File.Exists(_modelSetResult.UnetConfig.OnnxModelPath))
+                ValidationError = $"Unet model file not found";
+            if (!File.Exists(_modelSetResult.TokenizerConfig.OnnxModelPath))
+                ValidationError = $"Tokenizer model file not found";
+            if (_modelSetResult.Tokenizer2Config is not null)
+                if (!File.Exists(_modelSetResult.Tokenizer2Config.OnnxModelPath))
+                    ValidationError = $"Tokenizer2 model file not found";
+            if (!File.Exists(_modelSetResult.TextEncoderConfig.OnnxModelPath))
+                ValidationError = $"TextEncoder model file not found";
+            if (_modelSetResult.TextEncoder2Config is not null)
+                if (!File.Exists(_modelSetResult.TextEncoder2Config.OnnxModelPath))
+                    ValidationError = $"TextEncoder2 model file not found";
+            if (!File.Exists(_modelSetResult.VaeDecoderConfig.OnnxModelPath))
+                ValidationError = $"VaeDecoder model file not found";
+            if (!File.Exists(_modelSetResult.VaeEncoderConfig.OnnxModelPath))
+                ValidationError = $"VaeEncoder model file not found";
+
+            if (!string.IsNullOrEmpty(ValidationError))
+                return Task.CompletedTask;
 
             DialogResult = true;
             return Task.CompletedTask;
