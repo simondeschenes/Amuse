@@ -38,15 +38,15 @@
                         <StackPanel Margin="5,0">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="Duration:" Margin="0,0,8,0"  FontSize="10" Opacity=".6" VerticalAlignment="Center" FontStyle="Italic"/>
-                                <TextBlock Text="{Binding VideoResult.VideoInfo.Duration, FallbackValue=00:00:00, StringFormat={}mm\\:ss\\.ffff}" />
+                                <TextBlock Text="{Binding VideoResult.Video.Duration, FallbackValue=00:00:00, StringFormat={}mm\\:ss\\.ffff}" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,-2,0,0">
                                 <TextBlock Text="Video Info:" Margin="0,0,3,0"  FontSize="10" Opacity=".6" VerticalAlignment="Center" FontStyle="Italic"/>
-                                <TextBlock Text="{Binding VideoResult.VideoInfo.Width, FallbackValue=0}" />
+                                <TextBlock Text="{Binding VideoResult.Video.Width, FallbackValue=0}" />
                                 <TextBlock Text=" x " Opacity=".7" VerticalAlignment="Center" FontStyle="Italic"/>
-                                <TextBlock Text="{Binding VideoResult.VideoInfo.Height, FallbackValue=0}" />
+                                <TextBlock Text="{Binding VideoResult.Video.Height, FallbackValue=0}" />
                                 <TextBlock Text=" @ " FontSize="11" Opacity=".7" VerticalAlignment="Center" FontStyle="Italic"/>
-                                <TextBlock Text="{Binding VideoResult.VideoInfo.FPS, FallbackValue=0}" />
+                                <TextBlock Text="{Binding VideoResult.Video.FrameRate, FallbackValue=0}" />
                                 <TextBlock Text=" fps" FontSize="11" Opacity=".7" VerticalAlignment="Center" FontStyle="Italic"/>
                             </StackPanel>
                         </StackPanel>

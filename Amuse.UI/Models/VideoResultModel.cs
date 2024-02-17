@@ -10,7 +10,6 @@ namespace Amuse.UI.Models
     {
         public string ModelName => Model?.Name;
         public DateTime Timestamp { get; } = DateTime.UtcNow;
-        public VideoInfo VideoInfo { get; set; }
         public DiffuserPipelineType PipelineType { get; init; }
         public DiffuserType DiffuserType { get; init; }
         public PromptOptions PromptOptions { get; init; }
@@ -21,7 +20,7 @@ namespace Amuse.UI.Models
         public string FileName { get; set; }
 
         [JsonIgnore]
-        public byte[] VideoBytes { get; set; }
+        public OnnxVideo Video { get; set; }
 
         [JsonIgnore]
         public StableDiffusionModelSetViewModel Model { get; set; }

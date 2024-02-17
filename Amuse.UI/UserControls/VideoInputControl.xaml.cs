@@ -1,23 +1,19 @@
-﻿using Microsoft.Win32;
-using OnnxStack.Core.Services;
-using Amuse.UI.Commands;
+﻿using Amuse.UI.Commands;
 using Amuse.UI.Models;
+using Amuse.UI.Services;
 using System;
 using System.ComponentModel;
-using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
-using Amuse.UI.Services;
 
 namespace Amuse.UI.UserControls
 {
     public partial class VideoInputControl : UserControl, INotifyPropertyChanged
     {
         private readonly IFileService _fileService;
-        private readonly IVideoService _videoService;
         private bool _isPreviewVisible;
 
         /// <summary>
@@ -28,7 +24,6 @@ namespace Amuse.UI.UserControls
             if (!DesignerProperties.GetIsInDesignMode(this))
             {
                 _fileService = App.GetService<IFileService>();
-                _videoService = App.GetService<IVideoService>();
             }
 
             LoadVideoCommand = new AsyncRelayCommand(LoadVideo);
@@ -118,8 +113,6 @@ namespace Amuse.UI.UserControls
 
             VideoResult = videoResult;
             HasVideoResult = true;
-            PromptOptions.VideoInputFPS = videoResult.VideoInfo.FPS;
-            PromptOptions.VideoOutputFPS = videoResult.VideoInfo.FPS;
         }
 
 

@@ -339,7 +339,7 @@ namespace Amuse.UI.Views
                 if (!BatchOptions.IsAutomationEnabled)
                 {
                     var timestamp = Stopwatch.GetTimestamp();
-                    var result = await _stableDiffusionService.GenerateAsBytesAsync(new ModelOptions(modelOptions), promptOptions, schedulerOptions, ProgressCallback(), _cancelationTokenSource.Token);
+                    var result = await _stableDiffusionService.GenerateImageAsync(new ModelOptions(modelOptions), promptOptions, schedulerOptions, ProgressCallback(), _cancelationTokenSource.Token);
                     yield return await GenerateResultAsync(result, promptOptions, schedulerOptions, timestamp);
                 }
                 else
@@ -347,9 +347,9 @@ namespace Amuse.UI.Views
                     if (!BatchOptions.IsRealtimeEnabled)
                     {
                         var timestamp = Stopwatch.GetTimestamp();
-                        await foreach (var batchResult in _stableDiffusionService.GenerateBatchAsync(new ModelOptions(modelOptions), promptOptions, schedulerOptions, batchOptions, ProgressBatchCallback(), _cancelationTokenSource.Token))
+                        await foreach (var batchResult in _stableDiffusionService.GenerateImageAsync(batchOptions, new ModelOptions(modelOptions), promptOptions, schedulerOptions, ProgressBatchCallback(), _cancelationTokenSource.Token))
                         {
-                            yield return await GenerateResultAsync(batchResult.ImageResult.ToImageBytes(), promptOptions, batchResult.SchedulerOptions, timestamp);
+                            yield return await GenerateResultAsync(new OnnxImage(batchResult.Result), promptOptions, batchResult.SchedulerOptions, timestamp);
                             timestamp = Stopwatch.GetTimestamp();
                         }
                     }
@@ -372,7 +372,7 @@ namespace Amuse.UI.Views
 
                         realtimePromptOptions.Prompt = string.IsNullOrEmpty(realtimePromptOptions.Prompt) ? " " : realtimePromptOptions.Prompt;
                         var timestamp = Stopwatch.GetTimestamp();
-                        var result = await _stableDiffusionService.GenerateAsBytesAsync(new ModelOptions(modelOptions), realtimePromptOptions, realtimeSchedulerOptions, RealtimeProgressCallback(), _cancelationTokenSource.Token);
+                        var result = await _stableDiffusionService.GenerateImageAsync(new ModelOptions(modelOptions), realtimePromptOptions, realtimeSchedulerOptions, RealtimeProgressCallback(), _cancelationTokenSource.Token);
                         yield return await GenerateResultAsync(result, realtimePromptOptions, realtimeSchedulerOptions, timestamp);
                     }
                     await Utils.RefreshDelay(refreshTimestamp, UISettings.RealtimeRefreshRate, _cancelationTokenSource.Token);
@@ -399,13 +399,11 @@ namespace Amuse.UI.Views
             };
         }
 
-        private async Task<ImageResult> GenerateResultAsync(byte[] imageBytes, PromptOptions promptOptions, SchedulerOptions schedulerOptions, long timestamp)
+        private async Task<ImageResult> GenerateResultAsync(OnnxImage onnxImage, PromptOptions promptOptions, SchedulerOptions schedulerOptions, long timestamp)
         {
-            var image = Utils.CreateBitmap(imageBytes);
-
             var imageResult = new ImageResult
             {
-                Image = image,
+                Image = await onnxImage.ToBitmapAsync(),
                 Model = _selectedModel,
                 PromptOptions = promptOptions,
                 PipelineType = _selectedModel.ModelSet.PipelineType,

@@ -28,7 +28,6 @@ namespace Amuse.UI
 
             // Add OnnxStackStableDiffusion
             builder.Services.AddOnnxStack();
-            builder.Services.AddOnnxStackImageUpscaler();
             builder.Services.AddOnnxStackConfig<AmuseSettings>();
 
             // Add Windows
@@ -52,6 +51,7 @@ namespace Amuse.UI
             builder.Services.AddSingleton<IDeviceService, DeviceService>();
             builder.Services.AddSingleton<IFileService, FileService>();
             builder.Services.AddSingleton<IStableDiffusionService, StableDiffusionService>();
+            builder.Services.AddSingleton<IUpscaleService, UpscaleService>();
 
             // Build App
             _applicationHost = builder.Build();

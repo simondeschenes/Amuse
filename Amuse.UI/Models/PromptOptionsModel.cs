@@ -10,8 +10,6 @@ namespace Amuse.UI.Models
         private string _prompt;
         private string _negativePrompt;
         private bool _hasChanged;
-        private float _videoInputFPS;
-        private float _videoOutputFPS;
 
         [Required]
         [StringLength(512, MinimumLength = 1)]
@@ -28,18 +26,6 @@ namespace Amuse.UI.Models
             set { _prompt = value; NotifyPropertyChanged(); }
         }
 
-        public float VideoInputFPS
-        {
-            get { return _videoInputFPS; }
-            set { _videoInputFPS = value; NotifyPropertyChanged(); }
-        }
-
-        public float VideoOutputFPS
-        {
-            get { return _videoOutputFPS; }
-            set { _videoOutputFPS = value; NotifyPropertyChanged(); }
-        }
-
         public bool HasChanged
         {
             get { return _hasChanged; }
@@ -51,9 +37,7 @@ namespace Amuse.UI.Models
             return new PromptOptionsModel
             {
                 Prompt = promptOptions.Prompt,
-                NegativePrompt = promptOptions.NegativePrompt,
-                VideoInputFPS = promptOptions.VideoInputFPS,
-                VideoOutputFPS = promptOptions.VideoOutputFPS
+                NegativePrompt = promptOptions.NegativePrompt
             };
         }
 
@@ -62,9 +46,7 @@ namespace Amuse.UI.Models
             return new PromptOptions
             {
                 Prompt = promptOptions.Prompt,
-                NegativePrompt = promptOptions.NegativePrompt,
-                VideoInputFPS = promptOptions.VideoInputFPS,
-                VideoOutputFPS = promptOptions.VideoOutputFPS
+                NegativePrompt = promptOptions.NegativePrompt
             };
         }
 

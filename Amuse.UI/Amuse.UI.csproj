@@ -73,8 +73,9 @@
     <PackageReference Include="LibGit2Sharp" Version="0.28.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.77" />
-    <PackageReference Include="OnnxStack.ImageUpscaler" Version="0.19.0" />
-    <PackageReference Include="OnnxStack.StableDiffusion" Version="0.19.0" />
+    <PackageReference Include="OnnxStack.ImageUpscaler" Version="0.21.0" />
+    <PackageReference Include="OnnxStack.FeatureExtractor" Version="0.21.0" />
+    <PackageReference Include="OnnxStack.StableDiffusion" Version="0.21.0" />
   </ItemGroup>
 
   <ItemGroup>

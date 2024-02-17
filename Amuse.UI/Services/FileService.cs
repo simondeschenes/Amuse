@@ -3,7 +3,8 @@ using Amuse.UI.Models;
 using Amuse.UI.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
-using OnnxStack.Core.Services;
+using OnnxStack.Core.Image;
+using OnnxStack.Core.Video;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,7 +19,6 @@ namespace Services
     public class FileService : IFileService
     {
         private readonly ILogger<FileService> _logger;
-        private readonly IVideoService _videoService;
         private readonly IDialogService _dialogService;
         private readonly AmuseSettings _settings;
 
@@ -29,11 +29,10 @@ namespace Services
         /// <param name="dialogService">The dialog service.</param>
         /// <param name="videoService">The video service.</param>
         /// <param name="logger">The logger.</param>
-        public FileService(AmuseSettings settings, IDialogService dialogService, IVideoService videoService, ILogger<FileService> logger = default)
+        public FileService(AmuseSettings settings, IDialogService dialogService, ILogger<FileService> logger = default)
         {
             _logger = logger;
             _settings = settings;
-            _videoService = videoService;
             _dialogService = dialogService;
         }
 
@@ -339,13 +338,12 @@ namespace Services
 
                 _logger?.LogInformation($"[OpenVideoFile] Loading video file: {videoFile}");
                 var videoBytes = await File.ReadAllBytesAsync(videoFile);
-                var videoInfo = await _videoService.GetVideoInfoAsync(videoBytes);
+                var videoInfo = await VideoHelper.ReadVideoInfoAsync(videoBytes);
                 _logger?.LogInformation($"[OpenVideoFile] Video file loaded, {videoInfo}");
                 return new VideoInputModel
                 {
                     FileName = videoFile,
-                    VideoInfo = videoInfo,
-                    VideoBytes = videoBytes
+                    Video = new OnnxVideo(videoInfo, new List<OnnxImage>())
                 };
             }
             catch (Exception ex)
@@ -370,7 +368,7 @@ namespace Services
 
                 var videoFilename = Path.Combine(_settings.DirectoryVideoAutoSave, GetRandomFileName("mp4", prefix));
                 _logger?.LogInformation($"[AutoSaveVideoFile] Saving video, File: {videoFilename}");
-                await File.WriteAllBytesAsync(videoFilename, videoResult.VideoBytes);
+                await videoResult.Video.SaveAsync(videoFilename);
                 if (_settings.AutoSaveBlueprint)
                     await SaveBlueprintFileAsync(videoResult, videoFilename.Replace(".mp4", ".json"));
 
@@ -393,7 +391,7 @@ namespace Services
             try
             {
                 _logger?.LogInformation($"[SaveVideoFile] Saving video, File: {filename}");
-                await File.WriteAllBytesAsync(filename, videoResult.VideoBytes);
+                await videoResult.Video.SaveAsync(filename);
                 _logger?.LogInformation($"[SaveVideoFile] Video file saved.");
             }
             catch (Exception ex)
@@ -416,7 +414,7 @@ namespace Services
                 if (string.IsNullOrEmpty(saveFileName))
                     return;
 
-                await File.WriteAllBytesAsync(saveFileName, videoResult.VideoBytes);
+                await videoResult.Video.SaveAsync(saveFileName);
                 _logger?.LogInformation($"[SaveAsVideoFile] Video file saved, File: {saveFileName}");
             }
             catch (Exception ex)
@@ -432,21 +430,16 @@ namespace Services
         /// <param name="videoBytes">The video bytes.</param>
         /// <param name="prefix">The prefix.</param>
         /// <returns></returns>
-        public async Task<VideoInputModel> SaveTempVideoFile(byte[] videoBytes, string prefix = default)
+        public async Task<string> SaveTempVideoFile(OnnxVideo video, string prefix = default)
         {
             try
             {
                 _logger?.LogInformation($"[SaveTempVideoFile] Saving temporary video file...");
                 var tempVideoFile = GetTempFileName("mp4", prefix ?? "video");
-                await File.WriteAllBytesAsync(tempVideoFile, videoBytes);
-                var videoInfo = await _videoService.GetVideoInfoAsync(videoBytes);
+                await video.SaveAsync(tempVideoFile);
+                var videoBytes = await File.ReadAllBytesAsync(tempVideoFile);
                 _logger?.LogInformation($"[SaveTempVideoFile] Temporary video file saved, File: {tempVideoFile}");
-                return new VideoInputModel
-                {
-                    FileName = tempVideoFile,
-                    VideoBytes = videoBytes,
-                    VideoInfo = videoInfo
-                };
+                return tempVideoFile;
             }
             catch (Exception ex)
             {

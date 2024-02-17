@@ -3,7 +3,6 @@ using Amuse.UI.Models;
 using Amuse.UI.Services;
 using Microsoft.Extensions.Logging;
 using OnnxStack.Core.Image;
-using OnnxStack.ImageUpscaler.Services;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -213,11 +212,11 @@ namespace Amuse.UI.Views
             try
             {
                 var timestamp = Stopwatch.GetTimestamp();
-                var resultBytes = await _upscaleService.GenerateAsByteAsync(SelectedModel.ModelSet, new InputImage(InputImage.GetImageBytes()));
-                if (resultBytes != null)
+                var resultImage = await _upscaleService.GenerateAsync(SelectedModel.ModelSet, new OnnxImage(InputImage.GetImageBytes()));
+                if (resultImage != null)
                 {
                     var elapsed = Stopwatch.GetElapsedTime(timestamp).TotalSeconds;
-                    var imageResult = new UpscaleResult(Utils.CreateBitmap(resultBytes), UpscaleInfo with { }, elapsed);
+                    var imageResult = new UpscaleResult(await resultImage.ToBitmapAsync(), UpscaleInfo with { }, elapsed);
                     ResultImage = imageResult;
                     HasResult = true;
 

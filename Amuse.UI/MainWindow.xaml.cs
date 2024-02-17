@@ -2,8 +2,6 @@
 using Amuse.UI.Models;
 using Amuse.UI.Views;
 using Microsoft.Extensions.Logging;
-using OnnxStack.ImageUpscaler.Config;
-using OnnxStack.StableDiffusion.Config;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
