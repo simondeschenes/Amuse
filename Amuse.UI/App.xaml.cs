@@ -45,6 +45,8 @@ namespace Amuse.UI
             builder.Services.AddTransient<UpdateUpscaleModelSettingsDialog> ();
             builder.Services.AddTransient<AddControlNetModelDialog>();
             builder.Services.AddTransient<UpdateControlNetModelDialog>();
+            builder.Services.AddTransient<AddFeatureExtractorModelDialog>();
+            builder.Services.AddTransient<UpdateFeatureExtractorModelDialog>();
             builder.Services.AddSingleton<IModelFactory, ModelFactory>();
             builder.Services.AddSingleton<IDialogService, DialogService>();
             builder.Services.AddSingleton<IModelDownloadService, ModelDownloadService>();

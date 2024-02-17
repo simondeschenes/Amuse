@@ -34,6 +34,7 @@ namespace Amuse.UI.Models
         public ObservableCollection<UpscaleModelSetViewModel> UpscaleModelSets { get; set; } = new ObservableCollection<UpscaleModelSetViewModel>();
         public ObservableCollection<StableDiffusionModelSetViewModel> StableDiffusionModelSets { get; set; } = new ObservableCollection<StableDiffusionModelSetViewModel>();
         public ObservableCollection<ControlNetModelSetViewModel> ControlNetModelSets { get; set; } = new ObservableCollection<ControlNetModelSetViewModel>();
+        public ObservableCollection<FeatureExtractorModelSetViewModel> FeatureExtractorModelSets { get; set; } = new ObservableCollection<FeatureExtractorModelSetViewModel>();
 
         [JsonIgnore]
         public string DirectoryTemp { get; set; }

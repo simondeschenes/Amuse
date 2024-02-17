@@ -178,6 +178,62 @@
                     </DockPanel>
                 </GroupBox>
 
+                <!--Feature Extractor Models-->
+                <GroupBox  MinWidth="200" Margin="10,10,0,0" >
+                    <GroupBox.Header>
+                        <TextBlock Text="Feature Extraction Models" FontSize="15" />
+                    </GroupBox.Header>
+                    <DockPanel Margin="0,5,0,0">
+
+                        <UniformGrid DockPanel.Dock="Bottom" Columns="3" Height="24">
+                            <Button Content="Add" Command="{Binding AddFeatureExtractorModelCommand}"/>
+                            <Button Content="Edit"  Command="{Binding UpdateFeatureExtractorModelCommand}"/>
+                            <Button Content="Remove"  Command="{Binding RemoveFeatureExtractorModelCommand}"/>
+                        </UniformGrid>
+                        <ListBox ItemsSource="{Binding UISettings.FeatureExtractorModelSets}" SelectedItem="{Binding SelectedFeatureExtractorModel}" >
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="{x:Type ListBoxItem}">
+                                    <Setter Property="Padding" Value="0" />
+                                    <Setter Property="Margin" Value="0"/>
+                                    <Setter Property="BorderThickness" Value="1" />
+                                    <Setter Property="BorderBrush" Value="{StaticResource ControlBrightDefaultBorderBrush }" />
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                                <Border Name="Border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
+                                                    <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Margin="{TemplateBinding Padding}" />
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger  Property="IsSelected" Value="True" >
+                                            <Setter Property="Background" Value="{StaticResource ControlMouseOverBackground}" />
+                                            <Setter Property="BorderBrush" Value="{StaticResource AccentColour2}" />
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <DockPanel >
+                                        <StackPanel DockPanel.Dock="Left">
+                                            <TextBlock Text="{Binding Name}" FontSize="14" Margin="5" FontWeight="Medium"/>
+                                        </StackPanel>
+                                        <StackPanel DockPanel.Dock="Right" Margin="2" Opacity=".8">
+                                            <TextBlock Text="{Binding Type}" TextAlignment="Right" />
+                                            <TextBlock Text="{Binding ModelSet.PipelineType}" TextAlignment="Right" />
+                                        </StackPanel>
+                                        <TextBlock />
+                                    </DockPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                    </DockPanel>
+                </GroupBox>
+
             </UniformGrid>
 
         </DockPanel>

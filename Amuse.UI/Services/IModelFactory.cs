@@ -1,4 +1,5 @@
 ﻿using Amuse.UI.Models;
+using OnnxStack.FeatureExtractor.Common;
 using OnnxStack.ImageUpscaler.Common;
 using OnnxStack.StableDiffusion.Config;
 using OnnxStack.StableDiffusion.Enums;
@@ -12,5 +13,6 @@ namespace Amuse.UI.Services
         StableDiffusionModelSet CreateStableDiffusionModelSet(string name, string folder, string modelTemplateType);
         StableDiffusionModelSet CreateStableDiffusionModelSet(string name, string folder, StableDiffusionModelTemplate modelTemplate);
         ControlNetModelSet CreateControlNetModelSet(string name, ControlNetType controlNetType, DiffuserPipelineType pipelineType, string modelFilename);
+        FeatureExtractorModelSet CreateFeatureExtractorModelSet(string name, bool normalize, int sampleSize, int channels, string modelFilename);
     }
 }
