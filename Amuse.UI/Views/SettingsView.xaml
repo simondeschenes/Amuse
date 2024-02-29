@@ -223,7 +223,7 @@
                                         </StackPanel>
                                         <StackPanel DockPanel.Dock="Right" Margin="2" Opacity=".8">
                                             <TextBlock Text="{Binding Type}" TextAlignment="Right" />
-                                            <TextBlock Text="{Binding ModelSet.PipelineType}" TextAlignment="Right" />
+                                            <TextBlock Text="{Binding ControlNetType}" TextAlignment="Right" />
                                         </StackPanel>
                                         <TextBlock />
                                     </DockPanel>

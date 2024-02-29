@@ -1,4 +1,5 @@
-﻿using OnnxStack.Core.Image;
+﻿using Amuse.UI.Models;
+using OnnxStack.Core.Image;
 using OnnxStack.Core.Video;
 using OnnxStack.StableDiffusion.Common;
 using OnnxStack.StableDiffusion.Config;

@@ -81,7 +81,7 @@ namespace Amuse.UI.Services
         /// <returns></returns>
         public async Task<OnnxImage> GenerateAsync(UpscaleModelSet modelOptions, OnnxImage inputImage, CancellationToken cancellationToken = default)
         {
-            return new OnnxImage(await GenerateInternalAsync(modelOptions, inputImage, cancellationToken), ImageNormalizeType.ZeroToOne);
+            return await GenerateInternalAsync(modelOptions, inputImage, cancellationToken);
         }
 
 
@@ -90,7 +90,7 @@ namespace Amuse.UI.Services
         /// </summary>
         /// <param name="modelOptions">The model options.</param>
         /// <param name="inputImage">The input image.</param>
-        private async Task<DenseTensor<float>> GenerateInternalAsync(UpscaleModelSet modelSet, OnnxImage inputImage, CancellationToken cancellationToken)
+        private async Task<OnnxImage> GenerateInternalAsync(UpscaleModelSet modelSet, OnnxImage inputImage, CancellationToken cancellationToken)
         {
             if (!_pipelines.TryGetValue(modelSet, out var pipeline))
                 throw new Exception("Pipeline not found or is unsupported");

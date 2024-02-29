@@ -7,7 +7,6 @@ using OnnxStack.Core.Image;
 using OnnxStack.StableDiffusion.Common;
 using OnnxStack.StableDiffusion.Config;
 using OnnxStack.StableDiffusion.Enums;
-using OnnxStack.StableDiffusion.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
