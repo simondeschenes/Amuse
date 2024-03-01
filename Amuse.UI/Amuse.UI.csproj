@@ -8,7 +8,7 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <PlatformTarget>x64</PlatformTarget>
-    <Configurations>Debug;Release;Debug-Cuda;Release-Cuda;Debug-TensorRT;Release-TensorRT</Configurations>
+    <Configurations>Debug;Release;Debug-Nvidia;Release-Nvidia</Configurations>
     <ApplicationIcon>Images\Icon.ico</ApplicationIcon>
     <AssemblyName>Amuse</AssemblyName>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
@@ -19,13 +19,10 @@
     <Optimize>True</Optimize>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-Cuda|x64'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-Nvidia|x64'">
     <Optimize>True</Optimize>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-TensorRT|x64'">
-    <Optimize>True</Optimize>
-  </PropertyGroup>
 
   <ItemGroup>
     <None Remove="appsettings.json" />
@@ -64,8 +61,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.ML.OnnxRuntime.DirectML" Version="1.17.1" Condition=" '$(Configuration)' == 'Debug' OR '$(Configuration)' == 'Release' " />
-    <PackageReference Include="Microsoft.ML.OnnxRuntime.Gpu" Version="1.16.3" Condition=" '$(Configuration)' == 'Debug-TensorRT' OR '$(Configuration)' == 'Release-TensorRT'" />
-    <PackageReference Include="Microsoft.ML.OnnxRuntime.Gpu" Version="1.16.3" Condition=" '$(Configuration)' == 'Debug-Cuda' OR '$(Configuration)' == 'Release-Cuda'" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime.Gpu" Version="1.16.3" Condition=" '$(Configuration)' == 'Debug-Nvidia' OR '$(Configuration)' == 'Release-Nvidia'" />
   </ItemGroup>
 
   <ItemGroup>
@@ -76,10 +72,6 @@
     <PackageReference Include="OnnxStack.ImageUpscaler" Version="0.23.0" />
     <PackageReference Include="OnnxStack.FeatureExtractor" Version="0.23.0" />
     <PackageReference Include="OnnxStack.StableDiffusion" Version="0.23.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Properties\PublishProfiles\" />
   </ItemGroup>
 
   <ItemGroup>

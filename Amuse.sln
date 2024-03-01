@@ -8,25 +8,19 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
-		Debug-Cuda|x64 = Debug-Cuda|x64
-		Debug-TensorRT|x64 = Debug-TensorRT|x64
+		Debug-Nvidia|x64 = Debug-Nvidia|x64
 		Release|x64 = Release|x64
-		Release-Cuda|x64 = Release-Cuda|x64
-		Release-TensorRT|x64 = Release-TensorRT|x64
+		Release-Nvidia|x64 = Release-Nvidia|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{135BE435-46D9-4CF8-9B6F-E1F420CB005A}.Debug|x64.ActiveCfg = Debug|x64
 		{135BE435-46D9-4CF8-9B6F-E1F420CB005A}.Debug|x64.Build.0 = Debug|x64
-		{135BE435-46D9-4CF8-9B6F-E1F420CB005A}.Debug-Cuda|x64.ActiveCfg = Debug-Cuda|x64
-		{135BE435-46D9-4CF8-9B6F-E1F420CB005A}.Debug-Cuda|x64.Build.0 = Debug-Cuda|x64
-		{135BE435-46D9-4CF8-9B6F-E1F420CB005A}.Debug-TensorRT|x64.ActiveCfg = Debug-TensorRT|x64
-		{135BE435-46D9-4CF8-9B6F-E1F420CB005A}.Debug-TensorRT|x64.Build.0 = Debug-TensorRT|x64
+		{135BE435-46D9-4CF8-9B6F-E1F420CB005A}.Debug-Nvidia|x64.ActiveCfg = Debug-Nvidia|x64
+		{135BE435-46D9-4CF8-9B6F-E1F420CB005A}.Debug-Nvidia|x64.Build.0 = Debug-Nvidia|x64
 		{135BE435-46D9-4CF8-9B6F-E1F420CB005A}.Release|x64.ActiveCfg = Release|x64
 		{135BE435-46D9-4CF8-9B6F-E1F420CB005A}.Release|x64.Build.0 = Release|x64
-		{135BE435-46D9-4CF8-9B6F-E1F420CB005A}.Release-Cuda|x64.ActiveCfg = Release-Cuda|x64
-		{135BE435-46D9-4CF8-9B6F-E1F420CB005A}.Release-Cuda|x64.Build.0 = Release-Cuda|x64
-		{135BE435-46D9-4CF8-9B6F-E1F420CB005A}.Release-TensorRT|x64.ActiveCfg = Release-Cuda|x64
-		{135BE435-46D9-4CF8-9B6F-E1F420CB005A}.Release-TensorRT|x64.Build.0 = Release-Cuda|x64
+		{135BE435-46D9-4CF8-9B6F-E1F420CB005A}.Release-Nvidia|x64.ActiveCfg = Release-Nvidia|x64
+		{135BE435-46D9-4CF8-9B6F-E1F420CB005A}.Release-Nvidia|x64.Build.0 = Release-Nvidia|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
