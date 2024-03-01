@@ -2,7 +2,8 @@
 using Amuse.UI.Models;
 using Amuse.UI.Services;
 using Microsoft.Extensions.Logging;
-using OnnxStack.StableDiffusion.Config;
+using OnnxStack.FeatureExtractor.Common;
+using OnnxStack.StableDiffusion.Enums;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -16,21 +17,24 @@ using System.Windows;
 namespace Amuse.UI.Dialogs
 {
     /// <summary>
-    /// Interaction logic for AddModelDialog.xaml
+    /// Interaction logic for AddFeatureExtractorModelDialog.xaml
     /// </summary>
-    public partial class AddModelDialog : Window, INotifyPropertyChanged
+    public partial class AddFeatureExtractorModelDialog : Window, INotifyPropertyChanged
     {
-        private readonly ILogger<AddModelDialog> _logger;
+        private readonly ILogger<AddFeatureExtractorModelDialog> _logger;
 
-        private List<string> _invalidOptions;
-        private string _modelFolder;
+        private readonly List<string> _invalidOptions;
         private string _modelName;
+        private string _modelFile;
+        private bool _normalize;
+        private int _sampleSize = 512;
+        private int _channels = 1;
+        private string _controlNetFilter = "N/A";
         private IModelFactory _modelFactory;
         private AmuseSettings _settings;
-        private ModelTemplateViewModel _modelTemplate;
-        private StableDiffusionModelSet _modelSetResult;
+        private FeatureExtractorModelSet _modelSetResult;
 
-        public AddModelDialog(AmuseSettings settings, IModelFactory modelFactory, ILogger<AddModelDialog> logger)
+        public AddFeatureExtractorModelDialog(AmuseSettings settings, IModelFactory modelFactory, ILogger<AddFeatureExtractorModelDialog> logger)
         {
             _logger = logger;
             _settings = settings;
@@ -41,8 +45,8 @@ namespace Amuse.UI.Dialogs
             WindowMaximizeCommand = new AsyncRelayCommand(WindowMaximize);
             SaveCommand = new AsyncRelayCommand(Save, CanExecuteSave);
             CancelCommand = new AsyncRelayCommand(Cancel);
-            ModelTemplates = _settings.Templates.Where(x => !x.IsUserTemplate).ToList();
-            _invalidOptions = _settings.GetModelNames();
+            _invalidOptions = _settings.FeatureExtractorModelSets.Select(x => x.Name).ToList();
+            ControlNetFilters = ["N/A", .. Enum.GetNames<ControlNetType>()];
             InitializeComponent();
         }
 
@@ -51,16 +55,12 @@ namespace Amuse.UI.Dialogs
         public AsyncRelayCommand WindowRestoreCommand { get; }
         public AsyncRelayCommand WindowMaximizeCommand { get; }
         public AsyncRelayCommand WindowCloseCommand { get; }
+
         public AsyncRelayCommand SaveCommand { get; }
         public AsyncRelayCommand CancelCommand { get; }
         public ObservableCollection<ValidationResult> ValidationResults { get; set; } = new ObservableCollection<ValidationResult>();
-        public List<ModelTemplateViewModel> ModelTemplates { get; set; }
 
-        public ModelTemplateViewModel ModelTemplate
-        {
-            get { return _modelTemplate; }
-            set { _modelTemplate = value; NotifyPropertyChanged(); CreateModelSet(); }
-        }
+        public List<string> ControlNetFilters { get; set; }
 
         public string ModelName
         {
@@ -68,16 +68,15 @@ namespace Amuse.UI.Dialogs
             set { _modelName = value; _modelName?.Trim(); NotifyPropertyChanged(); CreateModelSet(); }
         }
 
-        public string ModelFolder
+        public string ModelFile
         {
-            get { return _modelFolder; }
+            get { return _modelFile; }
             set
             {
-                _modelFolder = value;
-                if (_modelTemplate is not null && !_modelTemplate.IsUserTemplate)
-                    _modelName = string.IsNullOrEmpty(_modelFolder)
-                        ? string.Empty
-                        : Path.GetFileName(_modelFolder);
+                _modelFile = value;
+                _modelName = string.IsNullOrEmpty(_modelFile)
+                    ? string.Empty
+                    : Path.GetFileNameWithoutExtension(_modelFile);
 
                 NotifyPropertyChanged();
                 NotifyPropertyChanged(nameof(ModelName));
@@ -85,36 +84,43 @@ namespace Amuse.UI.Dialogs
             }
         }
 
-        public StableDiffusionModelSet ModelSetResult
+        public string ControlNetFilter
+        {
+            get { return _controlNetFilter; }
+            set { _controlNetFilter = value; NotifyPropertyChanged(); }
+        }
+
+        public int SampleSize
+        {
+            get { return _sampleSize; }
+            set { _sampleSize = value; NotifyPropertyChanged(); CreateModelSet(); }
+        }
+
+        public bool Normalize
+        {
+            get { return _normalize; }
+            set { _normalize = value; NotifyPropertyChanged(); CreateModelSet(); }
+        }
+
+        public int Channels
+        {
+            get { return _channels; }
+            set { _channels = value; NotifyPropertyChanged(); CreateModelSet(); }
+        }
+
+        public FeatureExtractorModelSet ModelSetResult
         {
             get { return _modelSetResult; }
         }
 
-        private bool _enableTemplateSelection = true;
-
-        public bool EnableTemplateSelection
+        public ControlNetType? ControlNetType
         {
-            get { return _enableTemplateSelection; }
-            set { _enableTemplateSelection = value; NotifyPropertyChanged(); }
-        }
-
-        private bool _enableNameSelection = true;
-        public bool EnableNameSelection
-        {
-            get { return _enableNameSelection; }
-            set { _enableNameSelection = value; NotifyPropertyChanged(); }
+            get { return Enum.TryParse<ControlNetType>(_controlNetFilter, out var result) ? result : null; }
         }
 
 
-        public bool ShowDialog(ModelTemplateViewModel selectedTemplate = null)
+        public new bool ShowDialog()
         {
-            if (selectedTemplate is not null)
-            {
-                EnableNameSelection = !selectedTemplate.IsUserTemplate;
-                EnableTemplateSelection = false;
-                ModelTemplate = selectedTemplate;
-                ModelName = selectedTemplate.IsUserTemplate ? selectedTemplate.Name : string.Empty;
-            }
             return base.ShowDialog() ?? false;
         }
 
@@ -123,24 +129,14 @@ namespace Amuse.UI.Dialogs
         {
             _modelSetResult = null;
             ValidationResults.Clear();
-            if (string.IsNullOrEmpty(_modelFolder))
+            if (string.IsNullOrEmpty(_modelFile))
                 return;
 
-            _modelSetResult = _modelFactory.CreateStableDiffusionModelSet(ModelName.Trim(), ModelFolder, _modelTemplate.StableDiffusionTemplate);
+            _modelSetResult = _modelFactory.CreateFeatureExtractorModelSet(ModelName.Trim(), _normalize, _sampleSize, _channels, _modelFile);
 
             // Validate
-            if (_enableNameSelection)
-                ValidationResults.Add(new ValidationResult("Name", !_invalidOptions.Contains(_modelName.ToLower()) && _modelName.Length > 2 && _modelName.Length < 50));
-
-            ValidationResults.Add(new ValidationResult("Unet Model", File.Exists(_modelSetResult.UnetConfig.OnnxModelPath)));
-            ValidationResults.Add(new ValidationResult("Tokenizer Model", File.Exists(_modelSetResult.TokenizerConfig.OnnxModelPath)));
-            if (_modelSetResult.Tokenizer2Config is not null)
-                ValidationResults.Add(new ValidationResult("Tokenizer2 Model", File.Exists(_modelSetResult.Tokenizer2Config.OnnxModelPath)));
-            ValidationResults.Add(new ValidationResult("TextEncoder Model", File.Exists(_modelSetResult.TextEncoderConfig.OnnxModelPath)));
-            if (_modelSetResult.TextEncoder2Config is not null)
-                ValidationResults.Add(new ValidationResult("TextEncoder2 Model", File.Exists(_modelSetResult.TextEncoder2Config.OnnxModelPath)));
-            ValidationResults.Add(new ValidationResult("VaeDecoder Model", File.Exists(_modelSetResult.VaeDecoderConfig.OnnxModelPath)));
-            ValidationResults.Add(new ValidationResult("VaeEncoder Model", File.Exists(_modelSetResult.VaeEncoderConfig.OnnxModelPath)));
+            ValidationResults.Add(new ValidationResult("Name", !_invalidOptions.Contains(_modelName, StringComparer.OrdinalIgnoreCase) && _modelName.Length > 2 && _modelName.Length < 50));
+            ValidationResults.Add(new ValidationResult("Model", File.Exists(_modelSetResult.FeatureExtractorConfig.OnnxModelPath)));
         }
 
 
@@ -153,7 +149,7 @@ namespace Amuse.UI.Dialogs
 
         private bool CanExecuteSave()
         {
-            if (string.IsNullOrEmpty(_modelFolder))
+            if (string.IsNullOrEmpty(_modelFile))
                 return false;
             if (_modelSetResult is null)
                 return false;
@@ -168,6 +164,7 @@ namespace Amuse.UI.Dialogs
             DialogResult = false;
             return Task.CompletedTask;
         }
+
 
         #region BaseWindow
 

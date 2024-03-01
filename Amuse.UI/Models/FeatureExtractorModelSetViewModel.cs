@@ -1,4 +1,4 @@
-﻿using OnnxStack.StableDiffusion.Config;
+﻿using OnnxStack.FeatureExtractor.Common;
 using OnnxStack.StableDiffusion.Enums;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -6,9 +6,10 @@ using System.Text.Json.Serialization;
 
 namespace Amuse.UI.Models
 {
-    public class ControlNetModelSetViewModel : INotifyPropertyChanged
+    public class FeatureExtractorModelSetViewModel : INotifyPropertyChanged
     {
         private string _name;
+        private ControlNetType? _controlNetType;
         private bool _isLoaded;
         private bool _isLoading;
 
@@ -17,6 +18,15 @@ namespace Amuse.UI.Models
             get { return _name; }
             set { _name = value; NotifyPropertyChanged(); }
         }
+
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public ControlNetType? ControlNetType
+        {
+            get { return _controlNetType; }
+            set { _controlNetType = value; NotifyPropertyChanged(); }
+        }
+
 
         [JsonIgnore]
         public bool IsLoaded
@@ -32,8 +42,7 @@ namespace Amuse.UI.Models
             set { _isLoading = value; NotifyPropertyChanged(); }
         }
 
-        public ControlNetType Type => ModelSet.Type;
-        public ControlNetModelSet ModelSet { get; set; }
+        public FeatureExtractorModelSet ModelSet { get; set; }
 
         #region INotifyPropertyChanged
         public event PropertyChangedEventHandler PropertyChanged;

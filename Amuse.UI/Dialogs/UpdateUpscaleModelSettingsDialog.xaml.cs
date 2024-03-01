@@ -1,6 +1,7 @@
 ﻿using Amuse.UI.Commands;
 using Amuse.UI.Models;
 using Microsoft.Extensions.Logging;
+using OnnxStack.ImageUpscaler.Common;
 using OnnxStack.StableDiffusion.Config;
 using System;
 using System.Collections.Generic;
@@ -79,15 +80,6 @@ namespace Amuse.UI.Dialogs
             {
                 ValidationError = $"Model with name '{_modelSetResult.Name}' already exists";
                 return Task.CompletedTask;
-            }
-
-            foreach (var modelFile in _modelSetResult.ModelConfigurations)
-            {
-                modelFile.DeviceId = null;
-                modelFile.ExecutionProvider = null;
-                modelFile.ExecutionMode = null;
-                modelFile.InterOpNumThreads = null;
-                modelFile.IntraOpNumThreads = null;
             }
 
             DialogResult = true;

@@ -27,8 +27,7 @@ namespace Amuse.UI
             builder.Services.AddLogging((loggingBuilder) => loggingBuilder.AddWindowLogger());
 
             // Add OnnxStackStableDiffusion
-            builder.Services.AddOnnxStackStableDiffusion();
-            builder.Services.AddOnnxStackImageUpscaler();
+            builder.Services.AddOnnxStack();
             builder.Services.AddOnnxStackConfig<AmuseSettings>();
 
             // Add Windows
@@ -46,11 +45,15 @@ namespace Amuse.UI
             builder.Services.AddTransient<UpdateUpscaleModelSettingsDialog> ();
             builder.Services.AddTransient<AddControlNetModelDialog>();
             builder.Services.AddTransient<UpdateControlNetModelDialog>();
+            builder.Services.AddTransient<AddFeatureExtractorModelDialog>();
+            builder.Services.AddTransient<UpdateFeatureExtractorModelDialog>();
             builder.Services.AddSingleton<IModelFactory, ModelFactory>();
             builder.Services.AddSingleton<IDialogService, DialogService>();
             builder.Services.AddSingleton<IModelDownloadService, ModelDownloadService>();
             builder.Services.AddSingleton<IDeviceService, DeviceService>();
             builder.Services.AddSingleton<IFileService, FileService>();
+            builder.Services.AddSingleton<IStableDiffusionService, StableDiffusionService>();
+            builder.Services.AddSingleton<IUpscaleService, UpscaleService>();
 
             // Build App
             _applicationHost = builder.Build();

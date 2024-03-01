@@ -1,4 +1,5 @@
-﻿using OnnxStack.StableDiffusion.Config;
+﻿using OnnxStack.ImageUpscaler.Common;
+using OnnxStack.StableDiffusion.Config;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;

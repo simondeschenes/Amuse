@@ -1,8 +1,8 @@
 ﻿using Amuse.UI.Commands;
 using Amuse.UI.Models;
+using Amuse.UI.Services;
 using Microsoft.Extensions.Logging;
 using OnnxStack.Core;
-using OnnxStack.ImageUpscaler.Services;
 using System;
 using System.ComponentModel;
 using System.Linq;

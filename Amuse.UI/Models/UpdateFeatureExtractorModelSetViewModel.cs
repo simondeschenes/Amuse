@@ -1,12 +1,13 @@
 ﻿using Microsoft.ML.OnnxRuntime;
 using OnnxStack.Core.Config;
-using OnnxStack.ImageUpscaler.Common;
+using OnnxStack.FeatureExtractor.Common;
+using OnnxStack.StableDiffusion.Enums;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace Amuse.UI.Models
 {
-    public class UpdateUpscaleModelSetViewModel : INotifyPropertyChanged
+    public class UpdateFeatureExtractorModelSetViewModel : INotifyPropertyChanged
     {
         private string _name;
         private int _deviceId;
@@ -15,9 +16,10 @@ namespace Amuse.UI.Models
         private ExecutionMode _executionMode;
         private ExecutionProvider _executionProvider;
         private string _modelFile;
-        private int _channels;
-        private int _scaleFactor;
+        private ControlNetType? _controlNetType;
         private int _sampleSize;
+        private bool _normalize;
+        private int _channels;
 
         public string Name
         {
@@ -25,21 +27,28 @@ namespace Amuse.UI.Models
             set { _name = value; NotifyPropertyChanged(); }
         }
 
-        public int Channels
+        public ControlNetType? ControlNetType
         {
-            get { return _channels; }
-            set { _channels = value; NotifyPropertyChanged(); }
-        }
-        public int ScaleFactor
-        {
-            get { return _scaleFactor; }
-            set { _scaleFactor = value; NotifyPropertyChanged(); }
+            get { return _controlNetType; }
+            set { _controlNetType = value; NotifyPropertyChanged(); }
         }
 
         public int SampleSize
         {
             get { return _sampleSize; }
             set { _sampleSize = value; NotifyPropertyChanged(); }
+        }
+
+        public bool Normalize
+        {
+            get { return _normalize; }
+            set { _normalize = value; NotifyPropertyChanged(); }
+        }
+
+        public int Channels
+        {
+            get { return _channels; }
+            set { _channels = value; NotifyPropertyChanged(); }
         }
 
         public int DeviceId
@@ -79,9 +88,9 @@ namespace Amuse.UI.Models
         }
 
 
-        public static UpdateUpscaleModelSetViewModel FromModelSet(UpscaleModelSet modelset)
+        public static UpdateFeatureExtractorModelSetViewModel FromModelSet(FeatureExtractorModelSet modelset, ControlNetType? controlNetType)
         {
-            return new UpdateUpscaleModelSetViewModel
+            return new UpdateFeatureExtractorModelSetViewModel
             {
                 Name = modelset.Name,
                 DeviceId = modelset.DeviceId,
@@ -89,16 +98,18 @@ namespace Amuse.UI.Models
                 ExecutionProvider = modelset.ExecutionProvider,
                 InterOpNumThreads = modelset.InterOpNumThreads,
                 IntraOpNumThreads = modelset.IntraOpNumThreads,
-                SampleSize = modelset.UpscaleModelConfig.SampleSize,
-                ScaleFactor = modelset.UpscaleModelConfig.ScaleFactor,
-                Channels = modelset.UpscaleModelConfig.Channels,
-                ModelFile = modelset.UpscaleModelConfig.OnnxModelPath
+
+                ControlNetType = controlNetType,
+                ModelFile = modelset.FeatureExtractorConfig.OnnxModelPath,
+                Normalize = modelset.FeatureExtractorConfig.Normalize,
+                SampleSize = modelset.FeatureExtractorConfig.SampleSize,
+                Channels = modelset.FeatureExtractorConfig.Channels,
             };
         }
 
-        public static UpscaleModelSet ToModelSet(UpdateUpscaleModelSetViewModel modelset)
+        public static FeatureExtractorModelSet ToModelSet(UpdateFeatureExtractorModelSetViewModel modelset)
         {
-            return new UpscaleModelSet
+            return new FeatureExtractorModelSet
             {
                 IsEnabled = true,
                 Name = modelset.Name,
@@ -107,12 +118,12 @@ namespace Amuse.UI.Models
                 ExecutionProvider = modelset.ExecutionProvider,
                 InterOpNumThreads = modelset.InterOpNumThreads,
                 IntraOpNumThreads = modelset.IntraOpNumThreads,
-                UpscaleModelConfig = new UpscaleModelConfig
+                FeatureExtractorConfig = new FeatureExtractorModelConfig
                 {
-                    OnnxModelPath = modelset.ModelFile,
                     Channels = modelset.Channels,
-                    ScaleFactor = modelset.ScaleFactor,
-                    SampleSize = modelset.SampleSize
+                    Normalize = modelset.Normalize,
+                    SampleSize = modelset.SampleSize,
+                    OnnxModelPath = modelset.ModelFile
                 }
             };
         }
@@ -128,5 +139,4 @@ namespace Amuse.UI.Models
 
         #endregion
     }
-
 }

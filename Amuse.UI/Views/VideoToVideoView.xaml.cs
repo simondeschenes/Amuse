@@ -4,20 +4,16 @@ using Amuse.UI.Services;
 using Microsoft.Extensions.Logging;
 using Models;
 using OnnxStack.Core.Image;
-using OnnxStack.Core.Services;
 using OnnxStack.Core.Video;
+using OnnxStack.FeatureExtractor.Common;
 using OnnxStack.StableDiffusion.Common;
 using OnnxStack.StableDiffusion.Config;
 using OnnxStack.StableDiffusion.Enums;
-using OnnxStack.StableDiffusion.Models;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,7 +31,6 @@ namespace Amuse.UI.Views
     {
         private readonly ILogger<VideoToVideoView> _logger;
         private readonly IStableDiffusionService _stableDiffusionService;
-        private readonly IVideoService _videoService;
         private readonly IFileService _fileService;
 
         private bool _hasResult;
@@ -49,11 +44,12 @@ namespace Amuse.UI.Views
         private VideoResultModel _resultVideo;
         private StableDiffusionModelSetViewModel _selectedModel;
         private ControlNetModelSetViewModel _selectedControlNetModel;
+        private FeatureExtractorModelSetViewModel _selectedFeatureExtractorModel;
         private PromptOptionsModel _promptOptionsModel;
         private SchedulerOptionsModel _schedulerOptions;
         private BatchOptionsModel _batchOptions;
         private CancellationTokenSource _cancelationTokenSource;
-        private VideoFrames _videoFrames;
+        private OnnxVideo _videoFrames;
         private BitmapImage _previewSource;
         private BitmapImage _previewResult;
         private string _progressText;
@@ -67,7 +63,6 @@ namespace Amuse.UI.Views
             {
                 _logger = App.GetService<ILogger<VideoToVideoView>>();
                 _fileService = App.GetService<IFileService>();
-                _videoService = App.GetService<IVideoService>();
                 _stableDiffusionService = App.GetService<IStableDiffusionService>();
             }
 
@@ -121,10 +116,17 @@ namespace Amuse.UI.Views
             get { return _selectedModel; }
             set { _selectedModel = value; NotifyPropertyChanged(); }
         }
+
         public ControlNetModelSetViewModel SelectedControlNetModel
         {
             get { return _selectedControlNetModel; }
             set { _selectedControlNetModel = value; NotifyPropertyChanged(); }
+        }
+
+        public FeatureExtractorModelSetViewModel SelectedFeatureExtractorModel
+        {
+            get { return _selectedFeatureExtractorModel; }
+            set { _selectedFeatureExtractorModel = value; NotifyPropertyChanged(); }
         }
 
         public PromptOptionsModel PromptOptions
@@ -246,8 +248,7 @@ namespace Amuse.UI.Views
             InputVideo = new VideoInputModel
             {
                 FileName = videoResult.FileName,
-                VideoBytes = videoResult.VideoBytes,
-                VideoInfo = videoResult.VideoInfo,
+                Video = videoResult.Video,
             };
             PromptOptions = PromptOptionsModel.FromPromptOptions(videoResult.PromptOptions);
             SchedulerOptions = SchedulerOptionsModel.FromSchedulerOptions(videoResult.SchedulerOptions);
@@ -271,14 +272,14 @@ namespace Amuse.UI.Views
             {
                 var batchOptions = BatchOptionsModel.ToBatchOptions(BatchOptions);
                 var schedulerOptions = SchedulerOptionsModel.ToSchedulerOptions(SchedulerOptions);
-                if (_videoFrames is null || _videoFrames.Info.FPS != PromptOptions.VideoInputFPS)
+                if (_videoFrames is null)// || _videoFrames.Info.FrameRate != PromptOptions.VideoInputFPS)
                 {
-                    ProgressText = $"Generating video frames @ {PromptOptions.VideoInputFPS}fps";
-                    _videoFrames = await _videoService.CreateFramesAsync(_inputVideo.VideoBytes, PromptOptions.VideoInputFPS, _cancelationTokenSource.Token);
+                    ProgressText = $"Generating video frames @ {_inputVideo.Video.FrameRate}fps";
+                    _videoFrames = new OnnxVideo(_inputVideo.Video.Info, await VideoHelper.ReadVideoFramesAsync(_inputVideo.FileName, _inputVideo.Video.FrameRate, _cancelationTokenSource.Token));
                 }
 
                 var promptOptions = GetPromptOptions(PromptOptions, _videoFrames);
-                await foreach (var resultVideo in ExecuteStableDiffusion(_selectedModel.ModelSet, _selectedControlNetModel?.ModelSet, promptOptions, schedulerOptions, batchOptions))
+                await foreach (var resultVideo in ExecuteStableDiffusion(_selectedModel.ModelSet, _selectedControlNetModel?.ModelSet, _selectedFeatureExtractorModel?.ModelSet, promptOptions, schedulerOptions, batchOptions))
                 {
                     if (resultVideo != null)
                     {
@@ -411,15 +412,27 @@ namespace Amuse.UI.Views
         /// <param name="schedulerOptions">The scheduler options.</param>
         /// <param name="batchOptions">The batch options.</param>
         /// <returns></returns>
-        private async IAsyncEnumerable<VideoResultModel> ExecuteStableDiffusion(StableDiffusionModelSet modelOptions, ControlNetModelSet controlNetModel, PromptOptions promptOptions, SchedulerOptions schedulerOptions, BatchOptions batchOptions)
+        private async IAsyncEnumerable<VideoResultModel> ExecuteStableDiffusion(StableDiffusionModelSet modelOptions, ControlNetModelSet controlNetModel, FeatureExtractorModelSet featureExtractor, PromptOptions promptOptions, SchedulerOptions schedulerOptions, BatchOptions batchOptions)
         {
             if (!BatchOptions.IsRealtimeEnabled)
             {
                 if (!BatchOptions.IsAutomationEnabled)
                 {
                     var timestamp = Stopwatch.GetTimestamp();
-                    var result = await _stableDiffusionService.GenerateAsBytesAsync(new ModelOptions(modelOptions, controlNetModel), promptOptions, schedulerOptions, ProgressCallback(), _cancelationTokenSource.Token);
+                    var result = await _stableDiffusionService.GenerateVideoAsync(new ModelOptions(modelOptions, controlNetModel, featureExtractor), promptOptions, schedulerOptions, ProgressCallback(), _cancelationTokenSource.Token);
                     yield return await GenerateResultAsync(result, _selectedModel, promptOptions, schedulerOptions, timestamp);
+                }
+                else
+                {
+                    if (!BatchOptions.IsRealtimeEnabled)
+                    {
+                        var timestamp = Stopwatch.GetTimestamp();
+                        await foreach (var batchResult in _stableDiffusionService.GenerateVideoAsync(batchOptions, new ModelOptions(modelOptions, controlNetModel, featureExtractor), promptOptions, schedulerOptions, ProgressCallback(), _cancelationTokenSource.Token))
+                        {
+                            yield return await GenerateResultAsync(new OnnxVideo(_videoFrames.Info, batchResult.Result), _selectedModel, promptOptions, batchResult.SchedulerOptions, timestamp);
+                            timestamp = Stopwatch.GetTimestamp();
+                        }
+                    }
                 }
             }
             else
@@ -433,29 +446,29 @@ namespace Amuse.UI.Views
                     IsControlsEnabled = true;
                     ProgressMax = _videoFrames.Frames.Count;
                     var timestamp = Stopwatch.GetTimestamp();
-                    var resultVideoFrames = new List<byte[]>();
+                    var resultVideoFrames = new List<OnnxImage>();
                     foreach (var videoFrame in _videoFrames.Frames)
                     {
                         var refreshTimestamp = Stopwatch.GetTimestamp();
                         var realtimePromptOptions = GetLivePromptOptions(PromptOptions, videoFrame);
                         var realtimeSchedulerOptions = SchedulerOptionsModel.ToSchedulerOptions(SchedulerOptions);
-                        var result = await _stableDiffusionService.GenerateAsBytesAsync(new ModelOptions(modelOptions, controlNetModel), realtimePromptOptions, realtimeSchedulerOptions, RealtimeProgressCallback(), _cancelationTokenSource.Token);
+                        var result = await _stableDiffusionService.GenerateImageAsync(new ModelOptions(modelOptions, controlNetModel, featureExtractor), realtimePromptOptions, realtimeSchedulerOptions, RealtimeProgressCallback(), _cancelationTokenSource.Token);
                         resultVideoFrames.Add(result);
-                        PreviewResult = Utils.CreateBitmap(result);
-                        PreviewSource = Utils.CreateBitmap(videoFrame);
+                        PreviewResult = await result.ToBitmapAsync();
+                        PreviewSource = await videoFrame.ToBitmapAsync();
                         ProgressValue++;
                         await Utils.RefreshDelay(refreshTimestamp, UISettings.RealtimeRefreshRate, _cancelationTokenSource.Token);
                     }
 
                     IsControlsEnabled = false;
-                    var videoResult = await _videoService.CreateVideoAsync(resultVideoFrames, _promptOptionsModel.VideoOutputFPS);
-                    yield return await GenerateResultAsync(videoResult.Data, _selectedModel, GetLivePromptOptions(PromptOptions, default), SchedulerOptionsModel.ToSchedulerOptions(SchedulerOptions), timestamp);
+                    var videoResult = new OnnxVideo(_videoFrames.Info, resultVideoFrames);
+                    yield return await GenerateResultAsync(videoResult, _selectedModel, GetLivePromptOptions(PromptOptions, default), SchedulerOptionsModel.ToSchedulerOptions(SchedulerOptions), timestamp);
                 }
             }
         }
 
 
-        private PromptOptions GetPromptOptions(PromptOptionsModel promptOptionsModel, VideoFrames videoFrames)
+        private PromptOptions GetPromptOptions(PromptOptionsModel promptOptionsModel, OnnxVideo videoFrames)
         {
             var diffuserType = DiffuserType.ImageToImage;
             if (_selectedModel.IsControlNet)
@@ -470,23 +483,20 @@ namespace Amuse.UI.Views
                 Prompt = string.IsNullOrEmpty(promptOptionsModel.Prompt) ? " " : promptOptionsModel.Prompt,
                 NegativePrompt = promptOptionsModel.NegativePrompt,
                 DiffuserType = diffuserType,
-                InputVideo = new VideoInput(videoFrames),
-                VideoInputFPS = promptOptionsModel.VideoInputFPS,
-                VideoOutputFPS = promptOptionsModel.VideoOutputFPS,
+                InputVideo = videoFrames,
+                InputContolVideo = diffuserType == DiffuserType.ControlNet || diffuserType == DiffuserType.ControlNetImage ? videoFrames : default,
             };
         }
 
 
-        private PromptOptions GetLivePromptOptions(PromptOptionsModel promptOptionsModel, byte[] videoFrame)
+        private PromptOptions GetLivePromptOptions(PromptOptionsModel promptOptionsModel, OnnxImage videoFrame)
         {
             return new PromptOptions
             {
                 Prompt = string.IsNullOrEmpty(promptOptionsModel.Prompt) ? " " : promptOptionsModel.Prompt,
                 NegativePrompt = promptOptionsModel.NegativePrompt,
                 DiffuserType = DiffuserType.ImageToImage,
-                InputImage = new InputImage(videoFrame),
-                VideoInputFPS = promptOptionsModel.VideoInputFPS,
-                VideoOutputFPS = promptOptionsModel.VideoOutputFPS,
+                InputImage = videoFrame
             };
         }
 
@@ -499,20 +509,21 @@ namespace Amuse.UI.Views
         /// <param name="schedulerOptions">The scheduler options.</param>
         /// <param name="timestamp">The timestamp.</param>
         /// <returns></returns>
-        private async Task<VideoResultModel> GenerateResultAsync(byte[] videoBytes, StableDiffusionModelSetViewModel modelOptions, PromptOptions promptOptions, SchedulerOptions schedulerOptions, long timestamp)
+        private async Task<VideoResultModel> GenerateResultAsync(OnnxVideo video, StableDiffusionModelSetViewModel modelOptions, PromptOptions promptOptions, SchedulerOptions schedulerOptions, long timestamp)
         {
-            var video = await _fileService.SaveTempVideoFile(videoBytes, "VideoToVideo");
+            var tempvideoFileName = await _fileService.SaveTempVideoFile(video, "VideoToVideo");
             var videoResult = new VideoResultModel
             {
+                Video = video,
                 Model = modelOptions,
-                FileName = video.FileName,
-                VideoInfo = video.VideoInfo,
-                VideoBytes = video.VideoBytes,
+                FileName = tempvideoFileName,
                 PromptOptions = promptOptions,
                 SchedulerOptions = schedulerOptions,
+                DiffuserType = promptOptions.DiffuserType,
                 PipelineType = _selectedModel.ModelSet.PipelineType,
                 Elapsed = Stopwatch.GetElapsedTime(timestamp).TotalSeconds
             };
+
             await _fileService.AutoSaveVideoFile(videoResult, "VideoToVideo");
             return videoResult;
         }
@@ -530,7 +541,7 @@ namespace Amuse.UI.Views
                 if (_cancelationTokenSource.IsCancellationRequested)
                     return;
 
-                App.UIInvoke(() =>
+                App.UIInvoke(async () =>
                 {
                     if (_cancelationTokenSource.IsCancellationRequested)
                         return;
@@ -541,8 +552,8 @@ namespace Amuse.UI.Views
 
                     if (progress.BatchTensor is not null)
                     {
-                        PreviewResult = Utils.CreateBitmap(progress.BatchTensor.ToImageBytes());
-                        PreviewSource = UpdatePreviewFrame(progress.BatchValue - 1);
+                        PreviewResult = await new OnnxImage(progress.BatchTensor).ToBitmapAsync();
+                        PreviewSource = await _videoFrames.Frames[progress.BatchValue - 1].ToBitmapAsync();
                     }
 
                     if (ProgressText != progress.Message && progress.BatchMax == 0)
@@ -562,7 +573,6 @@ namespace Amuse.UI.Views
         }
 
 
-
         private Action<DiffusionProgress> RealtimeProgressCallback()
         {
             return (progress) =>
@@ -580,24 +590,6 @@ namespace Amuse.UI.Views
                 Utils.TaskbarProgress(ProgressValue, ProgressMax);
             };
         }
-
-        public BitmapImage UpdatePreviewFrame(int index)
-        {
-            var frame = _videoFrames.Frames[index];
-            using (var memoryStream = new MemoryStream())
-            using (var frameImage = SixLabors.ImageSharp.Image.Load<Rgba32>(frame))
-            {
-                frameImage.Resize(_schedulerOptions.Height, _schedulerOptions.Width);
-                frameImage.SaveAsPng(memoryStream);
-                var image = new BitmapImage();
-                image.BeginInit();
-                image.CacheOption = BitmapCacheOption.OnLoad;
-                image.StreamSource = memoryStream;
-                image.EndInit();
-                return image;
-            }
-        }
-
 
         #region INotifyPropertyChanged
         public event PropertyChangedEventHandler PropertyChanged;

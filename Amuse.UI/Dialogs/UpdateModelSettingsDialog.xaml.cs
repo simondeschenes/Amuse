@@ -1,6 +1,7 @@
 ﻿using Amuse.UI.Commands;
 using Amuse.UI.Models;
 using Microsoft.Extensions.Logging;
+using OnnxStack.Core.Config;
 using OnnxStack.StableDiffusion.Config;
 using System;
 using System.Collections.Generic;
@@ -81,13 +82,28 @@ namespace Amuse.UI.Dialogs
                 return Task.CompletedTask;
             }
 
-            foreach (var modelFile in _modelSetResult.ModelConfigurations)
+
+            var configurations = new OnnxModelConfig[]
             {
-                modelFile.DeviceId = null;
-                modelFile.ExecutionProvider = null;
-                modelFile.ExecutionMode = null;
-                modelFile.InterOpNumThreads = null;
-                modelFile.IntraOpNumThreads = null;
+                _modelSetResult.UnetConfig,
+                _modelSetResult.TokenizerConfig,
+                _modelSetResult.Tokenizer2Config,
+                _modelSetResult.TextEncoderConfig,
+                _modelSetResult.TextEncoder2Config,
+                _modelSetResult.VaeDecoderConfig,
+                _modelSetResult.VaeEncoderConfig,
+            };
+
+            foreach (var configuration in configurations)
+            {
+                if (configuration == null)
+                    continue;
+
+                configuration.DeviceId = null;
+                configuration.ExecutionProvider = null;
+                configuration.ExecutionMode = null;
+                configuration.InterOpNumThreads = null;
+                configuration.IntraOpNumThreads = null;
             }
 
             DialogResult = true;

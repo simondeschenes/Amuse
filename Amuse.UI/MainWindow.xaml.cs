@@ -2,8 +2,6 @@
 using Amuse.UI.Models;
 using Amuse.UI.Views;
 using Microsoft.Extensions.Logging;
-using OnnxStack.ImageUpscaler.Config;
-using OnnxStack.StableDiffusion.Config;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -21,7 +19,7 @@ namespace Amuse.UI
         private INavigatable _selectedTabItem;
         private readonly ILogger<MainWindow> _logger;
 
-        public MainWindow(AmuseSettings uiSettings, StableDiffusionConfig configuration, ImageUpscalerConfig upscaleConfiguration, ILogger<MainWindow> logger)
+        public MainWindow(AmuseSettings uiSettings, ILogger<MainWindow> logger)
         {
             _logger = logger;
             UISettings = uiSettings;

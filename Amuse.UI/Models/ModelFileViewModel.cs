@@ -7,7 +7,6 @@ namespace Amuse.UI.Models
 {
     public class ModelFileViewModel : INotifyPropertyChanged
     {
-        private OnnxModelType _type;
         private string _onnnxModelPath;
         private int? _deviceId;
         private int? _interOpNumThreads;
@@ -51,12 +50,6 @@ namespace Amuse.UI.Models
         {
             get { return _executionProvider; }
             set { _executionProvider = value; NotifyPropertyChanged(); }
-        }
-
-        public OnnxModelType Type
-        {
-            get { return _type; }
-            set { _type = value; NotifyPropertyChanged(); }
         }
 
         public bool IsOverrideEnabled

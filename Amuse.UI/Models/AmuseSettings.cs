@@ -1,6 +1,7 @@
 ﻿using Microsoft.ML.OnnxRuntime;
 using OnnxStack.Common.Config;
 using OnnxStack.Core.Config;
+using OnnxStack.StableDiffusion.Enums;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -30,10 +31,12 @@ namespace Amuse.UI.Models
         public int DefaultIntraOpNumThreads { get; set; }
         public ExecutionMode DefaultExecutionMode { get; set; }
         public ExecutionProvider DefaultExecutionProvider { get; set; }
+        public MemoryModeType DefaultMemoryMode { get; set; }
         public ObservableCollection<ModelTemplateViewModel> Templates { get; set; } = new ObservableCollection<ModelTemplateViewModel>();
         public ObservableCollection<UpscaleModelSetViewModel> UpscaleModelSets { get; set; } = new ObservableCollection<UpscaleModelSetViewModel>();
         public ObservableCollection<StableDiffusionModelSetViewModel> StableDiffusionModelSets { get; set; } = new ObservableCollection<StableDiffusionModelSetViewModel>();
         public ObservableCollection<ControlNetModelSetViewModel> ControlNetModelSets { get; set; } = new ObservableCollection<ControlNetModelSetViewModel>();
+        public ObservableCollection<FeatureExtractorModelSetViewModel> FeatureExtractorModelSets { get; set; } = new ObservableCollection<FeatureExtractorModelSetViewModel>();
 
         [JsonIgnore]
         public string DirectoryTemp { get; set; }

@@ -1,4 +1,5 @@
 ﻿using Amuse.UI.Models;
+using OnnxStack.Core.Video;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
@@ -140,7 +141,7 @@ namespace Amuse.UI.Services
         /// <param name="videoBytes">The video bytes.</param>
         /// <param name="prefix">The prefix.</param>
         /// <returns></returns>
-        Task<VideoInputModel> SaveTempVideoFile(byte[] videoBytes, string prefix = default);
+        Task<string> SaveTempVideoFile(OnnxVideo video, string prefix = default);
 
         /// <summary>
         /// Deletes the temporary video file.

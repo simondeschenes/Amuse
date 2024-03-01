@@ -26,7 +26,7 @@ namespace Amuse.UI.UserControls
         /// <summary>Initializes a new instance of the <see cref="SchedulerControl" /> class.</summary>
         public SchedulerControl()
         {
-            ValidSizes = new List<int>(Constants.ValidSizes);
+            ValidSizes = new List<int>(new[] { 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024 });
             NewSeedCommand = new RelayCommand(NewSeed);
             RandomSeedCommand = new RelayCommand(RandomSeed);
             ResetParametersCommand = new RelayCommand(ResetParameters);
@@ -76,9 +76,18 @@ namespace Amuse.UI.UserControls
             get { return (ControlNetModelSetViewModel)GetValue(SelectedControlNetModelProperty); }
             set { SetValue(SelectedControlNetModelProperty, value); }
         }
-
         public static readonly DependencyProperty SelectedControlNetModelProperty =
             DependencyProperty.Register("SelectedControlNetModel", typeof(ControlNetModelSetViewModel), typeof(SchedulerControl));
+
+
+
+        public FeatureExtractorModelSetViewModel SelectedFeatureExtractorModel
+        {
+            get { return (FeatureExtractorModelSetViewModel)GetValue(SelectedFeatureExtractorModelProperty); }
+            set { SetValue(SelectedFeatureExtractorModelProperty, value); }
+        }
+        public static readonly DependencyProperty SelectedFeatureExtractorModelProperty =
+            DependencyProperty.Register("SelectedFeatureExtractorModel", typeof(FeatureExtractorModelSetViewModel), typeof(SchedulerControl));
 
 
 
@@ -134,6 +143,22 @@ namespace Amuse.UI.UserControls
             DependencyProperty.Register("IsVideoControlsEnabled", typeof(bool), typeof(SchedulerControl));
 
 
+        private bool _processInputImage;
+
+        public bool ProcessInputImage
+        {
+            get { return _processInputImage; }
+            set
+            {
+                _processInputImage = value;
+                if (!_processInputImage)
+                    SelectedFeatureExtractorModel = null;
+
+                NotifyPropertyChanged();
+            }
+        }
+
+
 
         public StableDiffusionSchedulerDefaults SchedulerDefaults
         {
@@ -151,7 +176,7 @@ namespace Amuse.UI.UserControls
             if (model is null)
                 return;
 
-            SchedulerTypes = new List<SchedulerType>(model.ModelSet.PipelineType.GetSchedulerTypes());
+            SchedulerTypes = new List<SchedulerType>(GetSchedulerTypes(model.ModelSet.PipelineType));
             SchedulerDefaults = UISettings.Templates.FirstOrDefault(x => x.Name == model.Name)?.StableDiffusionTemplate?.SchedulerDefaults
                     ?? new StableDiffusionSchedulerDefaults();
             ResetParameters();
@@ -182,6 +207,42 @@ namespace Amuse.UI.UserControls
         private void RandomSeed()
         {
             SchedulerOptions.Seed = 0;
+        }
+
+        /// <summary>
+        /// TODO: Get from pipeline
+        /// </summary>
+        /// <param name="pipelineType">Type of the pipeline.</param>
+        /// <returns></returns>
+        private static SchedulerType[] GetSchedulerTypes(DiffuserPipelineType pipelineType)
+        {
+            switch (pipelineType)
+            {
+                case DiffuserPipelineType.StableDiffusion:
+                case DiffuserPipelineType.StableDiffusionXL:
+                    return new[]
+                    {
+                        SchedulerType.LMS,
+                        SchedulerType.Euler,
+                        SchedulerType.EulerAncestral,
+                        SchedulerType.DDPM,
+                        SchedulerType.DDIM,
+                        SchedulerType.KDPM2
+                    };
+                case DiffuserPipelineType.LatentConsistency:
+                case DiffuserPipelineType.LatentConsistencyXL:
+                    return new[]
+                    {
+                        SchedulerType.LCM
+                    };
+                case DiffuserPipelineType.InstaFlow:
+                    return new[]
+                    {
+                        SchedulerType.InstaFlow
+                    };
+                default:
+                    return default;
+            }
         }
 
         #region INotifyPropertyChanged

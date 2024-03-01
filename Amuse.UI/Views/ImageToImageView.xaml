@@ -29,10 +29,11 @@
                         SelectedControlNetModel="{Binding SelectedControlNetModel, Mode=TwoWay}"/>
                 </StackPanel>
                 <DockPanel IsEnabled="{Binding SelectedModel.IsLoaded, FallbackValue=False, TargetNullValue=False}">
-                    <userControls:SchedulerControl DockPanel.Dock="Bottom" Margin="0, 10, 0 ,0" MinHeight="300"
+                    <userControls:SchedulerControl DockPanel.Dock="Bottom" Margin="0, 10, 0 ,5" MinHeight="300"
                         UISettings="{Binding Settings}"
                         SelectedModel="{Binding SelectedModel}"
                         SelectedControlNetModel="{Binding SelectedControlNetModel}"
+                        SelectedFeatureExtractorModel="{Binding SelectedFeatureExtractorModel, Mode=TwoWay}"
                         DiffuserType="ImageToImage" 
                         BatchOptions="{Binding BatchOptions}"
                         SchedulerOptions="{Binding SchedulerOptions, Mode=TwoWay}" 

@@ -22,6 +22,7 @@ namespace Amuse.UI.Views
         private readonly ILogger<SettingsView> _logger;
         private readonly IDialogService _dialogService;
         private ControlNetModelSetViewModel _selectedControlNetModel;
+        private FeatureExtractorModelSetViewModel _selectedFeatureExtractorModel;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SettingsView"/> class.
@@ -40,6 +41,10 @@ namespace Amuse.UI.Views
             AddControlNetModelCommand = new AsyncRelayCommand(AddControlNetModel);
             UpdateControlNetModelCommand = new AsyncRelayCommand(UpdateControlNetModel, () => SelectedControlNetModel is not null);
             RemoveControlNetModelCommand = new AsyncRelayCommand(RemoveControlNetModel, () => SelectedControlNetModel is not null);
+
+            AddFeatureExtractorModelCommand = new AsyncRelayCommand(AddFeatureExtractorModel);
+            UpdateFeatureExtractorModelCommand = new AsyncRelayCommand(UpdateFeatureExtractorModel, () => SelectedFeatureExtractorModel is not null);
+            RemoveFeatureExtractorModelCommand = new AsyncRelayCommand(RemoveFeatureExtractorModel, () => SelectedFeatureExtractorModel is not null);
             InitializeComponent();
         }
 
@@ -47,6 +52,9 @@ namespace Amuse.UI.Views
         public AsyncRelayCommand AddControlNetModelCommand { get; }
         public AsyncRelayCommand UpdateControlNetModelCommand { get; }
         public AsyncRelayCommand RemoveControlNetModelCommand { get; }
+        public AsyncRelayCommand AddFeatureExtractorModelCommand { get; }
+        public AsyncRelayCommand UpdateFeatureExtractorModelCommand { get; }
+        public AsyncRelayCommand RemoveFeatureExtractorModelCommand { get; }
 
         public AmuseSettings UISettings
         {
@@ -60,6 +68,12 @@ namespace Amuse.UI.Views
         {
             get { return _selectedControlNetModel; }
             set { _selectedControlNetModel = value; NotifyPropertyChanged(); }
+        }
+
+        public FeatureExtractorModelSetViewModel SelectedFeatureExtractorModel
+        {
+            get { return _selectedFeatureExtractorModel; }
+            set { _selectedFeatureExtractorModel = value; NotifyPropertyChanged(); }
         }
 
         public Task NavigateAsync(ImageResult imageResult)
@@ -119,7 +133,7 @@ namespace Amuse.UI.Views
                 var modelSet = updateModelDialog.ModelSetResult;
                 SelectedControlNetModel.ModelSet = modelSet;
                 SelectedControlNetModel.Name = modelSet.Name;
-                UISettings.ControlNetModelSets.ForceNotifyCollectionChanged();
+                SelectedControlNetModel.NotifyPropertyChanged("Type");
                 await Save();
             }
         }
@@ -135,6 +149,60 @@ namespace Amuse.UI.Views
 
             UISettings.ControlNetModelSets.Remove(SelectedControlNetModel);
             SelectedControlNetModel = UISettings.ControlNetModelSets.FirstOrDefault();
+            await Save();
+        }
+
+        #endregion
+
+        #region Feature Extractor
+
+        private async Task AddFeatureExtractorModel()
+        {
+            var addModelDialog = _dialogService.GetDialog<AddFeatureExtractorModelDialog>();
+            if (addModelDialog.ShowDialog())
+            {
+                var model = new FeatureExtractorModelSetViewModel
+                {
+                    Name = addModelDialog.ModelSetResult.Name,
+                    ModelSet = addModelDialog.ModelSetResult
+                };
+                UISettings.FeatureExtractorModelSets.Add(model);
+                SelectedFeatureExtractorModel = model;
+                await Save();
+            }
+        }
+
+
+        private async Task UpdateFeatureExtractorModel()
+        {
+            if (SelectedFeatureExtractorModel.IsLoaded)
+            {
+                MessageBox.Show("Please unload model before updating", "Model In Use", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var updateModelDialog = _dialogService.GetDialog<UpdateFeatureExtractorModelDialog>();
+            if (updateModelDialog.ShowDialog(SelectedFeatureExtractorModel.ModelSet, SelectedFeatureExtractorModel.ControlNetType))
+            {
+                var modelSet = updateModelDialog.ModelSetResult;
+                SelectedFeatureExtractorModel.ModelSet = modelSet;
+                SelectedFeatureExtractorModel.Name = modelSet.Name;
+                SelectedFeatureExtractorModel.ControlNetType = updateModelDialog.ControlNetType;
+                await Save();
+            }
+        }
+
+
+        private async Task RemoveFeatureExtractorModel()
+        {
+            if (SelectedFeatureExtractorModel.IsLoaded)
+            {
+                MessageBox.Show("Please unload model before uninstalling", "Model In Use", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            UISettings.FeatureExtractorModelSets.Remove(SelectedFeatureExtractorModel);
+            SelectedFeatureExtractorModel = UISettings.FeatureExtractorModelSets.FirstOrDefault();
             await Save();
         }
 

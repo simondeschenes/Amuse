@@ -1,4 +1,5 @@
-﻿using SixLabors.ImageSharp;
+﻿using OnnxStack.Core.Image;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.ObjectModel;
@@ -21,29 +22,27 @@ namespace Amuse.UI
         }
 
 
-
         public static void NavigateToUrl(string url)
         {
             Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
         }
 
-        public static string RandomString()
-        {
-            return Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
-        }
 
-        public static BitmapImage CreateBitmap(byte[] imageBytes)
+        public static async Task<BitmapImage> ToBitmapAsync(this OnnxImage onnxImage)
         {
-            using (var memoryStream = new MemoryStream(imageBytes))
+            using (var memoryStream = new MemoryStream())
             {
+                await onnxImage.SaveAsync(memoryStream);
                 var image = new BitmapImage();
                 image.BeginInit();
                 image.CacheOption = BitmapCacheOption.OnLoad;
                 image.StreamSource = memoryStream;
                 image.EndInit();
+                image.Freeze();
                 return image;
             }
         }
+
 
         public static byte[] GetImageBytes(this BitmapSource image)
         {
@@ -59,20 +58,6 @@ namespace Amuse.UI
             }
         }
 
-        internal static BitmapSource GetImage(Image<Rgba32> inputImage)
-        {
-            using (var memoryStream = new MemoryStream())
-            {
-                inputImage.SaveAsPng(memoryStream);
-                var image = new BitmapImage();
-                image.BeginInit();
-                image.CacheOption = BitmapCacheOption.OnLoad;
-                image.StreamSource = memoryStream;
-                image.EndInit();
-                image.Freeze();
-                return image;
-            }
-        }
 
         internal static async Task RefreshDelay(long startTime, int refreshRate, CancellationToken cancellationToken)
         {
@@ -126,6 +111,6 @@ namespace Amuse.UI
             collection?.Move(0, 0);
         }
 
-       
+
     }
 }

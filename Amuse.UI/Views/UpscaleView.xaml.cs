@@ -3,7 +3,6 @@ using Amuse.UI.Models;
 using Amuse.UI.Services;
 using Microsoft.Extensions.Logging;
 using OnnxStack.Core.Image;
-using OnnxStack.ImageUpscaler.Services;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -213,11 +212,11 @@ namespace Amuse.UI.Views
             try
             {
                 var timestamp = Stopwatch.GetTimestamp();
-                var resultBytes = await _upscaleService.GenerateAsByteAsync(SelectedModel.ModelSet, new InputImage(InputImage.GetImageBytes()));
-                if (resultBytes != null)
+                var resultImage = await _upscaleService.GenerateAsync(SelectedModel.ModelSet, new OnnxImage(InputImage.GetImageBytes()));
+                if (resultImage != null)
                 {
                     var elapsed = Stopwatch.GetElapsedTime(timestamp).TotalSeconds;
-                    var imageResult = new UpscaleResult(Utils.CreateBitmap(resultBytes), UpscaleInfo with { }, elapsed);
+                    var imageResult = new UpscaleResult(await resultImage.ToBitmapAsync(), UpscaleInfo with { }, elapsed);
                     ResultImage = imageResult;
                     HasResult = true;
 
@@ -331,10 +330,10 @@ namespace Amuse.UI.Views
         {
             if (SelectedModel != null)
             {
-                UpscaleInfo.SampleSize = SelectedModel.ModelSet.SampleSize;
-                UpscaleInfo.ScaleFactor = SelectedModel.ModelSet.ScaleFactor;
-                UpscaleInfo.InputWidth = InputImage?.PixelWidth ?? SelectedModel.ModelSet.SampleSize;
-                UpscaleInfo.InputHeight = InputImage?.PixelHeight ?? SelectedModel.ModelSet.SampleSize;
+                UpscaleInfo.SampleSize = SelectedModel.ModelSet.UpscaleModelConfig.SampleSize;
+                UpscaleInfo.ScaleFactor = SelectedModel.ModelSet.UpscaleModelConfig.ScaleFactor;
+                UpscaleInfo.InputWidth = InputImage?.PixelWidth ?? SelectedModel.ModelSet.UpscaleModelConfig.SampleSize;
+                UpscaleInfo.InputHeight = InputImage?.PixelHeight ?? SelectedModel.ModelSet.UpscaleModelConfig.SampleSize;
                 return;
             }
             UpscaleInfo = new UpscaleInfoModel();

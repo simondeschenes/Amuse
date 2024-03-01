@@ -1,5 +1,6 @@
 ﻿using Amuse.UI.Commands;
 using Amuse.UI.Models;
+using OnnxStack.ImageUpscaler.Common;
 using OnnxStack.StableDiffusion.Config;
 using System;
 using System.Collections.Generic;
@@ -84,13 +85,10 @@ namespace Amuse.UI.Dialogs
                 return false;
             }
 
-            foreach (var modelFile in _modelSetResult.ModelConfigurations)
+            if (!File.Exists(_modelSetResult.UpscaleModelConfig.OnnxModelPath))
             {
-                if (!File.Exists(modelFile.OnnxModelPath))
-                {
-                    ValidationError = $"'{modelFile.Type}' model file not found";
-                    return false;
-                }
+                ValidationError = $"Upscale model file not found";
+                return false;
             }
             ValidationError = null;
             return true;

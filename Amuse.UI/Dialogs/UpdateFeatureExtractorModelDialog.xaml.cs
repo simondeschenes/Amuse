@@ -1,28 +1,31 @@
-﻿using OnnxStack.StableDiffusion.Config;
-using Amuse.UI.Commands;
+﻿using Amuse.UI.Commands;
 using Amuse.UI.Models;
+using OnnxStack.FeatureExtractor.Common;
+using OnnxStack.StableDiffusion.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
-using System;
 
 namespace Amuse.UI.Dialogs
 {
     /// <summary>
-    /// Interaction logic for UpdateControlNetModelDialog.xaml
+    /// Interaction logic for UpdateFeatureExtractorModelDialog.xaml
     /// </summary>
-    public partial class UpdateControlNetModelDialog : Window, INotifyPropertyChanged
+    public partial class UpdateFeatureExtractorModelDialog : Window, INotifyPropertyChanged
     {
         private List<string> _invalidOptions;
         private AmuseSettings _settings;
-        private ControlNetModelSet _modelSetResult;
-        private UpdateControlNetModelSetViewModel _updateModelSet;
+        private FeatureExtractorModelSet _modelSetResult;
+        private UpdateFeatureExtractorModelSetViewModel _updateModelSet;
         private string _validationError;
+        private string _controlNetFilter;
 
-        public UpdateControlNetModelDialog(AmuseSettings settings)
+        public UpdateFeatureExtractorModelDialog(AmuseSettings settings)
         {
             _settings = settings;
             WindowCloseCommand = new AsyncRelayCommand(WindowClose);
@@ -31,22 +34,31 @@ namespace Amuse.UI.Dialogs
             WindowMaximizeCommand = new AsyncRelayCommand(WindowMaximize);
             SaveCommand = new AsyncRelayCommand(Save, CanExecuteSave);
             CancelCommand = new AsyncRelayCommand(Cancel, CanExecuteCancel);
-            _invalidOptions = _settings.GetModelNames();
+            _invalidOptions = _settings.FeatureExtractorModelSets.Select(x => x.Name).ToList();
+            ControlNetFilters = new List<string> { "N/A" };
+            ControlNetFilters.AddRange(Enum.GetNames<ControlNetType>());
             InitializeComponent();
         }
 
+        public AmuseSettings Settings => _settings;
         public AsyncRelayCommand WindowMinimizeCommand { get; }
         public AsyncRelayCommand WindowRestoreCommand { get; }
         public AsyncRelayCommand WindowMaximizeCommand { get; }
         public AsyncRelayCommand WindowCloseCommand { get; }
-        public AmuseSettings Settings => _settings;
         public AsyncRelayCommand SaveCommand { get; }
         public AsyncRelayCommand CancelCommand { get; }
+        public List<string> ControlNetFilters { get; set; }
 
-        public UpdateControlNetModelSetViewModel UpdateModelSet
+        public UpdateFeatureExtractorModelSetViewModel UpdateModelSet
         {
             get { return _updateModelSet; }
             set { _updateModelSet = value; NotifyPropertyChanged(); }
+        }
+
+        public string ControlNetFilter
+        {
+            get { return _controlNetFilter; }
+            set { _controlNetFilter = value; NotifyPropertyChanged(); }
         }
 
         public string ValidationError
@@ -55,16 +67,21 @@ namespace Amuse.UI.Dialogs
             set { _validationError = value; NotifyPropertyChanged(); }
         }
 
-        public ControlNetModelSet ModelSetResult
+        public FeatureExtractorModelSet ModelSetResult
         {
             get { return _modelSetResult; }
         }
 
+        public ControlNetType? ControlNetType
+        {
+            get { return Enum.TryParse<ControlNetType>(_controlNetFilter, out var result) ? result : null; }
+        }
 
-        public bool ShowDialog(ControlNetModelSet modelSet)
+        public bool ShowDialog(FeatureExtractorModelSet modelSet, ControlNetType? controlNetType)
         {
             _invalidOptions.Remove(modelSet.Name);
-            UpdateModelSet = UpdateControlNetModelSetViewModel.FromModelSet(modelSet);
+            UpdateModelSet = UpdateFeatureExtractorModelSetViewModel.FromModelSet(modelSet, controlNetType);
+            ControlNetFilter = controlNetType == null ? "N/A" : controlNetType.ToString();
             return base.ShowDialog() ?? false;
         }
 
@@ -73,7 +90,7 @@ namespace Amuse.UI.Dialogs
             if (_updateModelSet == null)
                 return false;
 
-            _modelSetResult = UpdateControlNetModelSetViewModel.ToModelSet(_updateModelSet);
+            _modelSetResult = UpdateFeatureExtractorModelSetViewModel.ToModelSet(_updateModelSet);
             if (_modelSetResult == null)
                 return false;
 
@@ -83,11 +100,12 @@ namespace Amuse.UI.Dialogs
                 return false;
             }
 
-            if (!File.Exists(_modelSetResult.ControlNetConfig.OnnxModelPath))
+            if (!File.Exists(_modelSetResult.FeatureExtractorConfig.OnnxModelPath))
             {
                 ValidationError = $"ContolNet model file not found";
                 return false;
             }
+
             ValidationError = null;
             return true;
         }
@@ -165,5 +183,4 @@ namespace Amuse.UI.Dialogs
         }
         #endregion
     }
-
 }
