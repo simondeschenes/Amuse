@@ -2,10 +2,10 @@
     <img width="50%" src="Assets/Amuse-Logo-512.png">
 </p> 
 
-![GitHub all releases](https://img.shields.io/github/downloads/Stackyard-AI/Amuse/total)[![Download Amuse](https://img.shields.io/github/v/release/Stackyard-AI/Amuse?label=Download&style=flat-square)](https://github.com/Stackyard-AI/Amuse/releases/download/v1.2.2/Amuse_v1.2.2.zip)![GitHub last commit (by committer)](https://img.shields.io/github/last-commit/Stackyard-AI/Amuse)
+![GitHub all releases](https://img.shields.io/github/downloads/Stackyard-AI/Amuse/total)[![Download Amuse](https://img.shields.io/github/v/release/Stackyard-AI/Amuse?label=Download&style=flat-square)](https://github.com/Stackyard-AI/Amuse/releases/download/v1.3.0/Amuse_v1.3.0.zip)![GitHub last commit (by committer)](https://img.shields.io/github/last-commit/Stackyard-AI/Amuse)
 [![Discord](https://img.shields.io/discord/1189738352715513967?label=Discord&)](https://discord.gg/hThP5VRuHA)
 [![YouTube Channel Views](https://img.shields.io/youtube/channel/views/UCIBJC3QFZm0ocvove8oqmSg)](https://www.youtube.com/@StackyardAI)
-### **[Discord](https://discord.gg/hThP5VRuHA)**  | **[Youtube](https://www.youtube.com/@StackyardAI)** | **[Download](https://github.com/Stackyard-AI/Amuse/releases/download/v1.2.2/Amuse_v1.2.2.zip)**
+### **[Discord](https://discord.gg/hThP5VRuHA)**  | **[Youtube](https://www.youtube.com/@StackyardAI)** | **[Download](https://github.com/Stackyard-AI/Amuse/releases/download/v1.3.0/Amuse_v1.3.0.zip)**
 
 __________________________
 
@@ -17,7 +17,7 @@ Amuse, written entirely in .NET, operates locally with a dependency-free archite
 
 ### Experience the power of AI without compromise
 
-## >> [Download Amuse v1.2.2](https://github.com/Stackyard-AI/Amuse/releases/download/v1.2.2/Amuse_v1.2.2.zip) <<
+## >> [Download Amuse v1.3.0](https://github.com/Stackyard-AI/Amuse/releases/download/v1.3.0/Amuse_v1.3.0.zip) <<
 __________________________
 
 ## Features
