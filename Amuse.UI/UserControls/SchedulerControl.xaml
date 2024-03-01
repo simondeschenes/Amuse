@@ -266,7 +266,7 @@
 
                     </UniformGrid>
 
-                    <DockPanel DockPanel.Dock="Bottom" Visibility="{Binding SelectedModel.IsControlNet, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Collapsed}">
+                    <DockPanel Visibility="{Binding SelectedModel.IsControlNet, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Collapsed}">
                         <UniformGrid Columns="2" Margin="0,0,0,10" >
                             <!--<CheckBox IsChecked="{Binding SchedulerOptions.IsControlImageProcessingEnabled}" Content="Process Input Image" />-->
                             <!--<CheckBox IsChecked="{Binding IsControlImageProcessingPreviewEnabled}" IsEnabled="{Binding IsControlImageProcessingEnabled}" Content="Preview Processed Input" Margin="5,0,0,0" />-->
@@ -288,6 +288,24 @@
                             </UniformGrid.Style>
                         </UniformGrid>
                     </DockPanel>
+
+                    <UniformGrid Columns="2" Visibility="{Binding SelectedModel.IsControlNet, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Collapsed}"> 
+                      
+                        <StackPanel Margin="0,0,5,0">
+                            <TextBlock Text="Feature Extractor" />
+                            <Grid>
+                                <ComboBox DisplayMemberPath="Name" SelectedItem="{Binding SelectedFeatureExtractorModel}" ItemsSource="{Binding UISettings.FeatureExtractorModelSets}" IsEnabled="{Binding ProcessInputImage}" />
+                                <TextBlock Text="None" Visibility="{Binding SelectedFeatureExtractorModel, Converter={StaticResource InverseNullVisibilityConverter}}" IsHitTestVisible="False" Margin="3,2" FontStyle="Italic" Opacity=".7" />
+                            </Grid>
+
+                        </StackPanel>
+                        <StackPanel Margin="5,0,0,0">
+                            <TextBlock/>
+                            <CheckBox Content="Process Input Image" IsChecked="{Binding ProcessInputImage}" />
+                        </StackPanel>
+                    </UniformGrid>
+                  
+
                 </StackPanel>
             </TabItem>
 

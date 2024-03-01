@@ -76,9 +76,18 @@ namespace Amuse.UI.UserControls
             get { return (ControlNetModelSetViewModel)GetValue(SelectedControlNetModelProperty); }
             set { SetValue(SelectedControlNetModelProperty, value); }
         }
-
         public static readonly DependencyProperty SelectedControlNetModelProperty =
             DependencyProperty.Register("SelectedControlNetModel", typeof(ControlNetModelSetViewModel), typeof(SchedulerControl));
+
+
+
+        public FeatureExtractorModelSetViewModel SelectedFeatureExtractorModel
+        {
+            get { return (FeatureExtractorModelSetViewModel)GetValue(SelectedFeatureExtractorModelProperty); }
+            set { SetValue(SelectedFeatureExtractorModelProperty, value); }
+        }
+        public static readonly DependencyProperty SelectedFeatureExtractorModelProperty =
+            DependencyProperty.Register("SelectedFeatureExtractorModel", typeof(FeatureExtractorModelSetViewModel), typeof(SchedulerControl));
 
 
 
@@ -132,6 +141,22 @@ namespace Amuse.UI.UserControls
         }
         public static readonly DependencyProperty IsVideoControlsEnabledProperty =
             DependencyProperty.Register("IsVideoControlsEnabled", typeof(bool), typeof(SchedulerControl));
+
+
+        private bool _processInputImage;
+
+        public bool ProcessInputImage
+        {
+            get { return _processInputImage; }
+            set
+            {
+                _processInputImage = value;
+                if (!_processInputImage)
+                    SelectedFeatureExtractorModel = null;
+
+                NotifyPropertyChanged();
+            }
+        }
 
 
 

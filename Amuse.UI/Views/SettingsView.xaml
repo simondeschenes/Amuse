@@ -26,10 +26,18 @@
                                 <TextBlock Text="Execution Device" />
                                 <userControls:DevicePickerControl Settings="{Binding UISettings}" DeviceId="{Binding UISettings.DefaultDeviceId, Mode=TwoWay}" ExecutionProvider="{Binding UISettings.DefaultExecutionProvider, Mode=TwoWay}" />
                             </StackPanel>
-                            <StackPanel Margin="0,10,0,0">
-                                <TextBlock Text="Model Cache Mode" />
-                                <ComboBox ItemsSource="{Binding Source={StaticResource ModelCacheMode}}" SelectedItem="{Binding UISettings.ModelCacheMode}" />
-                            </StackPanel>
+
+                            <UniformGrid Columns="2" Margin="0,10,0,0">
+                                <StackPanel Margin="0,0,5,0">
+                                    <TextBlock Text="Memory Mode" />
+                                    <ComboBox ItemsSource="{Binding Source={StaticResource MemoryModeType}}" SelectedItem="{Binding UISettings.DefaultMemoryMode}" />
+                                </StackPanel>
+                                <StackPanel Margin="5,0,0,0">
+                                    <TextBlock Text="Model Cache Mode" />
+                                    <ComboBox ItemsSource="{Binding Source={StaticResource ModelCacheMode}}" SelectedItem="{Binding UISettings.ModelCacheMode}" />
+                                </StackPanel>
+                            </UniformGrid>
+                           
                             <StackPanel Margin="0,5,0,0">
                                 <TextBlock Text="Default Model Directory" />
                                 <userControls:FilePickerTextBox IsFolderPicker="True" FileName="{Binding UISettings.DirectoryModel, Mode=TwoWay}"/>

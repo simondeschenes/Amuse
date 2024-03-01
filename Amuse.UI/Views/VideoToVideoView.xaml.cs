@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Models;
 using OnnxStack.Core.Image;
 using OnnxStack.Core.Video;
+using OnnxStack.FeatureExtractor.Common;
 using OnnxStack.StableDiffusion.Common;
 using OnnxStack.StableDiffusion.Config;
 using OnnxStack.StableDiffusion.Enums;
@@ -43,6 +44,7 @@ namespace Amuse.UI.Views
         private VideoResultModel _resultVideo;
         private StableDiffusionModelSetViewModel _selectedModel;
         private ControlNetModelSetViewModel _selectedControlNetModel;
+        private FeatureExtractorModelSetViewModel _selectedFeatureExtractorModel;
         private PromptOptionsModel _promptOptionsModel;
         private SchedulerOptionsModel _schedulerOptions;
         private BatchOptionsModel _batchOptions;
@@ -114,10 +116,17 @@ namespace Amuse.UI.Views
             get { return _selectedModel; }
             set { _selectedModel = value; NotifyPropertyChanged(); }
         }
+
         public ControlNetModelSetViewModel SelectedControlNetModel
         {
             get { return _selectedControlNetModel; }
             set { _selectedControlNetModel = value; NotifyPropertyChanged(); }
+        }
+
+        public FeatureExtractorModelSetViewModel SelectedFeatureExtractorModel
+        {
+            get { return _selectedFeatureExtractorModel; }
+            set { _selectedFeatureExtractorModel = value; NotifyPropertyChanged(); }
         }
 
         public PromptOptionsModel PromptOptions
@@ -270,7 +279,7 @@ namespace Amuse.UI.Views
                 }
 
                 var promptOptions = GetPromptOptions(PromptOptions, _videoFrames);
-                await foreach (var resultVideo in ExecuteStableDiffusion(_selectedModel.ModelSet, _selectedControlNetModel?.ModelSet, promptOptions, schedulerOptions, batchOptions))
+                await foreach (var resultVideo in ExecuteStableDiffusion(_selectedModel.ModelSet, _selectedControlNetModel?.ModelSet, _selectedFeatureExtractorModel?.ModelSet, promptOptions, schedulerOptions, batchOptions))
                 {
                     if (resultVideo != null)
                     {
@@ -403,14 +412,14 @@ namespace Amuse.UI.Views
         /// <param name="schedulerOptions">The scheduler options.</param>
         /// <param name="batchOptions">The batch options.</param>
         /// <returns></returns>
-        private async IAsyncEnumerable<VideoResultModel> ExecuteStableDiffusion(StableDiffusionModelSet modelOptions, ControlNetModelSet controlNetModel, PromptOptions promptOptions, SchedulerOptions schedulerOptions, BatchOptions batchOptions)
+        private async IAsyncEnumerable<VideoResultModel> ExecuteStableDiffusion(StableDiffusionModelSet modelOptions, ControlNetModelSet controlNetModel, FeatureExtractorModelSet featureExtractor, PromptOptions promptOptions, SchedulerOptions schedulerOptions, BatchOptions batchOptions)
         {
             if (!BatchOptions.IsRealtimeEnabled)
             {
                 if (!BatchOptions.IsAutomationEnabled)
                 {
                     var timestamp = Stopwatch.GetTimestamp();
-                    var result = await _stableDiffusionService.GenerateVideoAsync(new ModelOptions(modelOptions, controlNetModel), promptOptions, schedulerOptions, ProgressCallback(), _cancelationTokenSource.Token);
+                    var result = await _stableDiffusionService.GenerateVideoAsync(new ModelOptions(modelOptions, controlNetModel, featureExtractor), promptOptions, schedulerOptions, ProgressCallback(), _cancelationTokenSource.Token);
                     yield return await GenerateResultAsync(result, _selectedModel, promptOptions, schedulerOptions, timestamp);
                 }
                 else
@@ -418,7 +427,7 @@ namespace Amuse.UI.Views
                     if (!BatchOptions.IsRealtimeEnabled)
                     {
                         var timestamp = Stopwatch.GetTimestamp();
-                        await foreach (var batchResult in _stableDiffusionService.GenerateVideoAsync(batchOptions, new ModelOptions(modelOptions), promptOptions, schedulerOptions, ProgressCallback(), _cancelationTokenSource.Token))
+                        await foreach (var batchResult in _stableDiffusionService.GenerateVideoAsync(batchOptions, new ModelOptions(modelOptions, controlNetModel, featureExtractor), promptOptions, schedulerOptions, ProgressCallback(), _cancelationTokenSource.Token))
                         {
                             yield return await GenerateResultAsync(new OnnxVideo(_videoFrames.Info, batchResult.Result), _selectedModel, promptOptions, batchResult.SchedulerOptions, timestamp);
                             timestamp = Stopwatch.GetTimestamp();
@@ -443,7 +452,7 @@ namespace Amuse.UI.Views
                         var refreshTimestamp = Stopwatch.GetTimestamp();
                         var realtimePromptOptions = GetLivePromptOptions(PromptOptions, videoFrame);
                         var realtimeSchedulerOptions = SchedulerOptionsModel.ToSchedulerOptions(SchedulerOptions);
-                        var result = await _stableDiffusionService.GenerateImageAsync(new ModelOptions(modelOptions, controlNetModel), realtimePromptOptions, realtimeSchedulerOptions, RealtimeProgressCallback(), _cancelationTokenSource.Token);
+                        var result = await _stableDiffusionService.GenerateImageAsync(new ModelOptions(modelOptions, controlNetModel, featureExtractor), realtimePromptOptions, realtimeSchedulerOptions, RealtimeProgressCallback(), _cancelationTokenSource.Token);
                         resultVideoFrames.Add(result);
                         PreviewResult = await result.ToBitmapAsync();
                         PreviewSource = await videoFrame.ToBitmapAsync();
@@ -474,7 +483,8 @@ namespace Amuse.UI.Views
                 Prompt = string.IsNullOrEmpty(promptOptionsModel.Prompt) ? " " : promptOptionsModel.Prompt,
                 NegativePrompt = promptOptionsModel.NegativePrompt,
                 DiffuserType = diffuserType,
-                InputVideo = videoFrames
+                InputVideo = videoFrames,
+                InputContolVideo = diffuserType == DiffuserType.ControlNet || diffuserType == DiffuserType.ControlNetImage ? videoFrames : default,
             };
         }
 

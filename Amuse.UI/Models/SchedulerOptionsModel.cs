@@ -35,7 +35,6 @@ namespace Amuse.UI.Models
         private SchedulerType _schedulerType;
         private bool _hasChanged;
         private float _conditioningScale = 1;
-        private bool _isControlImageProcessingEnabled;
 
         /// <summary>
         /// Gets or sets the height.

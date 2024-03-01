@@ -39,7 +39,7 @@ namespace Amuse.UI.Models
         private ModelFileViewModel _textEncoderModel;
         private ModelFileViewModel _tokenizer2Model;
         private ModelFileViewModel _tokenizerModel;
-        // private MemoryModeType _memoryMode;
+        private MemoryModeType _memoryMode;
 
         public string Name
         {
@@ -170,11 +170,11 @@ namespace Amuse.UI.Models
             set { _modelType = value; NotifyPropertyChanged(); }
         }
 
-        //public MemoryModeType MemoryMode
-        //{
-        //    get { return _memoryMode; }
-        //    set { _memoryMode = value; NotifyPropertyChanged(); }
-        //}
+        public MemoryModeType MemoryMode
+        {
+            get { return _memoryMode; }
+            set { _memoryMode = value; NotifyPropertyChanged(); }
+        }
 
         public ModelFileViewModel UnetModel
         {
@@ -261,7 +261,7 @@ namespace Amuse.UI.Models
                 Tokenizer2Length = modelset.Tokenizer2Config?.TokenizerLength ?? 1280,
                 ModelType = modelset.UnetConfig.ModelType,
                 ScaleFactor = modelset.VaeDecoderConfig.ScaleFactor,
-                //   MemoryMode = modelset.MemoryMode,
+                MemoryMode = modelset.MemoryMode,
 
                 UnetModel = new ModelFileViewModel
                 {
@@ -401,7 +401,7 @@ namespace Amuse.UI.Models
                 InterOpNumThreads = modelset.InterOpNumThreads,
                 IntraOpNumThreads = modelset.IntraOpNumThreads,
 
-                //  MemoryMode = modelset.MemoryMode,
+                MemoryMode = modelset.MemoryMode,
 
                 UnetConfig = new UNetConditionModelConfig
                 {

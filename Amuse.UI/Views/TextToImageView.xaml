@@ -25,12 +25,9 @@
                    SupportedDiffusers="{Binding SupportedDiffusers}"
                    IsEnabled="{Binding IsGenerating, Converter={StaticResource InverseBoolConverter}}"
                    SelectedModel="{Binding SelectedModel, Mode=TwoWay}" />
-                <UniformGrid Rows="2" IsEnabled="{Binding SelectedModel.IsLoaded, FallbackValue=False, TargetNullValue=False}">
-                    <userControls:PromptControl 
-                        SelectedModel="{Binding SelectedModel}"
-                        PromptOptions="{Binding PromptOptions}" 
-                        IsEnabled="{Binding IsControlsEnabled}"/>
-                    <userControls:SchedulerControl DockPanel.Dock="Bottom" Margin="0, 10, 0 ,0"
+                <DockPanel IsEnabled="{Binding SelectedModel.IsLoaded, FallbackValue=False, TargetNullValue=False}">
+                  
+                    <userControls:SchedulerControl DockPanel.Dock="Bottom" Margin="0, 10, 0 ,0" MinHeight="300"
                         UISettings="{Binding UISettings}"
                         SelectedModel="{Binding SelectedModel}"
                         DiffuserType="TextToImage" 
@@ -38,7 +35,11 @@
                         SchedulerOptions="{Binding SchedulerOptions, Mode=TwoWay}" 
                         IsEnabled="{Binding IsControlsEnabled}"
                         IsGenerating="{Binding IsGenerating}"/>
-                </UniformGrid>
+                    <userControls:PromptControl 
+                        SelectedModel="{Binding SelectedModel}"
+                        PromptOptions="{Binding PromptOptions}" 
+                        IsEnabled="{Binding IsControlsEnabled}"/>
+                </DockPanel>
             </DockPanel>
         </DockPanel>
 

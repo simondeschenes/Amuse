@@ -4,6 +4,7 @@ using OnnxStack.Core;
 using OnnxStack.Core.Config;
 using OnnxStack.Core.Image;
 using OnnxStack.Core.Video;
+using OnnxStack.FeatureExtractor.Pipelines;
 using OnnxStack.StableDiffusion.Common;
 using OnnxStack.StableDiffusion.Config;
 using OnnxStack.StableDiffusion.Enums;
@@ -13,6 +14,7 @@ using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,6 +30,8 @@ namespace Amuse.UI.Services
         private readonly AmuseSettings _settings;
         private readonly Dictionary<IOnnxModel, IPipeline> _pipelines;
         private readonly ConcurrentDictionary<IOnnxModel, ControlNetModel> _controlNetSessions;
+
+        private FeatureExtractorPipeline _featureExtractorPipeline;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StableDiffusionService"/> class.
@@ -65,6 +69,12 @@ namespace Amuse.UI.Services
         /// <returns></returns>
         public async Task<bool> UnloadModelAsync(StableDiffusionModelSet model)
         {
+            if (_featureExtractorPipeline is not null)
+            {
+                await _featureExtractorPipeline.UnloadAsync();
+                _featureExtractorPipeline = null;
+            }
+
             if (_pipelines.Remove(model, out var pipeline))
             {
                 await pipeline?.UnloadAsync();
@@ -109,13 +119,19 @@ namespace Amuse.UI.Services
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        public Task<bool> UnloadControlNetModelAsync(ControlNetModelSet model)
+        public async Task<bool> UnloadControlNetModelAsync(ControlNetModelSet model)
         {
+            if (_featureExtractorPipeline is not null)
+            {
+                await _featureExtractorPipeline.UnloadAsync();
+                _featureExtractorPipeline = null;
+            }
+
             if (_controlNetSessions.Remove(model, out var controlNet))
             {
-                controlNet?.UnloadAsync();
+                await controlNet?.UnloadAsync();
             }
-            return Task.FromResult(true);
+            return true;
         }
 
 
@@ -145,11 +161,13 @@ namespace Amuse.UI.Services
             if (!_pipelines.TryGetValue(model.BaseModel, out var pipeline))
                 throw new Exception("Pipeline not found or is unsupported");
 
+            pipeline.ValidateInputs(prompt, options);
+
             var controlNet = default(ControlNetModel);
             if (model.ControlNetModel is not null && !_controlNetSessions.TryGetValue(model.ControlNetModel, out controlNet))
                 throw new Exception("ControlNet not loaded");
 
-            pipeline.ValidateInputs(prompt, options);
+            await ProcessInputImage(model, prompt, cancellationToken);
 
             return await pipeline.GenerateImageAsync(prompt, options, controlNet, progressCallback, cancellationToken);
         }
@@ -170,18 +188,23 @@ namespace Amuse.UI.Services
         /// or
         /// ControlNet not loaded
         /// </exception>
-        public IAsyncEnumerable<BatchResult> GenerateImageAsync(BatchOptions batchOptions, ModelOptions model, PromptOptions prompt, SchedulerOptions options, Action<DiffusionProgress> progressCallback = null, CancellationToken cancellationToken = default)
+        public async IAsyncEnumerable<BatchResult> GenerateImageAsync(BatchOptions batchOptions, ModelOptions model, PromptOptions prompt, SchedulerOptions options, Action<DiffusionProgress> progressCallback = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             if (!_pipelines.TryGetValue(model.BaseModel, out var pipeline))
                 throw new Exception("Pipeline not found or is unsupported");
+
+            pipeline.ValidateInputs(prompt, options);
 
             var controlNet = default(ControlNetModel);
             if (model.ControlNetModel is not null && !_controlNetSessions.TryGetValue(model.ControlNetModel, out controlNet))
                 throw new Exception("ControlNet not loaded");
 
-            pipeline.ValidateInputs(prompt, options);
+            await ProcessInputImage(model, prompt, cancellationToken);
 
-            return pipeline.RunBatchAsync(batchOptions, prompt, options, controlNet, progressCallback, cancellationToken);
+            await foreach (var result in pipeline.RunBatchAsync(batchOptions, prompt, options, controlNet, progressCallback, cancellationToken))
+            {
+                yield return result;
+            }
         }
 
 
@@ -204,11 +227,13 @@ namespace Amuse.UI.Services
             if (!_pipelines.TryGetValue(model.BaseModel, out var pipeline))
                 throw new Exception("Pipeline not found or is unsupported");
 
+            pipeline.ValidateInputs(prompt, options);
+
             var controlNet = default(ControlNetModel);
             if (model.ControlNetModel is not null && !_controlNetSessions.TryGetValue(model.ControlNetModel, out controlNet))
                 throw new Exception("ControlNet not loaded");
 
-            pipeline.ValidateInputs(prompt, options);
+            await ProcessInputVideo(model, prompt, cancellationToken);
 
             return await pipeline.GenerateVideoAsync(prompt, options, controlNet, progressCallback, cancellationToken);
         }
@@ -229,18 +254,23 @@ namespace Amuse.UI.Services
         /// or
         /// ControlNet not loaded
         /// </exception>
-        public IAsyncEnumerable<BatchResult> GenerateVideoAsync(BatchOptions batchOptions, ModelOptions model, PromptOptions prompt, SchedulerOptions options, Action<DiffusionProgress> progressCallback, CancellationToken cancellationToken)
+        public async IAsyncEnumerable<BatchResult> GenerateVideoAsync(BatchOptions batchOptions, ModelOptions model, PromptOptions prompt, SchedulerOptions options, Action<DiffusionProgress> progressCallback, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             if (!_pipelines.TryGetValue(model.BaseModel, out var pipeline))
                 throw new Exception("Pipeline not found or is unsupported");
+
+            pipeline.ValidateInputs(prompt, options);
 
             var controlNet = default(ControlNetModel);
             if (model.ControlNetModel is not null && !_controlNetSessions.TryGetValue(model.ControlNetModel, out controlNet))
                 throw new Exception("ControlNet not loaded");
 
-            pipeline.ValidateInputs(prompt, options);
+            await ProcessInputVideo(model, prompt, cancellationToken);
 
-            return pipeline.RunBatchAsync(batchOptions, prompt, options, controlNet, progressCallback, cancellationToken);
+            await foreach (var result in pipeline.RunBatchAsync(batchOptions, prompt, options, controlNet, progressCallback, cancellationToken))
+            {
+                yield return result;
+            }
         }
 
 
@@ -262,6 +292,57 @@ namespace Amuse.UI.Services
             }; ;
         }
 
-      
+
+        private async Task ProcessInputImage(ModelOptions model, PromptOptions prompt, CancellationToken cancellationToken)
+        {
+            if (model.FeatureExtractorModel is not null)
+            {
+                if (_featureExtractorPipeline is null || _featureExtractorPipeline.Name != model.FeatureExtractorModel.Name)
+                {
+                    if (_featureExtractorPipeline is not null)
+                    {
+                        await _featureExtractorPipeline.UnloadAsync();
+                        _featureExtractorPipeline = null;
+                    }
+
+                    _featureExtractorPipeline = FeatureExtractorPipeline.CreatePipeline(model.FeatureExtractorModel, _logger);
+                }
+
+                if (_featureExtractorPipeline is not null)
+                {
+                    await _featureExtractorPipeline.LoadAsync();
+                    prompt.InputContolImage = await _featureExtractorPipeline.RunAsync(prompt.InputContolImage, cancellationToken);
+                    if (_settings.DefaultMemoryMode == MemoryModeType.Minimum)
+                        await _featureExtractorPipeline.UnloadAsync();
+                }
+            }
+        }
+
+
+        private async Task ProcessInputVideo(ModelOptions model, PromptOptions prompt, CancellationToken cancellationToken)
+        {
+            if (model.FeatureExtractorModel is not null)
+            {
+                if (_featureExtractorPipeline is null || _featureExtractorPipeline.Name != model.FeatureExtractorModel.Name)
+                {
+                    if (_featureExtractorPipeline is not null)
+                    {
+                        await _featureExtractorPipeline.UnloadAsync();
+                        _featureExtractorPipeline = null;
+                    }
+
+                    await _featureExtractorPipeline?.UnloadAsync();
+                    _featureExtractorPipeline = FeatureExtractorPipeline.CreatePipeline(model.FeatureExtractorModel, _logger);
+                }
+
+                if (_featureExtractorPipeline is not null)
+                {
+                    await _featureExtractorPipeline.LoadAsync();
+                    prompt.InputContolVideo = await _featureExtractorPipeline.RunAsync(prompt.InputContolVideo, cancellationToken);
+                    if (_settings.DefaultMemoryMode == MemoryModeType.Minimum)
+                        await _featureExtractorPipeline.UnloadAsync();
+                }
+            }
+        }
     }
 }
