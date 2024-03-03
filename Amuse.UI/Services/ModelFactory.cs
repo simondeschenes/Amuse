@@ -47,10 +47,9 @@ namespace Amuse.UI.Services
                 ExecutionProvider = _settings.DefaultExecutionProvider,
                 InterOpNumThreads = _settings.DefaultInterOpNumThreads,
                 IntraOpNumThreads = _settings.DefaultIntraOpNumThreads,
-              //  MemoryMode = _settings.DefaultMemoryMode,
+                MemoryMode = _settings.DefaultMemoryMode,
                 IsEnabled = true,
             };
-
 
             // Some repositories have the ControlNet in the unet folder, some on the controlnet folder
             var isControlNet = modelTemplate.DiffuserTypes.Any(x => x == DiffuserType.ControlNet || x == DiffuserType.ControlNetImage);
@@ -74,11 +73,8 @@ namespace Amuse.UI.Services
 
             if (modelSet.PipelineType == DiffuserPipelineType.StableDiffusionXL || modelSet.PipelineType == DiffuserPipelineType.LatentConsistencyXL)
             {
-             
-
                 if (modelTemplate.ModelType == ModelType.Refiner)
                 {
-                    modelSet.SampleSize = 1024;
                     modelSet.UnetConfig = new UNetConditionModelConfig { OnnxModelPath = unetPath, ModelType = ModelType.Refiner };
                     modelSet.Tokenizer2Config = new TokenizerModelConfig { OnnxModelPath = tokenizer2Path, TokenizerLength = 1280, PadTokenId = 1 };
                     modelSet.TextEncoder2Config = new TextEncoderModelConfig { OnnxModelPath = textEncoder2Path };
@@ -87,7 +83,6 @@ namespace Amuse.UI.Services
                 }
                 else
                 {
-                    modelSet.SampleSize = 1024;
                     modelSet.UnetConfig = new UNetConditionModelConfig { OnnxModelPath = unetPath, ModelType = ModelType.Base };
                     modelSet.TokenizerConfig = new TokenizerModelConfig { OnnxModelPath = tokenizerPath, PadTokenId = 1 };
                     modelSet.Tokenizer2Config = new TokenizerModelConfig { OnnxModelPath = tokenizer2Path, TokenizerLength = 1280, PadTokenId = 1 };
@@ -99,7 +94,6 @@ namespace Amuse.UI.Services
             }
             else
             {
-                modelSet.SampleSize = 512;
                 var tokenizerLength = modelTemplate.ModelType == ModelType.Turbo ? 1024 : 768;
                 modelSet.UnetConfig = new UNetConditionModelConfig { OnnxModelPath = unetPath, ModelType = modelTemplate.ModelType };
                 modelSet.TokenizerConfig = new TokenizerModelConfig { OnnxModelPath = tokenizerPath, TokenizerLength = tokenizerLength };
@@ -110,6 +104,7 @@ namespace Amuse.UI.Services
 
             return modelSet;
         }
+
 
         public UpscaleModelSet CreateUpscaleModelSet(string name, string filename, string modelTemplateType)
         {
