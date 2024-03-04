@@ -2,7 +2,9 @@
 using Amuse.UI.Models;
 using Amuse.UI.Services;
 using Microsoft.Extensions.Logging;
+using Models;
 using OnnxStack.Core.Image;
+using OnnxStack.StableDiffusion.Config;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -33,10 +35,11 @@ namespace Amuse.UI.Views
         private bool _isControlsEnabled;
         private UpscaleResult _resultImage;
         private UpscaleModelSetViewModel _selectedModel;
-        private CancellationTokenSource _cancelationTokenSource;
+        private CancellationTokenSource _cancelationTokenSource = null;
         private BitmapSource _inputImage;
         private string _imageFile;
         private UpscaleInfoModel _upscaleInfo;
+        private BatchOptionsModel _batchOptions;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UpscaleView"/> class.
@@ -100,15 +103,17 @@ namespace Amuse.UI.Views
             set { _imageFile = value; NotifyPropertyChanged(); LoadImage(); }
         }
 
-
-
         public UpscaleInfoModel UpscaleInfo
         {
             get { return _upscaleInfo; }
             set { _upscaleInfo = value; NotifyPropertyChanged(); }
         }
 
-
+        public BatchOptionsModel BatchOptions
+        {
+            get { return _batchOptions; }
+            set { _batchOptions = value; NotifyPropertyChanged(); }
+        }
 
         public int ProgressValue
         {

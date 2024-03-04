@@ -173,7 +173,7 @@
                                                 <StackPanel Visibility="{Binding SelectedModelTemplate.Website, Converter={StaticResource NullVisibilityConverter}}" Margin="0,2,0,0">
                                                     <TextBlock Grid.Column="0" Grid.Row="2" Text="Website" FontStyle="Italic" FontSize="10" Opacity=".7"/>
                                                     <TextBlock Margin="0,-3,0,0">
-                                                         <Hyperlink NavigateUri="{Binding SelectedModelTemplate.Website}" Command="{Binding HyperLinkNavigateCommand}" CommandParameter="{Binding SelectedModelTemplate.Website}" Foreground="LightBlue" >
+                                                         <Hyperlink NavigateUri="{Binding SelectedModelTemplate.Website, Converter={StaticResource StringToUriConverter}}" Command="{Binding HyperLinkNavigateCommand}" CommandParameter="{Binding SelectedModelTemplate.Website}" Foreground="LightBlue" >
                                                             <Run Text="{Binding SelectedModelTemplate.Website}" />
                                                          </Hyperlink>
                                                     </TextBlock>
@@ -182,7 +182,7 @@
                                                 <StackPanel Visibility="{Binding SelectedModelTemplate.Repository, Converter={StaticResource NullVisibilityConverter}}" Margin="0,2,0,0">
                                                     <TextBlock Grid.Column="0" Grid.Row="2" Text="Repository" FontStyle="Italic" FontSize="10" Opacity=".7"/>
                                                     <TextBlock Margin="0,-3,0,0" TextTrimming="CharacterEllipsis">
-                                                      <Hyperlink NavigateUri="{Binding SelectedModelTemplate.Repository}" Command="{Binding HyperLinkNavigateCommand}" CommandParameter="{Binding SelectedModelTemplate.Repository}" Foreground="LightBlue" >
+                                                      <Hyperlink NavigateUri="{Binding SelectedModelTemplate.Repository, Converter={StaticResource StringToUriConverter}}" Command="{Binding HyperLinkNavigateCommand}" CommandParameter="{Binding SelectedModelTemplate.Repository}" Foreground="LightBlue" >
                                                          <Run Text="{Binding SelectedModelTemplate.Repository}" />
                                                       </Hyperlink>
                                                     </TextBlock>

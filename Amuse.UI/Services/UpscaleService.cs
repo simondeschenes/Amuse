@@ -13,7 +13,7 @@ namespace Amuse.UI.Services
 {
     public class UpscaleService : IUpscaleService
     {
-        private readonly ILogger<StableDiffusionService> _logger;
+        private readonly ILogger<StableDiffusionService> _logger = null;
         private readonly Dictionary<IOnnxModel, ImageUpscalePipeline> _pipelines;
 
         /// <summary>

@@ -8,7 +8,7 @@
              xmlns:local="clr-namespace:Amuse.UI.UserControls"
              xmlns:userControls="clr-namespace:Amuse.UI.UserControls"
              xmlns:behaviors="clr-namespace:Amuse.UI.Behaviors"
-             xmlns:models="clr-namespace:Amuse.UI.Models"
+             xmlns:converters="clr-namespace:Amuse.UI.Converters"
              mc:Ignorable="d" 
              d:DesignWidth="500" Name="UI" Focusable="True"  PreviewKeyDown="OnPreviewKeyDown" MouseEnter="OnMouseEnter" AllowDrop="True" PreviewDrop="OnPreviewDrop" PreviewMouseWheel="OnMouseWheel">
     <Border DataContext="{Binding ElementName=UI}" BorderBrush="{StaticResource ControlBrightDefaultBorderBrush}" BorderThickness="2" >
@@ -21,12 +21,16 @@
 
                         <!--Recent Colors-->
                         <ListView ItemsSource="{Binding RecentColors, ElementName=ColorPickerControl}" SelectedValue="{Binding SelectedColor}" SelectedValuePath="Color" Background="Transparent" BorderBrush="Transparent">
+                            <ListView.Resources>
+                                <converters:ColorToBrushConverter x:Key="ColorToBrushConverter" />
+                            </ListView.Resources>
                             <ListView.ItemContainerStyle>
                                 <Style TargetType="{x:Type ListViewItem}">
-                                    <Setter Property="Background">
-                                        <Setter.Value>
-                                            <SolidColorBrush Color="{Binding Color}" />
-                                        </Setter.Value>
+                                    <Setter Property="Background" Value="{Binding Color, Converter={StaticResource ColorToBrushConverter}}" >
+                                        <!--<Setter.Value>
+                                                --><!--<Binding  brush Path="Color" UpdateSourceTrigger="PropertyChanged" /> --><!--
+                                                <SolidColorBrush Color="{Binding Color, }" />
+                                        </Setter.Value>-->
                                     </Setter>
                                     <Setter Property="Template">
                                         <Setter.Value>
